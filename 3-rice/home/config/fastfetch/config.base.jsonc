@@ -3,20 +3,16 @@
     // grouped-tree style: coloured section headers, nerd-font icon per line).
     // Needs a Nerd Font in the terminal (Iosevka Nerd Font Mono, already set).
     //
-    // COLOURS: section colours are NAMED ANSI ("red", "yellow"): they resolve
-    // through the terminal palette (~/.config/kitty/colors.conf), so a theme /
-    // auto-themer change recolours them for free.
-    //     cyan = coral (#ff8a5c, ANSI slot 6 of the warm set)     yellow = amber (#f3bc7b)
-    //     (red is now rose-red #ff4d6d = errors, so it is not used for chrome)
-    // (No palette row on purpose. The 16 ANSI slots in colors.conf are themed warm.)
+    // COLOURS: this is the TEMPLATE. ~/.local/bin/rice-theme writes config.jsonc from it on every theme
+    // change, swapping the colour names for the theme's own colours (matching the logo's gradient):
+    //     "yellow" = accent2 (logo top)   "cyan" = accent (logo bottom)   "bright_black" = muted
+    // Edit this file, not config.jsonc (generated, not in the repo).
 
     "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
 
     // LOGO: a SQUARE image (kitty graphics protocol), not the tall ASCII art.
     // Terminal cells are ~1:2, so 38x19 cells = square, as tall as the 19-row text block; padding top 1 shifts it one row down (user preferred this look over exact centring) (raise width/height together to grow it; keep width = 2 x height). Source is the Arch logo
-    // (/usr/share/pixmaps/archlinux-logo.svg) tinted amber->coral:
-    //   logo.svg = tinted source (edit/regenerate this),  logo.png = rendered from it
-    //   rsvg-convert -w 512 -h 512 logo.svg -o logo.png
+    // (/usr/share/pixmaps/archlinux-logo.svg): logo.svg = template, rice-theme renders the tinted logo.png from it.
     // Only works in kitty (kitty-direct); other terminals show no logo.
     "logo": {
         "type": "kitty-direct",

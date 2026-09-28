@@ -5,7 +5,10 @@
 3-rice/home/config/quickshell/colors.json
 3-rice/home/config/gtk-3.0/gtk.css
 3-rice/home/config/gtk-4.0/gtk.css
+3-rice/home/config/gtk-3.0/settings.ini
+3-rice/home/config/gtk-4.0/settings.ini
 3-rice/home/config/fastfetch/logo.png
+3-rice/home/config/fastfetch/config.jsonc
 3-rice/optional/ncspot/home/config/ncspot/config.toml
 3-rice/home/config/mpv/script-opts/
 
