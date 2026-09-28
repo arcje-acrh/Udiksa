@@ -1,0 +1,25 @@
+#!/usr/bin/env python3
+"""Turn the ASUS ROG keyboard's Fn-lock OFF (media/brightness keys work without Fn).
+
+hid_asus forces Fn-lock ON whenever it binds the keyboard (boot) and re-applies
+it on resume, and exposes no setting to change that. This sends the same HID
+feature report the driver uses (report 0x5a: 5a d0 4e <state>, 64 bytes),
+with state 0. Usage: asus-fnlock-off [0|1]   (default 0 = Fn-lock off)
+"""
+import fcntl, glob, os, sys
+
+state = int(sys.argv[1]) if len(sys.argv) > 1 else 0
+HIDIOCSFEATURE_64 = (3 << 30) | (64 << 16) | (ord("H") << 8) | 0x06  # _IOWR('H', 6, 64)
+
+nodes = glob.glob("/sys/bus/hid/devices/0003:0B05:19B6.*/hidraw/hidraw*")
+if not nodes:
+    print("asus-fnlock-off: no ASUS ROG keyboard (0b05:19b6) here, nothing to do"); sys.exit(0)
+
+report = bytes([0x5A, 0xD0, 0x4E, state]) + bytes(60)
+for n in nodes:
+    fd = os.open("/dev/" + os.path.basename(n), os.O_RDWR)
+    try:
+        fcntl.ioctl(fd, HIDIOCSFEATURE_64, report)
+    finally:
+        os.close(fd)
+    print("Fn-lock set to %s via %s" % ("ON" if state else "OFF", os.path.basename(n)))

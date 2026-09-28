@@ -9,7 +9,7 @@
 //   screen  hyprctl eval hl.monitor(...) 60 / 240 Hz (monitors.lua picks the same at reload)
 //   auto    on battery: batteryMode (Silent) + 60 Hz; on the charger: acMode + 240 Hz. asusd's own
 //           AC/battery profiles are kept in step so the two never fight.
-// Settings live in ~/.config/udiksa/performance.json (device folder, in the repo). Everything is re-applied at start.
+// Settings live in ~/.config/udiksa/performance.json (yours, not in the repo; defaults on first run). Everything is re-applied at start.
 pragma Singleton
 import QtQuick
 import Quickshell

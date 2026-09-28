@@ -1,0 +1,2 @@
+Laptops with an NVIDIA card next to the built-in GPU (hybrid): switch the GPU mode (Integrated / Hybrid / NVIDIA
+only) from the notch and Settings > GPU, with supergfxctl. The NVIDIA driver itself comes with part 2.

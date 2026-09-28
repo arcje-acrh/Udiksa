@@ -1,0 +1,169 @@
+#!/usr/bin/env python3
+"""rice-kbd -- keyboard lighting on ASUS laptops (asusctl / asusd). Device-specific: on a machine without asusctl or
+an RGB keyboard every command does nothing (exit 0), so the dotfiles stay the same everywhere.
+
+The choices are kept in ~/.config/udiksa/keyboard.json (yours, not in the repo); asusd also remembers
+the last effect by itself. Single-zone keyboards (e.g. Zephyrus G16 GU605) show one colour for the whole keyboard.
+
+  rice-kbd                      JSON: saved choices + what this keyboard can do
+  rice-kbd set <key> <value>... save + apply (keys below; several pairs at once are fine)
+  rice-kbd apply                apply everything saved (first login)
+  rice-kbd theme                re-apply when "follow theme" is on (rice-theme calls it on every theme switch)
+  rice-kbd lit                  the light was just switched on (Fn keys; the notch's watcher calls it): send the
+                                current colour / effect, which could not be sent while it was off
+
+  brightness  off|low|med|high
+  effect      static|breathe|rainbow-cycle|rainbow-wave|pulse
+  colour      rrggbb   (colour2 = breathe's second colour)
+  follow_theme  true|false   (colour = the theme's accent, colour2 = its second accent)
+  speed       low|med|high      direction  up|down|left|right
+  boot / awake / sleep / shutdown   true|false   (when the keyboard is lit at all)
+"""
+import json, os, re, shutil, subprocess, sys
+
+HOME = os.path.expanduser("~")
+CFG = os.path.join(HOME, ".config/udiksa/keyboard.json")
+COLORS = os.path.join(HOME, ".config/quickshell/colors.json")
+LED = "/sys/class/leds/asus::kbd_backlight"
+DEFAULTS = {"brightness": "low", "effect": "static", "colour": "ffffff", "colour2": "000000", "follow_theme": True,
+            "speed": "med", "direction": "right", "boot": True, "awake": True, "sleep": False, "shutdown": False}
+EFFECTS = ["static", "breathe", "rainbow-cycle", "rainbow-wave", "pulse"]
+CHOICES = {"brightness": ["off", "low", "med", "high"], "effect": EFFECTS, "speed": ["low", "med", "high"],
+           "direction": ["up", "down", "left", "right"]}
+
+
+def capable():
+    return shutil.which("asusctl") is not None and os.path.exists(LED)
+
+
+def rgb():
+    return os.path.exists(os.path.join(LED, "kbd_rgb_mode"))
+
+
+def real_brightness():
+    """What the keyboard really shows (the Fn brightness keys change it without us): off / low / med / high."""
+    try:
+        return CHOICES["brightness"][max(0, min(3, int(open(os.path.join(LED, "brightness")).read())))]
+    except (OSError, ValueError):
+        return None
+
+
+def load():
+    d = dict(DEFAULTS)
+    try:
+        d.update(json.load(open(CFG)))
+    except (OSError, ValueError):
+        pass
+    b = real_brightness()
+    if b:
+        d["brightness"] = b           # the truth is the keyboard, not the file
+    return d
+
+
+def save(d):
+    real = os.path.realpath(CFG)                 # through the stow link into ~/Udiksa
+    os.makedirs(os.path.dirname(real), exist_ok=True)
+    open(real + ".tmp", "w").write(json.dumps({k: d[k] for k in DEFAULTS}, indent=2, sort_keys=True) + "\n")
+    os.replace(real + ".tmp", real)
+
+
+def theme_colours():
+    try:
+        c = json.load(open(COLORS))
+        return c.get("accent", "#ffffff").lstrip("#")[:6], c.get("accent2", "#000000").lstrip("#")[:6]
+    except (OSError, ValueError):
+        return None
+
+
+def asus(*args):
+    subprocess.run(["asusctl"] + list(args), capture_output=True)
+
+
+EFFECT_KEYS = ("effect", "colour", "colour2", "follow_theme", "speed", "direction")
+POWER_KEYS = ("boot", "awake", "sleep", "shutdown")
+
+
+def led(hexc):
+    """A screen colour as the keyboard's LEDs should get it, so it LOOKS like the screen: full strength (brightness is
+    set separately) and gamma 2.2 (LEDs are linear, screen colours are not; without it muted / light colours come
+    out washed-out, near white). Black stays black."""
+    r, g, b = (int(hexc[i:i + 2], 16) for i in (0, 2, 4))
+    top = max(r, g, b)
+    if top == 0:
+        return "000000"
+    return "".join(f"{round(255 * (c / top) ** 2.2):02x}" for c in (r, g, b))
+
+
+def send_effect(d):
+    c1, c2 = d["colour"], d["colour2"]
+    if d["follow_theme"]:
+        t = theme_colours()
+        if t:
+            c1, c2 = t
+    c1, c2 = led(c1), led(c2)
+    e = d["effect"]
+    args = {"static": ["-c", c1], "breathe": ["--colour", c1, "--colour2", c2, "--speed", d["speed"]],
+            "rainbow-cycle": ["--speed", d["speed"]], "rainbow-wave": ["--direction", d["direction"], "--speed", d["speed"]],
+            "pulse": ["-c", c1]}[e]
+    asus("aura", "effect", e, *args)
+
+
+def apply(d, old=None, touched=None):
+    """Send only what was touched (touched = keys given to `set`; None = everything, e.g. first login). Measured on the
+    GU605: an effect sent while the light is OFF switches it on (a flash), and the power-state command blinks it,
+    so: while off only brightness / power states go out; effects wait until the light is switched on; turning it
+    on = brightness first, then the effect (keeps the new brightness, no flash)."""
+    if not capable():
+        return
+    changed = set(DEFAULTS) if touched is None else set(touched)
+    lit = d["brightness"] != "off"
+    was_lit = old is not None and old.get("brightness") != "off"
+    if changed & set(POWER_KEYS):
+        asus("aura", "power", "keyboard", *[f"--{s}" for s in POWER_KEYS if d[s]])
+    if "brightness" in changed:
+        asus("leds", "set", d["brightness"])
+    if rgb() and lit and ((changed & set(EFFECT_KEYS)) or not was_lit):
+        send_effect(d)
+        # a new colour / effect makes the keyboard's own controller light up at FULL while the brightness setting
+        # still says the old level (user 2026-09-28): send the level again so the LEDs follow it
+        asus("leds", "set", d["brightness"])
+
+
+def conv(key, v):
+    if key in CHOICES:
+        if v not in CHOICES[key]:
+            sys.exit(f"{key}: one of {', '.join(CHOICES[key])}")
+        return v
+    if key in ("colour", "colour2"):
+        v = v.lstrip("#").lower()
+        if not re.fullmatch(r"[0-9a-f]{6}", v):
+            sys.exit(f"{key}: rrggbb")
+        return v
+    if isinstance(DEFAULTS.get(key), bool):
+        return v.lower() in ("1", "true", "yes", "on")
+    sys.exit(f"unknown: {key}")
+
+
+if __name__ == "__main__":
+    a = sys.argv[1:]
+    d = load()
+    if not a:
+        print(json.dumps(dict(d, capable=capable(), rgb=rgb(), effects=EFFECTS if rgb() else [])))
+    elif a[0] == "set" and len(a) >= 3 and len(a) % 2 == 1:
+        old = dict(d)
+        for k, v in zip(a[1::2], a[2::2]):
+            d[k] = conv(k, v)
+        save(d)
+        apply(d, old, a[1::2])
+    elif a[0] == "apply":
+        apply(d)
+    elif a[0] == "lit":
+        if d["brightness"] != "off" and capable() and rgb():
+            send_effect(d)
+            asus("leds", "set", d["brightness"])
+    elif a[0] == "theme":
+        if d["follow_theme"] and d["brightness"] != "off" and d["effect"] in ("static", "breathe", "pulse") and capable() and rgb():
+            send_effect(d)
+            asus("leds", "set", d["brightness"])
+    else:
+        sys.exit(__doc__)

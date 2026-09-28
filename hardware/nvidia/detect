@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# exit 0 = hybrid graphics: an NVIDIA card (10de) plus another GPU. In Integrated mode the NVIDIA card can be
+# hidden from lspci, so an installed nvidia-utils counts too.
+gpus=$(lspci -nn 2>/dev/null | grep -Ei 'vga|3d|display')
+{ grep -q '\[10de:' <<<"$gpus" || pacman -Qq nvidia-utils &>/dev/null; } && grep -qv '\[10de:' <<<"$gpus"
