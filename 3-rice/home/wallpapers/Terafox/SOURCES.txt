@@ -1,0 +1,17 @@
+Theme: Terafox
+Colours: official Nightfox Terafox (sea-green accent) -- github.com/EdenEast/nightfox.nvim (MIT)
+
+Wallpapers:
+  01-a-foggy-forest-with-trees-and-bushes.png  <-  https://github.com/dharmx/walls/blob/main/digital/a_foggy_forest_with_trees_and_bushes.png  (no licence stated by the collection; rights stay with the original artist)
+  02-daniel-leone-v7datklzzaw.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/photography/daniel-leone-v7daTKlZzaw.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-mountain.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/mix/mountain.jpg  (no licence stated by the collection; rights stay with the original artist)
+  04-a-rocky-shore-with-waves-crashing-on-roc.jpg  <-  https://github.com/dharmx/walls/blob/main/nature/a_rocky_shore_with_waves_crashing_on_rocks.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-waves-crashing-waves-on-the-ocean.jpg  <-  https://github.com/dharmx/walls/blob/main/nature/waves_crashing_waves_on_the_ocean.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-a-group-of-wooden-posts-in-water.jpg  <-  https://github.com/dharmx/walls/blob/main/calm/a_group_of_wooden_posts_in_water.jpg  (no licence stated by the collection; rights stay with the original artist)
+  07-a-road-leading-to-mountains.jpg  <-  https://github.com/dharmx/walls/blob/main/calm/a_road_leading_to_mountains.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-a-foggy-forest-with-trees-01.jpg  <-  https://github.com/dharmx/walls/blob/main/fogsmoke/a_foggy_forest_with_trees_01.jpg  (no licence stated by the collection; rights stay with the original artist)
+  09-a-white-flower-with-green-center.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_white_flower_with_green_center.jpg  (no licence stated by the collection; rights stay with the original artist)
+  10-abstract.jpg  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/abstract.jpg  (MIT)
+  11-a-pixel-art-of-a-room-with-people-and-a-.png  <-  https://github.com/dharmx/walls/blob/main/poly/a_pixel_art_of_a_room_with_people_and_a_room_with_a_black_background.png  (no licence stated by the collection; rights stay with the original artist)
+  12-a-house-with-stairs-leading-to-the-front.png  <-  https://github.com/dharmx/walls/blob/main/anime/a_house_with_stairs_leading_to_the_front.png  (no licence stated by the collection; rights stay with the original artist)
+  13-a-cartoon-of-a-girl-with-white-hair-and-.png  <-  https://github.com/dharmx/walls/blob/main/anime/a_cartoon_of_a_girl_with_white_hair_and_black_eyes.png  (no licence stated by the collection; rights stay with the original artist)

@@ -1,0 +1,13 @@
+#!/bin/bash
+# music -- ncspot with a cava visualiser below it, both floating on the scratchpad (special:magic),
+# placed as one centred block by the rice-ncspot / rice-cava rules in ~/.config/hypr/conf/rules.lua.
+# Started by the launcher's ncspot entry (~/.local/share/applications/ncspot.desktop). Closing ncspot closes cava.
+if pgrep -f -- '--class rice-ncspot' >/dev/null; then       # already running: just show the scratchpad
+    hyprctl dispatch 'hl.dsp.workspace.toggle_special("magic")' >/dev/null
+    exit 0
+fi
+kitty --class rice-cava --title cava -e cava &
+cava_pid=$!
+# PULSE_LATENCY_MSEC: a bigger audio buffer = no crackle / pitch wobble when the CPU is busy (Quiet profile, UI calls)
+kitty --class rice-ncspot --title ncspot -e env PULSE_LATENCY_MSEC=90 ncspot
+kill "$cava_pid" 2>/dev/null

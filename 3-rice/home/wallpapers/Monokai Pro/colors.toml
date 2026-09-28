@@ -1,0 +1,35 @@
+# Monokai Pro -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Monokai Pro, classic filter (yellow accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#ffd866"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#5b595c"             # buttons, empty part of sliders, selected text background
+muted = "#727072"                 # faint things: icons that are off, hints, disabled text
+
+background = "#2d2a2e"            # main background: the notch, the terminal, app windows
+dark_background = "#221f22"       # a darker shade of the background
+darker_background = "#19181a"     # the darkest shade
+lighter_background = "#403e41"    # panels and cards (a bit lighter than the background)
+
+foreground = "#fcfcfa"            # normal text
+dark_foreground = "#939293"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#fcfcfa"      # brighter text
+bright_foreground = "#ffffff"     # brightest text + the terminal cursor
+
+red = "#ff6188"                   # terminal + errors
+yellow = "#ffd866"                # terminal + warnings
+green = "#a9dc76"                 # terminal + success
+cyan = "#78dce8"                  # terminal
+blue = "#fc9867"                  # terminal + links
+magenta = "#ab9df2"               # terminal + git changes in the prompt
+
+bright_red = "#ff6188"            # terminal (bold/bright versions)
+bright_yellow = "#ffd866"
+bright_green = "#a9dc76"
+bright_cyan = "#78dce8"
+bright_blue = "#fc9867"
+bright_magenta = "#ab9df2"

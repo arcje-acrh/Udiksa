@@ -1,0 +1,16 @@
+Theme: Nord
+Colours: official Nord (frost accent)
+
+Wallpapers:
+  01-nord-mountains.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/wallpapers/nord_mountains.png  (MIT)
+  02-ign-firewatch-2.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/Firewatch/ign_Firewatch-2.jpg  (MIT)
+  03-nord-valley.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/wallpapers/nord_valley.png  (MIT)
+  04-nord-lake.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/wallpapers/nord_lake.png  (MIT)
+  05-ign-lakesidedeer-08.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/LakesideDeerComplete/ign_LakesideDeer-08.png  (MIT)
+  06-ign-catalina-3.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/Catalina/ign_Catalina-3.jpg  (MIT)
+  07-ign-deadtree-1.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/DeadTree/ign_DeadTree-1.png  (MIT)
+  08-ign-eos-snowcappedmountain01.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/EOS-SnowCappedMountain/ign_EOS-SnowCappedMountain01.jpg  (MIT)
+  09-ign-coast-01.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/Coast/ign_Coast-01.jpg  (MIT)
+  10-nord-scenary.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/wallpapers/nord_scenary.png  (MIT)
+  11-ign-loficity-1.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/LofiCity/ign_LofiCity-1.png  (MIT)
+  12-ign-blue-chains.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/wallpapers/ign_blue_chains.png  (MIT)

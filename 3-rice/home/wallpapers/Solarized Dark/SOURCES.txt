@@ -1,0 +1,18 @@
+Theme: Solarized Dark
+Colours: official Solarized dark (blue accent)
+
+Wallpapers:
+  01-a-snowy-landscape-with-trees-and-a-light.jpg  <-  https://github.com/dharmx/walls/blob/main/cold/a_snowy_landscape_with_trees_and_a_light_on_it.jpg  (no licence stated by the collection; rights stay with the original artist)
+  02-a-road-with-trees-on-either-side-of-it.jpg  <-  https://github.com/dharmx/walls/blob/main/dreamcore/a_road_with_trees_on_either_side_of_it.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-a-close-up-of-water.jpg  <-  https://github.com/dharmx/walls/blob/main/unsorted/a_close_up_of_water.jpg  (no licence stated by the collection; rights stay with the original artist)
+  04-a-snowy-mountain-top-with-dark-sky.jpg  <-  https://github.com/dharmx/walls/blob/main/mountain/a_snowy_mountain_top_with_dark_sky.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-waves-crashing-waves-on-rocks.jpg  <-  https://github.com/dharmx/walls/blob/main/nature/waves_crashing_waves_on_rocks.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-a-rocky-beach-with-water-in-the-backgrou.jpg  <-  https://github.com/dharmx/walls/blob/main/nature/a_rocky_beach_with_water_in_the_background.jpg  (no licence stated by the collection; rights stay with the original artist)
+  07-river.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/river.png  (MIT)
+  08-a-planet-in-space-with-clouds.jpg  <-  https://github.com/dharmx/walls/blob/main/solarized/a_planet_in_space_with_clouds.jpg  (no licence stated by the collection; rights stay with the original artist)
+  09-ink-wave.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/ink_wave.png  (MIT)
+  10-a-video-game-screen-with-a-diamond-and-g.png  <-  https://github.com/dharmx/walls/blob/main/poly/a_video_game_screen_with_a_diamond_and_green_lights.png  (no licence stated by the collection; rights stay with the original artist)
+  11-a-screenshot-of-a-computer-generated-ima.png  <-  https://github.com/dharmx/walls/blob/main/minimal/a_screenshot_of_a_computer_generated_image_of_planets.png  (no licence stated by the collection; rights stay with the original artist)
+  12-dark-forest.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/dark_forest.png  (MIT)
+  13-a-view-of-the-ocean-from-a-balcony.jpg  <-  https://github.com/dharmx/walls/blob/main/anime/a_view_of_the_ocean_from_a_balcony.jpeg  (no licence stated by the collection; rights stay with the original artist)
+  14-a-cartoon-of-a-girl-sitting-on-a-porch-i.png  <-  https://github.com/dharmx/walls/blob/main/anime/a_cartoon_of_a_girl_sitting_on_a_porch_in_the_rain.png  (no licence stated by the collection; rights stay with the original artist)

@@ -1,0 +1,15 @@
+Theme: One Dark
+Colours: official One Dark / Atom (blue accent)
+
+Wallpapers:
+  01-ign-mojave-dynamic-13.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/Mojave/ign_mojave_dynamic_13.jpeg  (MIT)
+  02-ign-mojave-dynamic-1.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/Mojave/ign_mojave_dynamic_1.jpeg  (MIT)
+  03-ign-soliddesert-2.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/SolidDesert/ign_SolidDesert-2.png  (MIT)
+  04-ign-mojave-dynamic-12.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/Mojave/ign_mojave_dynamic_12.jpeg  (MIT)
+  05-nord-winter.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/nord-winter.png  (MIT)
+  06-street-blues.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/wallpapers/street_blues.png  (MIT)
+  07-a-close-up-of-a-flower.png  <-  https://github.com/dharmx/walls/blob/main/nord/a_close_up_of_a_flower.png  (no licence stated by the collection; rights stay with the original artist)
+  08-a-group-of-flowers-on-a-black-background.png  <-  https://github.com/dharmx/walls/blob/main/nord/a_group_of_flowers_on_a_black_background.png  (no licence stated by the collection; rights stay with the original artist)
+  09-a-group-of-circles-with-different-phases.png  <-  https://github.com/dharmx/walls/blob/main/nord/a_group_of_circles_with_different_phases_of_the_moon.png  (no licence stated by the collection; rights stay with the original artist)
+  10-snowflakes.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/snowflakes.jpg  (no licence stated by the collection; rights stay with the original artist)
+  11-mage.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/mage.jpg  (no licence stated by the collection; rights stay with the original artist)

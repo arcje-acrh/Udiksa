@@ -1,0 +1,36 @@
+# Solarized Dark -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Solarized dark (blue accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#268bd2"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#0a4a59"             # buttons, empty part of sliders, selected text background
+muted = "#586e75"                 # faint things: icons that are off, hints, disabled text
+
+background = "#002b36"            # main background: the notch, the terminal, app windows
+dark_background = "#00212b"       # a darker shade of the background
+darker_background = "#001a22"     # the darkest shade
+lighter_background = "#073642"    # panels and cards (a bit lighter than the background)
+
+foreground = "#93a1a1"            # normal text
+dark_foreground = "#839496"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#eee8d5"      # brighter text
+bright_foreground = "#fdf6e3"     # brightest text + the terminal cursor
+
+red = "#dc322f"                   # terminal + errors
+yellow = "#b58900"                # terminal + warnings
+orange = "#cb4b16"                # terminal
+green = "#859900"                 # terminal + success
+cyan = "#2aa198"                  # terminal
+blue = "#268bd2"                  # terminal + links
+magenta = "#d33682"               # terminal + git changes in the prompt
+
+bright_red = "#e35f5c"            # terminal (bold/bright versions)
+bright_yellow = "#d4a52a"
+bright_green = "#a0b52a"
+bright_cyan = "#50bab2"
+bright_blue = "#51a2dd"
+bright_magenta = "#dd5e9d"

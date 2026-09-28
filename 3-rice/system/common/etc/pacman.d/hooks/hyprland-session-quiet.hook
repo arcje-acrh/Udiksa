@@ -1,0 +1,10 @@
+[Trigger]
+Operation = Install
+Operation = Upgrade
+Type = Package
+Target = hyprland
+
+[Action]
+Description = Re-applying quiet session wrapper to hyprland.desktop
+When = PostTransaction
+Exec = /usr/bin/sed -i 's|^Exec=.*|Exec=/usr/local/bin/start-hyprland-quiet|' /usr/share/wayland-sessions/hyprland.desktop

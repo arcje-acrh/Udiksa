@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# touchpad-toggle -- switch the laptop touchpad off / on (F10, bound in ~/.config/hypr/conf/binds.lua)
+# and show the new state in the notch. Hyprland cannot report a device's on/off state, so it is kept
+# in a small file in $XDG_RUNTIME_DIR (gone after a reboot, when the touchpad is on again anyway).
+tp=$(hyprctl devices -j | jq -r '.mice[].name | select(test("touchpad"))' | head -1)
+[ -n "$tp" ] || exit 1
+state="${XDG_RUNTIME_DIR:-/tmp}/touchpad-off"
+if [ -e "$state" ]; then
+    rm -f "$state"
+    hyprctl eval "hl.device({ name = \"$tp\", enabled = true })" >/dev/null
+    qs ipc call osd touchpad on
+else
+    touch "$state"
+    hyprctl eval "hl.device({ name = \"$tp\", enabled = false })" >/dev/null
+    qs ipc call osd touchpad off
+fi

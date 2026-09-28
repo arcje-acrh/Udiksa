@@ -1,0 +1,8 @@
+#!/bin/sh
+# Silence "Loading Linux ..." / "Loading initial ramdisk ..." so booting
+# shows a plain dark screen. Script functions take priority over builtins.
+cat << 'QUIET'
+function echo {
+	true
+}
+QUIET

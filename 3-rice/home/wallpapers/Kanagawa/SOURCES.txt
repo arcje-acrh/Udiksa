@@ -1,0 +1,16 @@
+Theme: Kanagawa
+Colours: official Kanagawa wave (crystal blue accent)
+
+Wallpapers:
+  01-ign-thebeach-02.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/TheBeach/ign_TheBeach-02.jpg  (MIT)
+  02-ign-rockymountain2.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/RockyMountain/ign_RockyMountain2.jpg  (MIT)
+  03-ign-solidforest-2.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/SolidForest/ign_SolidForest-2.png  (MIT)
+  04-ign-eos-sunset02.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/EOS-Sunset/ign_EOS-Sunset02.jpg  (MIT)
+  05-tree-stump.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/tree-stump.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-cottages-river.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/cottages-river.png  (no licence stated by the collection; rights stay with the original artist)
+  07-street.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/street.png  (no licence stated by the collection; rights stay with the original artist)
+  08-a-person-on-a-cliff.jpg  <-  https://github.com/dharmx/walls/blob/main/mountain/a_person_on_a_cliff.jpg  (no licence stated by the collection; rights stay with the original artist)
+  09-wild.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/wallpapers/wild.png  (MIT)
+  10-ign-yourname.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/wallpapers/ign_yourName.png  (MIT)
+  11-astronaut-nord.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/astronaut-nord.png  (MIT)
+  12-hollow-knight.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/hollow-knight.jpg  (no licence stated by the collection; rights stay with the original artist)

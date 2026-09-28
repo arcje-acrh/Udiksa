@@ -1,0 +1,16 @@
+Theme: Catppuccin Mocha
+Colours: official Catppuccin Mocha (mauve accent)
+
+Wallpapers:
+  01-serenity.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/serenity.jpg  (no licence stated by the collection; rights stay with the original artist)
+  02-eclipse.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/eclipse.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-marine-tunnel.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/marine-tunnel.jpg  (no licence stated by the collection; rights stay with the original artist)
+  04-cool.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/cool.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-clouds-5.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/clouds-5.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-flowers-1.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/flowers-1.jpg  (no licence stated by the collection; rights stay with the original artist)
+  07-flowers-13.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/flowers-13.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-cat-waves.png  <-  https://github.com/zhichaoh/catppuccin-wallpapers/blob/main/waves/cat-waves.png  (MIT)
+  09-minimalist-black-hole.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/minimalist-black-hole.png  (no licence stated by the collection; rights stay with the original artist)
+  10-pompeii.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/pompeii.png  (no licence stated by the collection; rights stay with the original artist)
+  11-voxel-houses-monochrome.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/voxel-houses-monochrome.png  (no licence stated by the collection; rights stay with the original artist)
+  12-knight-templar.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/knight-templar.jpg  (no licence stated by the collection; rights stay with the original artist)

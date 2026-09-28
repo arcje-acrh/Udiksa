@@ -1,0 +1,4 @@
+#!/bin/sh
+# Run Hyprland's watchdog without printing its banner on the tty
+# (greetd attaches the session to VT1). Output goes to a log instead.
+exec /usr/bin/start-hyprland "$@" > "${XDG_CACHE_HOME:-$HOME/.cache}/hyprland-session.log" 2>&1

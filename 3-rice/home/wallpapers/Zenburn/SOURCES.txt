@@ -1,0 +1,15 @@
+Theme: Zenburn
+Colours: official Zenburn (green accent) -- github.com/bbatsov/zenburn-emacs (GPL-3.0 theme; colour values only)
+
+Wallpapers:
+  01-a-foggy-mountain-with-trees.jpg  <-  https://github.com/dharmx/walls/blob/main/fogsmoke/a_foggy_mountain_with_trees.jpg  (no licence stated by the collection; rights stay with the original artist)
+  02-fog-in-the-forest-with-trees-and-fog.jpg  <-  https://github.com/dharmx/walls/blob/main/fogsmoke/fog_in_the_forest_with_trees_and_fog.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-forest-mountain-cloudy-valley.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/photography/forest-mountain-cloudy-valley.png  (no licence stated by the collection; rights stay with the original artist)
+  04-forest-5.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/photography/forest-5.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-a-large-rock-in-the-middle-of-a-body-of-.png  <-  https://github.com/dharmx/walls/blob/main/apeiros/a_large_rock_in_the_middle_of_a_body_of_water.png  (no licence stated by the collection; rights stay with the original artist)
+  06-sea.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/photography/sea.jpg  (no licence stated by the collection; rights stay with the original artist)
+  07-excl-autumn-leaf.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/photography/Excl_Autumn_Leaf.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-a-house-with-a-porch-and-a-porch.jpg  <-  https://github.com/dharmx/walls/blob/main/unsorted/a_house_with_a_porch_and_a_porch.jpg  (no licence stated by the collection; rights stay with the original artist)
+  09-freshcake-forestwallpaper.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/mix/FreshCake_forestWallpaper.jpg  (no licence stated by the collection; rights stay with the original artist)
+  10-a-house-in-a-field-with-mountains-and-cl.jpg  <-  https://github.com/dharmx/walls/blob/main/unsorted/a_house_in_a_field_with_mountains_and_clouds.jpg  (no licence stated by the collection; rights stay with the original artist)
+  11-cyber-asian-girl-1080.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/anime/light/cyber-asian-girl-1080.png  (no licence stated by the collection; rights stay with the original artist)

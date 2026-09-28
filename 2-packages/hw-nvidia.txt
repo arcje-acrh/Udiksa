@@ -1,0 +1,6 @@
+# Installed only when an NVIDIA GPU is found (lspci).
+nvidia-open-dkms
+nvidia-utils
+lib32-nvidia-utils
+libva-nvidia-driver
+egl-wayland

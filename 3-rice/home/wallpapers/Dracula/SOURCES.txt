@@ -1,0 +1,14 @@
+Theme: Dracula
+Colours: official Dracula (purple accent)
+
+Wallpapers:
+  01-dracula-mnt-282a36.png  <-  https://github.com/dracula/wallpaper/blob/master/second-collection/illustrations/trees-and-mountains/dracula-mnt-282a36.png  (MIT)
+  02-ign-surface06.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/Surface/ign_Surface06.jpg  (MIT)
+  03-ign-night.jpg  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/ZorinMountain/ign_Night.jpg  (MIT)
+  04-night-forest-path.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/night-forest-path.png  (no licence stated by the collection; rights stay with the original artist)
+  05-flowers-2.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/flowers-2.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-bunnies-road.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/bunnies-road.png  (no licence stated by the collection; rights stay with the original artist)
+  07-pixel-galaxy.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/pixel-galaxy.png  (no licence stated by the collection; rights stay with the original artist)
+  08-grand-hall.png  <-  https://github.com/rose-pine/wallpapers/blob/main/minecraft/grand-hall.png  (CC0-1.0)
+  09-dracula-galaxy-282a36.png  <-  https://github.com/dracula/wallpaper/blob/master/second-collection/illustrations/galaxy/dracula-galaxy-282a36.png  (MIT)
+  10-ign-0001.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/wallpapers/ign-0001.png  (MIT)

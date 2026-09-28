@@ -1,0 +1,54 @@
+#!/bin/sh
+# gpu-state — one-line GPU facts for fastfetch (and later the Quickshell GPU widget).
+# Never wakes the dGPU: it only reads sysfs and asks supergfxd over D-Bus.
+#
+#   gpu-state mode     supergfxctl mode: Integrated / Hybrid / AsusMuxDgpu
+#   gpu-state display  which GPU is driving the laptop panel right now
+#   gpu-state dgpu     NVIDIA GPU power state: active / suspended (+ driver)
+#   gpu-state all      the three above on separate lines
+#
+# Vendor ids: 0x8086 = Intel, 0x10de = NVIDIA.
+
+vendor_name() {
+    case "$1" in
+        0x8086) echo "Intel (iGPU)" ;;
+        0x10de) echo "NVIDIA (dGPU)" ;;
+        0x1002) echo "AMD" ;;
+        *)      echo "unknown" ;;
+    esac
+}
+
+mode() {
+    supergfxctl -g 2>/dev/null || echo "unknown"
+}
+
+display() {
+    for c in /sys/class/drm/card*-eDP-*; do
+        [ -e "$c/status" ] && [ "$(cat "$c/status")" = "connected" ] || continue
+        # connector path: .../<gpu pci dev>/drm/cardN/cardN-eDP-1  -> GPU dir is 3 levels up
+        gpu=$(readlink -f "$c/../../..")
+        vendor_name "$(cat "$gpu/vendor" 2>/dev/null)"
+        return
+    done
+    echo "unknown"
+}
+
+dgpu() {
+    for d in /sys/bus/pci/devices/*; do
+        [ "$(cat "$d/vendor" 2>/dev/null)" = "0x10de" ] || continue
+        case "$(cat "$d/class" 2>/dev/null)" in 0x03*) ;; *) continue ;; esac
+        state=$(cat "$d/power/runtime_status" 2>/dev/null || echo "unknown")
+        drv=$(basename "$(readlink -f "$d/driver" 2>/dev/null)" 2>/dev/null)
+        echo "$state${drv:+ ($drv)}"
+        return
+    done
+    echo "not present"
+}
+
+case "${1:-all}" in
+    mode)    mode ;;
+    display) display ;;
+    dgpu)    dgpu ;;
+    all)     echo "mode:    $(mode)"; echo "display: $(display)"; echo "dGPU:    $(dgpu)" ;;
+    *)       echo "usage: gpu-state {mode|display|dgpu|all}" >&2; exit 2 ;;
+esac

@@ -1,0 +1,20 @@
+# ble.sh settings (bash line editor). Installed in ~/.local/share/blesh and
+# hooked from ~/.bashrc. It is used here ONLY for a real right-hand prompt
+# (clock) that repaints correctly when the terminal is resized; its optional
+# extras are switched off to keep the shell behaving as before.
+
+# ---- right prompt ----
+# The clock itself is defined in ~/.config/starship.toml (`right_format`):
+# with ble.sh present, starship rewrites `prompt_rps1` before every prompt, so
+# do NOT set prompt_rps1 here (it would be overwritten).
+# Erase the clock once a command is run: history has no clocks that a later
+# window resize could wrap onto stray lines.
+bleopt prompt_rps1_transient=1
+
+# ---- extras OFF (set to 1 / remove the line to enable) ----
+bleopt highlight_syntax=              # coloured syntax highlighting while typing
+bleopt complete_auto_complete=        # fish-style grey auto-suggestions
+bleopt complete_menu_complete=        # Tab menu completion popup
+bleopt edit_marker=                   # "[ble: ...]" status markers
+bleopt edit_marker_error=
+bleopt prompt_eol_mark=

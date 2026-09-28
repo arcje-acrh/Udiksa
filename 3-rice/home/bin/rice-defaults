@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# rice-defaults -- which app opens which kind of file (writes ~/.config/mimeapps.list via xdg-mime).
+# Set PER CATEGORY on purpose: some apps claim far too much (zathura's comic plugin claims zip / png / folders,
+# OnlyOffice claims pdf / epub / text), so "every type an app lists" is not used. Safe to run again.
+set -uo pipefail
+A=/usr/share/applications; L="$HOME/.local/share/applications"
+types() { [[ -f $1 ]] && grep -h '^MimeType=' "$1" | cut -d= -f2 | tr ';' '\n' | grep -E "$2" | tr '\n' ' '; }
+set_default() { local app=$1; shift; [[ $# -gt 0 ]] && [[ -f $A/$app || -f $L/$app ]] && xdg-mime default "$app" "$@"; }
+
+set_default imv.desktop $(types $A/imv.desktop '^image/')
+set_default mpv.desktop $(types $A/mpv.desktop '^(video|audio)/|^application/(ogg|x-ogg|x-matroska|vnd.rn-realmedia|x-flac)')
+set_default org.gnome.FileRoller.desktop $(types $A/org.gnome.FileRoller.desktop '.')
+set_default onlyoffice-desktopeditors.desktop $(types $A/onlyoffice-desktopeditors.desktop '.')
+# after OnlyOffice (it claims these too):
+set_default org.pwmt.zathura-pdf-mupdf.desktop application/pdf application/epub+zip application/oxps application/x-fictionbook application/x-mobipocket-ebook application/vnd.ms-xpsdocument
+set_default org.pwmt.zathura-djvu.desktop image/vnd.djvu image/vnd.djvu+multipage image/x-djvu
+set_default org.pwmt.zathura-cb.desktop application/x-cbr application/x-cbz application/x-cb7 application/x-cbt application/vnd.comicbook+zip application/vnd.comicbook-rar
+set_default nano-kitty.desktop $(types $L/nano-kitty.desktop '.')
+set_default onlyoffice-desktopeditors.desktop text/csv
+set_default zen.desktop text/html application/xhtml+xml x-scheme-handler/http x-scheme-handler/https
+set_default org.gnome.Nautilus.desktop inode/directory
+command -v xdg-settings >/dev/null && [[ -f $A/zen.desktop ]] && xdg-settings set default-web-browser zen.desktop 2>/dev/null
+echo "default apps set (pictures imv, video/music mpv, documents zathura, archives File Roller, text nano, office OnlyOffice)"

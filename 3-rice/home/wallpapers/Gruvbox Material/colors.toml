@@ -1,0 +1,36 @@
+# Gruvbox Material -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Gruvbox Material dark, medium, material foreground (green accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#a9b665"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#45403d"             # buttons, empty part of sliders, selected text background
+muted = "#7c6f64"                 # faint things: icons that are off, hints, disabled text
+
+background = "#282828"            # main background: the notch, the terminal, app windows
+dark_background = "#1b1b1b"       # a darker shade of the background
+darker_background = "#141414"     # the darkest shade
+lighter_background = "#32302f"    # panels and cards (a bit lighter than the background)
+
+foreground = "#d4be98"            # normal text
+dark_foreground = "#a89984"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#ddc7a1"      # brighter text
+bright_foreground = "#ddc7a1"     # brightest text + the terminal cursor
+
+red = "#ea6962"                   # terminal + errors
+yellow = "#d8a657"                # terminal + warnings
+orange = "#e78a4e"                # terminal
+green = "#a9b665"                 # terminal + success
+cyan = "#89b482"                  # terminal
+blue = "#7daea3"                  # terminal + links
+magenta = "#d3869b"               # terminal + git changes in the prompt
+
+bright_red = "#ea6962"            # terminal (bold/bright versions)
+bright_yellow = "#d8a657"
+bright_green = "#a9b665"
+bright_cyan = "#89b482"
+bright_blue = "#7daea3"
+bright_magenta = "#d3869b"

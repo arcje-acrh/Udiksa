@@ -1,0 +1,17 @@
+Theme: Graphite
+Colours: the rice's own greyscale palette (hand-made 2026-09-26)
+
+Wallpapers:
+  01-a-mountain-range-with-clouds-in-the-back.jpg  <-  https://github.com/dharmx/walls/blob/main/mountain/a_mountain_range_with_clouds_in_the_background.jpg  (no licence stated by the collection; rights stay with the original artist)
+  02-a-lake-surrounded-by-mountains.jpg  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_lake_surrounded_by_mountains.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-a-snowy-mountain-tops-with-clouds-in-the.png  <-  https://github.com/dharmx/walls/blob/main/mountain/a_snowy_mountain_tops_with_clouds_in_the_background.png  (no licence stated by the collection; rights stay with the original artist)
+  04-a-forest-of-trees-with-fog.jpg  <-  https://github.com/dharmx/walls/blob/main/nature/a_forest_of_trees_with_fog.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-a-stone-walkway-leading-to-a-lighthouse.jpg  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_stone_walkway_leading_to_a_lighthouse.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-a-plane-on-the-ground-01.jpg  <-  https://github.com/dharmx/walls/blob/main/decay/a_plane_on_the_ground_01.jpg  (no licence stated by the collection; rights stay with the original artist)
+  07-a-black-and-white-photo-of-clouds.jpg  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_black_and_white_photo_of_clouds.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-a-group-of-white-flowers.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_group_of_white_flowers.jpg  (no licence stated by the collection; rights stay with the original artist)
+  09-a-close-up-of-a-flower-08.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_close_up_of_a_flower_08.jpg  (no licence stated by the collection; rights stay with the original artist)
+  10-a-building-with-many-square-windows.jpg  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_building_with_many_square_windows.jpg  (no licence stated by the collection; rights stay with the original artist)
+  11-a-white-car-parked-on-a-brick-road.png  <-  https://github.com/dharmx/walls/blob/main/unsorted/a_white_car_parked_on_a_brick_road.png  (no licence stated by the collection; rights stay with the original artist)
+  12-a-cartoon-of-a-girl-with-long-hair-holdi.jpg  <-  https://github.com/dharmx/walls/blob/main/anime/a_cartoon_of_a_girl_with_long_hair_holding_a_sword.jpg  (no licence stated by the collection; rights stay with the original artist)
+  13-a-cartoon-of-a-girl-holding-a-sword.png  <-  https://github.com/dharmx/walls/blob/main/nord/a_cartoon_of_a_girl_holding_a_sword.png  (no licence stated by the collection; rights stay with the original artist)

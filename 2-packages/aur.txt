@@ -1,0 +1,3 @@
+# AUR apps (installed with yay).
+matugen-bin
+quickshell-git

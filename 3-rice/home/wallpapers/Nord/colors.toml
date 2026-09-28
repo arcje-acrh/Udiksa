@@ -1,0 +1,36 @@
+# Nord -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Nord (frost accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#88c0d0"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#434c5e"             # buttons, empty part of sliders, selected text background
+muted = "#616e88"                 # faint things: icons that are off, hints, disabled text
+
+background = "#2e3440"            # main background: the notch, the terminal, app windows
+dark_background = "#272c36"       # a darker shade of the background
+darker_background = "#20242c"     # the darkest shade
+lighter_background = "#3b4252"    # panels and cards (a bit lighter than the background)
+
+foreground = "#d8dee9"            # normal text
+dark_foreground = "#9ba3b3"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#e5e9f0"      # brighter text
+bright_foreground = "#eceff4"     # brightest text + the terminal cursor
+
+red = "#bf616a"                   # terminal + errors
+yellow = "#ebcb8b"                # terminal + warnings
+orange = "#d08770"                # terminal
+green = "#a3be8c"                 # terminal + success
+cyan = "#88c0d0"                  # terminal
+blue = "#81a1c1"                  # terminal + links
+magenta = "#b48ead"               # terminal + git changes in the prompt
+
+bright_red = "#bf616a"            # terminal (bold/bright versions)
+bright_yellow = "#ebcb8b"
+bright_green = "#a3be8c"
+bright_cyan = "#8fbcbb"
+bright_blue = "#81a1c1"
+bright_magenta = "#b48ead"

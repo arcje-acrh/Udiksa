@@ -1,0 +1,36 @@
+# Tokyo Night -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Tokyo Night, night variant (blue accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#7aa2f7"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#283457"             # buttons, empty part of sliders, selected text background
+muted = "#565f89"                 # faint things: icons that are off, hints, disabled text
+
+background = "#1a1b26"            # main background: the notch, the terminal, app windows
+dark_background = "#16161e"       # a darker shade of the background
+darker_background = "#101014"     # the darkest shade
+lighter_background = "#24283b"    # panels and cards (a bit lighter than the background)
+
+foreground = "#c0caf5"            # normal text
+dark_foreground = "#a9b1d6"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#c0caf5"      # brighter text
+bright_foreground = "#c0caf5"     # brightest text + the terminal cursor
+
+red = "#f7768e"                   # terminal + errors
+yellow = "#e0af68"                # terminal + warnings
+orange = "#ff9e64"                # terminal
+green = "#9ece6a"                 # terminal + success
+cyan = "#7dcfff"                  # terminal
+blue = "#7aa2f7"                  # terminal + links
+magenta = "#bb9af7"               # terminal + git changes in the prompt
+
+bright_red = "#ff899d"            # terminal (bold/bright versions)
+bright_yellow = "#faba4a"
+bright_green = "#9fe044"
+bright_cyan = "#a4daff"
+bright_blue = "#8db0ff"
+bright_magenta = "#c7a9ff"

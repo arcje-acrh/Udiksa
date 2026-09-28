@@ -1,0 +1,70 @@
+singleton Theme Theme.qml
+singleton Osd Osd.qml
+singleton Notifs Notifs.qml
+singleton Power Power.qml
+singleton Tailscale Tailscale.qml
+singleton Bt Bt.qml
+singleton NotchCtl NotchCtl.qml
+Bar Bar.qml
+Notch Notch.qml
+Workspaces Workspaces.qml
+WindowTitle WindowTitle.qml
+Status Status.qml
+MediaChip MediaChip.qml
+Card Card.qml
+Seg Seg.qml
+Toggle Toggle.qml
+ListRow ListRow.qml
+LevelSlider LevelSlider.qml
+PanelTitle PanelTitle.qml
+Field Field.qml
+ScrollList ScrollList.qml
+WifiAdvanced WifiAdvanced.qml
+PowerPanel PowerPanel.qml
+BatteryPanel BatteryPanel.qml
+VolumePanel VolumePanel.qml
+WifiPanel WifiPanel.qml
+BluetoothPanel BluetoothPanel.qml
+ClockPanel ClockPanel.qml
+MediaPanel MediaPanel.qml
+SystemPanel SystemPanel.qml
+FanCurve FanCurve.qml
+TailscalePanel TailscalePanel.qml
+LauncherPanel LauncherPanel.qml
+NotificationCard NotificationCard.qml
+NotificationsPanel NotificationsPanel.qml
+PolkitDialog PolkitDialog.qml
+singleton Agenda Agenda.qml
+LedBar LedBar.qml
+Check Check.qml
+ThemeSwitcher ThemeSwitcher.qml
+FloatWatcher FloatWatcher.qml
+Lock Lock.qml
+KeyEdge KeyEdge.qml
+Settings Settings.qml
+SetRow SetRow.qml
+SetNum SetNum.qml
+SetPage SetPage.qml
+SetGroup SetGroup.qml
+SetButton SetButton.qml
+SetLook SetLook.qml
+SetApps SetApps.qml
+SetDisplay SetDisplay.qml
+SetSound SetSound.qml
+SetKeyboard SetKeyboard.qml
+SetTailscale SetTailscale.qml
+SetPerformance SetPerformance.qml
+SetPower SetPower.qml
+SetGpu SetGpu.qml
+SetKeys SetKeys.qml
+SetNotify SetNotify.qml
+SetFiles SetFiles.qml
+SetScripts SetScripts.qml
+SetSoftware SetSoftware.qml
+SetRegion SetRegion.qml
+SetAbout SetAbout.qml
+SetInput SetInput.qml
+SetThemes SetThemes.qml
+SetWifi SetWifi.qml
+SetBluetooth SetBluetooth.qml
+AudioAuto AudioAuto.qml

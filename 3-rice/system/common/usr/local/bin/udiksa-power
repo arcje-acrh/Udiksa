@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+# udiksa-power -- the root half of Settings > Power: what the lid / power button / sleep key do (logind) and
+# "hibernate after sleeping for" (systemd sleep). Settings runs it through `sudo -n`, allowed without a password
+# by /etc/sudoers.d/udiksa-power, so it only accepts the fixed words and numbers below.
+# Usage: udiksa-power <lid on battery> <lid on charger> <lid with a monitor> <power button> <hibernate after (min, 0 = never)>
+#   actions: suspend suspend-then-hibernate hibernate lock poweroff ignore
+# Undo: delete /etc/systemd/logind.conf.d/udiksa.conf and /etc/systemd/sleep.conf.d/udiksa.conf.
+set -euo pipefail
+[[ $# -eq 5 ]] || { sed -n '5,6p' "$0"; exit 2; }
+for a in "$1" "$2" "$3" "$4"; do
+    [[ $a =~ ^(suspend|suspend-then-hibernate|hibernate|lock|poweroff|ignore)$ ]] || { echo "bad action: $a"; exit 2; }
+done
+[[ $5 =~ ^[0-9]{1,5}$ ]] || { echo "bad minutes: $5"; exit 2; }
+sleep_key=suspend; (($5 > 0)) && sleep_key=suspend-then-hibernate
+
+install -d /etc/systemd/logind.conf.d /etc/systemd/sleep.conf.d
+cat > /etc/systemd/logind.conf.d/udiksa.conf <<EOF
+# written by Settings > Power (/usr/local/bin/udiksa-power)
+[Login]
+HandleLidSwitch=$1
+HandleLidSwitchExternalPower=$2
+HandleLidSwitchDocked=$3
+HandlePowerKey=$4
+HandleSuspendKey=$sleep_key
+EOF
+if (($5 > 0)); then
+    printf '# written by Settings > Power (/usr/local/bin/udiksa-power)\n[Sleep]\nHibernateDelaySec=%smin\n' "$5" > /etc/systemd/sleep.conf.d/udiksa.conf
+else
+    rm -f /etc/systemd/sleep.conf.d/udiksa.conf
+fi
+systemctl kill -s HUP systemd-logind          # logind re-reads its settings (sessions are not touched)

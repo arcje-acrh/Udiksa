@@ -1,0 +1,36 @@
+# Everforest Dark -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Everforest dark, medium (green accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#a7c080"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#475258"             # buttons, empty part of sliders, selected text background
+muted = "#7a8478"                 # faint things: icons that are off, hints, disabled text
+
+background = "#2d353b"            # main background: the notch, the terminal, app windows
+dark_background = "#232a2e"       # a darker shade of the background
+darker_background = "#1e2326"     # the darkest shade
+lighter_background = "#343f44"    # panels and cards (a bit lighter than the background)
+
+foreground = "#d3c6aa"            # normal text
+dark_foreground = "#9da9a0"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#d3c6aa"      # brighter text
+bright_foreground = "#e4dcc6"     # brightest text + the terminal cursor
+
+red = "#e67e80"                   # terminal + errors
+yellow = "#dbbc7f"                # terminal + warnings
+orange = "#e69875"                # terminal
+green = "#a7c080"                 # terminal + success
+cyan = "#83c092"                  # terminal
+blue = "#7fbbb3"                  # terminal + links
+magenta = "#d699b6"               # terminal + git changes in the prompt
+
+bright_red = "#e67e80"            # terminal (bold/bright versions)
+bright_yellow = "#dbbc7f"
+bright_green = "#a7c080"
+bright_cyan = "#83c092"
+bright_blue = "#7fbbb3"
+bright_magenta = "#d699b6"

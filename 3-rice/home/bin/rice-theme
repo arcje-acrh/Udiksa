@@ -1,0 +1,1203 @@
+#!/usr/bin/env python3
+"""rice-theme -- themes = folders of wallpapers; one palette re-colours the whole rice.
+
+  Themes live in ~/Pictures/Wallpapers/<Theme>/  (drop images in = add; new folder = new theme;
+  the folder "Unsorted" is ignored). Where a theme's colours come from, in this order:
+    colors.toml   a theme's own colours (simple key = "#hex" list; the 22 palettes shipped here + Graphite). Each wallpaper adds a SUBTLE
+                  variation (accent hue moves <= 10 deg toward the wallpaper, surfaces take ~10 % of its tint).
+    theme.json    {"palette": {...}} pinned exactly (Outrun), or {"scheme": "..."} for matugen.
+    (nothing)     the palette comes from the chosen wallpaper (matugen, dark, scheme-vibrant).
+  matugen results are cached per wallpaper in ~/.cache/rice/palettes/, previews in ~/.cache/rice/thumbs/.
+
+  rice-theme list                          JSON for the switcher: themes, wallpapers, thumbs, swatches, mode
+  rice-theme apply <image> [--pos X,Y] [--transition grow|wipe|none]
+                                           that wallpaper + its theme's colours everywhere (X,Y = where the
+                                           wallpaper grows from, screen pixels from the top-left)
+  rice-theme next | prev                   next / previous wallpaper of the current theme (wipe)
+  rice-theme reapply                       write the current theme again (e.g. after editing this script)
+  rice-theme current                       the current theme + wallpaper
+  rice-theme thumbs                        (re)make the previews
+  rice-theme colors <picture>              show a picture's main colours + the theme colours it would give
+  rice-theme import <github link>          a theme repo from GitHub that has a colors.toml + pictures (many community themes do)
+
+  A THEME = A FOLDER in ~/Pictures/Wallpapers/ with pictures in it. New folder = new theme (it shows up in the
+  switcher, Super+T); delete the folder = the theme is gone. The first time, its colours are made from its
+  pictures and saved as colors.toml in the folder: edit that file to change them (each line says what it
+  colours), then pick the theme again or run `rice-theme reapply`.
+
+  Written on apply (all derived from ONE palette):
+    ~/.config/quickshell/colors.json         the notch + switcher (live)
+    ~/.config/hypr/conf/colors.lua           window borders (hyprctl reload)
+    ~/.config/kitty/colors.conf              terminal + 16 ANSI colours (SIGUSR1 = live)
+    ~/.local/state/rice/starship.toml        prompt (~/.config/starship.toml + [palettes.rice]; .bashrc points to it)
+    ~/.config/fastfetch/logo.png             the Arch logo from logo.svg (accent2 -> accent gradient)
+    ~/.config/gtk-4.0/gtk.css, gtk-3.0/gtk.css + settings.ini, gsettings color-scheme / gtk-theme
+                                             (adw-gtk3[-dark]) / accent-color: GTK + libadwaita apps
+    ~/.config/qt6ct/qt6ct.conf + colors/rice.conf, ~/.config/Kvantum/Rice/ (generated from KvFlat /
+                                             KvFlatLight) + kvantum.kvconfig: Qt apps (QT_QPA_PLATFORMTHEME=qt6ct)
+    wallpaper: awww img (animated)           State: ~/.local/state/rice/theme.json
+  Running GTK/Qt apps pick up the new colours when they are restarted (dark/light switches live).
+"""
+import colorsys, hashlib, json, os, re, shutil, subprocess, sys, tomllib
+
+HOME = os.path.expanduser("~")
+WALLS = os.path.join(HOME, "Pictures/Wallpapers")
+CACHE = os.path.join(HOME, ".cache/rice/palettes")
+THUMBS = os.path.join(HOME, ".cache/rice/thumbs")
+STATE = os.path.join(HOME, ".local/state/rice/theme.json")
+IMG = (".png", ".jpg", ".jpeg", ".webp")
+SKIP = {"Unsorted"}
+
+
+# ---------------- colour helpers ----------------
+def rgb(h):
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) / 255 for i in (0, 2, 4))
+
+
+def hexc(r, g, b):
+    return "#%02x%02x%02x" % tuple(max(0, min(255, round(v * 255))) for v in (r, g, b))
+
+
+def hls(h):
+    return colorsys.rgb_to_hls(*rgb(h))
+
+
+def from_hls(h, l, s):
+    return hexc(*colorsys.hls_to_rgb(h % 1.0, max(0, min(1, l)), max(0, min(1, s))))
+
+
+def mix(a, b, t):                                  # t = share of b
+    ra, rb = rgb(a), rgb(b)
+    return hexc(*[x + (y - x) * t for x, y in zip(ra, rb)])
+
+
+def lum(h):
+    r, g, b = [c / 12.92 if c <= 0.04045 else ((c + 0.055) / 1.055) ** 2.4 for c in rgb(h)]
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+
+
+def on(bgc, a, b):                                 # whichever of a/b reads better on bgc
+    return a if abs(lum(a) - lum(bgc)) >= abs(lum(b) - lum(bgc)) else b
+
+
+def hue_toward(c, target, max_deg):
+    h, l, s = hls(c)
+    th = hls(target)[0]
+    d = ((th - h + 0.5) % 1.0) - 0.5
+    step = max(-max_deg / 360, min(max_deg / 360, d))
+    return from_hls(h + step, l, s)
+
+
+def ansi_from(accent, sat=None):
+    ah, _, as_ = hls(accent)
+    sat = sat if sat is not None else max(0.45, min(0.75, as_))
+    out = {}
+    for slot, deg in ((1, 355), (2, 95), (3, 42), (4, 215), (5, 320), (6, 180)):
+        h = deg / 360
+        d = ((ah - h + 0.5) % 1.0) - 0.5
+        h = h + 0.18 * d
+        out[slot] = from_hls(h, 0.66, sat)
+        out[slot + 8] = from_hls(h, 0.76, sat)
+    return out
+
+
+# ---------------- palettes ----------------
+def matugen_raw(img, scheme="scheme-vibrant"):
+    st = os.stat(img)
+    key = hashlib.sha1(f"{img}|{st.st_mtime_ns}|{scheme}|raw1".encode()).hexdigest()
+    cf = os.path.join(CACHE, key + ".json")
+    if os.path.exists(cf):
+        return json.load(open(cf))
+    raw = subprocess.run(["matugen", "image", img, "--dry-run", "-q", "-j", "hex", "-m", "dark",
+                          "-t", scheme, "--prefer", "saturation"],
+                         capture_output=True, text=True, check=True).stdout
+    p = json.loads(raw)["palettes"]
+    out = {pal: {tone: v["color"] for tone, v in tones.items()} for pal, tones in p.items()}
+    os.makedirs(CACHE, exist_ok=True)
+    json.dump(out, open(cf, "w"))
+    return out
+
+
+def matugen_palette(img, scheme="scheme-vibrant"):
+    p = matugen_raw(img, scheme)
+    mono = scheme == "scheme-monochrome"
+    t = lambda pal, tone: from_hls(hls(p[pal][str(tone)])[0], hls(p[pal][str(tone)])[1], 0) if mono else p[pal][str(tone)]
+    a = ansi_from(t("primary", 70), 0.22 if mono else None)
+    pal = {
+        "mode": "dark",
+        "bg": t("neutral_variant", 5), "surface": t("neutral_variant", 10),
+        "raised": t("neutral_variant", 15), "hover": t("neutral_variant", 20),
+        "text": t("neutral", 90), "muted": t("neutral_variant", 60), "dim": t("neutral_variant", 40),
+        "accent": t("primary", 70), "accent2": t("tertiary", 80), "warn": t("tertiary", 80),
+        "accentDeep": t("primary", 30), "shadow": "#000000", "cursor": t("neutral", 95),
+        "promptWarn": a[5], "promptDanger": a[1], "promptMuted": t("neutral_variant", 50),
+        "red": a[1], "green": a[2], "yellow": a[3], "blue": a[4],
+    }
+    pal["ansi"] = [pal["surface"], a[1], a[2], a[3], a[4], a[5], a[6], t("neutral", 80),
+                   pal["dim"], a[9], a[10], a[11], a[12], a[13], a[14], pal["cursor"]]
+    return pal
+
+
+def toml_palette(c):
+    """colors.toml (keys: mode, accent, background, foreground, the 8 colours + bright_*, ...) -> the rice's palette.
+    (The same simple key names many community theme repos use, so they import as they are.)"""
+    g = lambda k, d=None: c.get(k, d)
+    light = g("mode", "dark") == "light"
+    bg, fg = g("background"), g("foreground")
+    pal = {
+        "mode": "light" if light else "dark",
+        "bg": bg, "surface": g("lighter_background"), "raised": g("selection"),
+        "hover": mix(g("selection"), g("muted"), 0.5),
+        "text": fg, "muted": g("dark_foreground"), "dim": g("muted"),
+        # second accent = a LIGHTER TINT of the theme's own accent (used for the border gradient end, the prompt
+        # path, "attention" like volume > 100 %). NOT the theme's yellow: that is orange in many themes and
+        # looked foreign (user 2026-09-26). Yellow stays a terminal/GTK colour only.
+        "accent": g("accent"), "accent2": mix(g("accent"), g("bright_foreground", fg), 0.42),
+        "warn": mix(g("accent"), g("bright_foreground", fg), 0.42),
+        "accentDeep": mix(g("accent"), bg, 0.6), "shadow": "#000000",
+        "cursor": g("bright_foreground", fg),
+        "promptWarn": g("magenta"), "promptDanger": g("red"), "promptMuted": g("dark_foreground"),
+        "red": g("red"), "green": g("green"), "yellow": g("yellow"), "blue": g("blue"),
+    }
+    pal["ansi"] = [g("selection"), g("red"), g("green"), g("yellow"), g("blue"), g("magenta"), g("cyan"), fg,
+                   g("muted"), g("bright_red"), g("bright_green"), g("bright_yellow"), g("bright_blue"),
+                   g("bright_magenta"), g("bright_cyan"), g("bright_foreground", fg)]
+    return pal
+
+
+def vary(pal, img):
+    """Subtle per-wallpaper variation of a preset: accent hue <= 10 deg toward the wallpaper's main colour,
+    surfaces take ~10 % of the wallpaper's tint (at their own lightness)."""
+    try:
+        p = matugen_raw(img)
+    except Exception:
+        return pal
+    main = p["primary"]["70"]
+    out = dict(pal)
+    out["accent"] = hue_toward(pal["accent"], main, 10)
+    out["accent2"] = out["warn"] = hue_toward(pal["accent2"], main, 6)
+    wh = hls(main)[0]
+    for k in ("bg", "surface", "raised", "hover"):
+        h, l, s = hls(pal[k])
+        out[k] = mix(pal[k], from_hls(wh, l, min(0.5, s + 0.25)), 0.10)
+    out["accentDeep"] = mix(out["accent"], out["bg"], 0.6)
+    return out
+
+
+def contrast(a, b):
+    la, lb = lum(a), lum(b)
+    return (max(la, lb) + 0.05) / (min(la, lb) + 0.05)
+
+
+def push(c, ref, target, light):
+    """Move c's lightness away from ref (darker on light themes, lighter on dark ones) until
+    contrast(c, ref) >= target. Hue and saturation stay, so the theme keeps its character."""
+    h, l, s = hls(c)
+    chroma = s * (1 - abs(2 * l - 1))          # keep the colour's real intensity, not its HLS saturation:
+    step = -0.02 if light else 0.02            # near-whites have ~100 % "saturation" and turned orange when darkened
+    out = c
+    for _ in range(50):
+        if contrast(out, ref) >= target:
+            break
+        l = max(0.0, min(1.0, l + step))
+        room = 1 - abs(2 * l - 1)
+        out = from_hls(h, l, min(1.0, chroma / room) if room > 0 else 0)
+    return out
+
+
+def guard(p):
+    """Contrast guard (user 2026-09-26: text/buttons vanished on some presets, e.g. White's muted grey ==
+    its surface). Minimums the shell's panels need; applied to every palette source."""
+    p = dict(p)
+    before = p["accent"]
+    light = p.get("mode") == "light"
+    p["surface"] = push(p["surface"], p["bg"], 1.10, light)            # panels stand out from the notch
+    p["raised"] = push(p["raised"], p["surface"], 1.22, light)         # buttons / tracks on a panel
+    p["hover"] = push(p["hover"], p["raised"], 1.15, light)
+    p["text"] = push(p["text"], p["surface"], 7.0, light)
+    p["muted"] = push(p["muted"], p["raised"], 3.6, light)              # labels ON buttons must read
+    p["muted"] = push(p["muted"], p["surface"], 4.0, light)
+    p["dim"] = push(p["dim"], p["surface"], 2.1, light)                 # "off" icons, hints
+    p["dim"] = push(p["dim"], p["bg"], 2.2, light)                      # ... also on the notch itself
+    p["accent"] = push(p["accent"], p["surface"], 3.0, light)
+    p["accent2"] = push(p["accent2"], p["surface"], 3.0, light)
+    p["warn"] = push(p["warn"], p["surface"], 3.0, light)
+    for k in ("promptMuted", "promptWarn", "promptDanger"):          # prompt colours sit on the terminal bg
+        if k in p:
+            p[k] = push(p[k], p["bg"], 4.0 if k != "promptMuted" else 3.6, light)
+    # an accent that is (almost) the text colour cannot mark "selected": move it toward the background
+    ah, al, as_ = hls(p["accent"]); th, tl, ts = hls(p["text"])
+    same_hue = abs(((ah - th + 0.5) % 1.0) - 0.5) < 0.07 or as_ < 0.2 or ts < 0.2
+    if same_hue and contrast(p["accent"], p["text"]) < 1.12:           # only when practically identical (Kanagawa)
+        p["accent"] = from_hls(ah, al + (0.18 if light else -0.18), min(1, as_ + 0.1))
+        p["accent"] = push(p["accent"], p["surface"], 3.0, light)
+    if p["accent"] != before:                                           # keep a pinned accentDeep otherwise
+        p["accentDeep"] = mix(p["accent"], p["bg"], 0.6)
+    return p
+
+
+# the colors.toml layout: every key with what it colours (written for every theme, so editing is obvious)
+TOML_KEYS = [
+    ("mode", "dark or light (light = light backgrounds, dark text)"),
+    None,
+    ("accent", "THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights"),
+    ("selection", "buttons, empty part of sliders, selected text background"),
+    ("muted", "faint things: icons that are off, hints, disabled text"),
+    None,
+    ("background", "main background: the notch, the terminal, app windows"),
+    ("dark_background", "a darker shade of the background"),
+    ("darker_background", "the darkest shade"),
+    ("lighter_background", "panels and cards (a bit lighter than the background)"),
+    None,
+    ("foreground", "normal text"),
+    ("dark_foreground", "secondary text: labels, notes, the prompt's branch/time"),
+    ("light_foreground", "brighter text"),
+    ("bright_foreground", "brightest text + the terminal cursor"),
+    None,
+    ("red", "terminal + errors"), ("yellow", "terminal + warnings"), ("orange", "terminal"), ("green", "terminal + success"),
+    ("cyan", "terminal"), ("blue", "terminal + links"), ("magenta", "terminal + git changes in the prompt"), ("brown", "terminal"),
+    None,
+    ("bright_red", "terminal (bold/bright versions)"), ("bright_yellow", ""), ("bright_green", ""),
+    ("bright_cyan", ""), ("bright_blue", ""), ("bright_magenta", ""),
+]
+TOML_HEAD = """# {name} -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+{note}
+"""
+
+
+def write_toml(d, vals, note=""):
+    name = os.path.basename(d)
+    out = [TOML_HEAD.format(name=name, note=note).rstrip("\n"), ""]
+    done = set()
+    for item in TOML_KEYS:
+        if item is None:
+            out.append("")
+            continue
+        k, why = item
+        if k not in vals:
+            continue
+        v = vals[k]
+        line = f'{k} = "{v}"'
+        out.append(f"{line:<34}# {why}" if why else line)
+        done.add(k)
+    extra = [k for k in vals if k not in done]
+    if extra:
+        out += ["", "# extra keys (used if present)"] + [f'{k} = "{vals[k]}"' for k in extra]
+    write(os.path.join(d, "colors.toml"), "\n".join(out).rstrip() + "\n")
+
+
+def auto_toml(d, img):
+    """First time a folder has pictures but no colours: make colors.toml from its first picture (matugen)."""
+    p = guard(matugen_palette(img))
+    a = p["ansi"]
+    vals = {"mode": "dark", "accent": p["accent"], "selection": p["raised"], "muted": p["dim"],
+            "background": p["bg"], "dark_background": mix(p["bg"], "#000000", 0.2),
+            "darker_background": mix(p["bg"], "#000000", 0.35), "lighter_background": p["surface"],
+            "foreground": p["text"], "dark_foreground": p["muted"], "light_foreground": p["cursor"],
+            "bright_foreground": p["cursor"]}
+    for i, n in enumerate(["red", "green", "yellow", "blue", "magenta", "cyan"]):
+        vals[n] = a[i + 1]
+        vals["bright_" + n] = a[i + 9]
+    write_toml(d, vals, f"# (made automatically from {os.path.basename(img)} -- change anything you like)")
+
+
+def theme_cfg(theme_dir):
+    f = os.path.join(theme_dir, "theme.json")
+    return json.load(open(f)) if os.path.exists(f) else {}
+
+
+def base_palette(theme_dir):
+    """The theme's own palette without wallpaper variation (None = comes from the wallpaper)."""
+    f = os.path.join(theme_dir, "colors.toml")
+    if not os.path.exists(f) and not theme_cfg(theme_dir):
+        imgs = sorted(os.path.join(theme_dir, x) for x in os.listdir(theme_dir) if x.lower().endswith(IMG))
+        if imgs:
+            try:
+                auto_toml(theme_dir, imgs[0])
+            except Exception:
+                pass
+    if os.path.exists(f):
+        return toml_palette(tomllib.load(open(f, "rb"))), True
+    pin = theme_cfg(theme_dir).get("palette")
+    if pin:
+        pin = dict(pin); pin.setdefault("mode", "dark")
+        a = pin["ansi"]
+        pin.setdefault("red", a[1]); pin.setdefault("green", a[2]); pin.setdefault("yellow", a[3]); pin.setdefault("blue", a[4])
+        return pin, False
+    return None, False
+
+
+def palette_for(img):
+    d = os.path.dirname(img)
+    base, variable = base_palette(d)
+    if base is None:
+        return guard(matugen_palette(img, theme_cfg(d).get("scheme", "scheme-vibrant")))
+    return guard(vary(base, img) if variable else base)
+
+
+# ---------------- writing targets ----------------
+def write(path, text):
+    path = os.path.realpath(path)          # write THROUGH symlinks (dotfiles are stowed into ~/Udiksa)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as f:
+        f.write(text)
+    os.replace(tmp, path)
+
+
+def quickshell(p):
+    keys = ["bg", "surface", "raised", "hover", "text", "muted", "dim", "accent", "accent2", "warn", "accentDeep", "shadow", "mode"]
+    f = os.path.join(HOME, ".config/quickshell/colors.json")
+    old = json.load(open(f)) if os.path.exists(f) else {}
+    out = {"_comment": old.get("_comment", "Written by rice-theme.")}
+    out.update({k: p[k] for k in keys})
+    write(f, json.dumps(out, indent=2) + "\n")
+
+
+def hypr(p, theme):
+    a, b = p["accent"].lstrip("#"), p["accent2"].lstrip("#")
+    light = p["mode"] == "light"
+    write(os.path.join(HOME, ".config/hypr/conf/colors.lua"), f"""-- Palette used by the rest of the config.
+-- WRITTEN BY rice-theme (theme: {theme}) -- edits here are overwritten on the next theme change.
+-- Colours are Hyprland "rgba(rrggbbaa)" strings, or 0xAARRGGBB integers.
+return {{
+    -- window borders: gradient between two accents, dim when unfocused
+    active_border   = {{ "rgba({a}ee)", "rgba({b}ee)" }},
+    active_angle    = 45,
+    inactive_border = "rgba({p['raised'].lstrip('#')}99)",
+
+    -- shadows (0xAARRGGBB): black; stronger on the focused window{' (softer on light themes)' if light else ''}
+    shadow_active   = {'0x66000000' if light else '0xe6000000'},
+    shadow_inactive = {'0x33000000' if light else '0xa6000000'},
+
+    -- solid background shown behind everything until a wallpaper is set
+    background = 0x{p['bg'].lstrip('#')},
+}}
+""")
+
+
+def kitty(p, theme):
+    n = p["ansi"]
+    lines = [f"# kitty colour scheme -- WRITTEN BY rice-theme (theme: {theme}); overwritten on theme change.",
+             "", f"foreground              {p['text']}", f"background              {p['bg']}",
+             f"selection_foreground    {on(p['accent'], p['bg'], p['text'])}", f"selection_background    {p['accent']}",
+             "# cursor colour also colours the cursor trail (see cursor_trail in kitty.conf)",
+             f"cursor                  {p['cursor']}", f"cursor_text_color       {p['bg']}",
+             f"url_color               {p['accent2']}", "", "# window / tab chrome",
+             f"active_border_color     {p['accent']}", f"inactive_border_color   {p['raised']}",
+             f"bell_border_color       {p['accent2']}", "tab_bar_background      none",
+             f"active_tab_foreground   {on(p['accent'], p['bg'], p['text'])}", f"active_tab_background   {p['accent']}",
+             f"inactive_tab_foreground {p['muted']}", f"inactive_tab_background {p['surface']}",
+             "", "# 16 ANSI colours: normal (0-7) and bright (8-15), in the theme's hues"]
+    for i in range(8):
+        lines += [f"color{i:<2}  {n[i]}", f"color{i + 8:<2}  {n[i + 8]}"]
+    write(os.path.join(HOME, ".config/kitty/colors.conf"), "\n".join(lines) + "\n")
+
+
+def starship(p):
+    """~/.config/starship.toml is the template (yours to edit, never rewritten); the coloured copy is
+    ~/.local/state/rice/starship.toml, which .bashrc points STARSHIP_CONFIG at."""
+    f = os.path.join(HOME, ".config/starship.toml")
+    if not os.path.exists(f):
+        return
+    s = open(f).read()
+    vals = {"text": p["text"], "accent": p["accent"], "path": p["accent2"], "warn": p["promptWarn"],
+            "danger": p["promptDanger"], "muted": p["promptMuted"]}
+    m = re.search(r"(?m)^\[palettes\.rice\]\s*$", s)      # the real table header (a comment mentions it too)
+    if not m:
+        return
+    head, sep, rest = s[:m.start()], m.group(0), s[m.end():]
+    block, nxt, tail = rest.partition("\n[")
+    for k, v in vals.items():
+        block = re.sub(rf'(?m)^({k}\s*=\s*)"#[0-9a-fA-F]{{6}}"', rf'\g<1>"{v}"', block)
+    write(os.path.join(HOME, ".local/state/rice/starship.toml"), head + sep + block + nxt + tail)
+
+
+def fastfetch(p):
+    """The Arch logo: logo.svg is the template (never rewritten); the tinted copy (top = accent2,
+    bottom = accent) is rendered straight into logo.png."""
+    svg = os.path.join(HOME, ".config/fastfetch/logo.svg")
+    if not os.path.exists(svg):
+        return
+    s = open(svg).read()
+    s = re.sub(r'(<stop offset="0" stop-color=")#[0-9a-fA-F]{6}', rf'\g<1>{p["accent2"]}', s)
+    s = re.sub(r'(<stop offset="1" stop-color=")#[0-9a-fA-F]{6}', rf'\g<1>{p["accent"]}', s)
+    subprocess.run(["rsvg-convert", "-w", "512", "-h", "512", "-o", os.path.join(HOME, ".config/fastfetch/logo.png")],
+                   input=s.encode())
+
+
+def gtk(p, theme):
+    light = p["mode"] == "light"
+    acc_fg = on(p["accent"], "#ffffff", "#000000") if light else on(p["accent"], p["bg"], p["text"])
+    c = {  # libadwaita colour names (adw-gtk3 reads the same ones)
+        "accent_color": p["accent"], "accent_bg_color": p["accent"], "accent_fg_color": acc_fg,
+        "window_bg_color": p["bg"], "window_fg_color": p["text"],
+        "view_bg_color": p["bg"], "view_fg_color": p["text"],
+        "headerbar_bg_color": p["surface"], "headerbar_fg_color": p["text"],
+        "headerbar_border_color": p["raised"], "headerbar_backdrop_color": p["bg"],
+        "sidebar_bg_color": p["surface"], "sidebar_fg_color": p["text"], "sidebar_backdrop_color": p["surface"],
+        "secondary_sidebar_bg_color": p["bg"], "secondary_sidebar_fg_color": p["text"],
+        "card_bg_color": p["surface"], "card_fg_color": p["text"],
+        "dialog_bg_color": p["surface"], "dialog_fg_color": p["text"],
+        "popover_bg_color": p["surface"], "popover_fg_color": p["text"],
+        "thumbnail_bg_color": p["surface"], "thumbnail_fg_color": p["text"],
+        "destructive_bg_color": p["red"], "destructive_fg_color": on(p["red"], "#ffffff", "#000000"), "destructive_color": p["red"],
+        "success_bg_color": p["green"], "success_fg_color": on(p["green"], "#ffffff", "#000000"), "success_color": p["green"],
+        "warning_bg_color": p["yellow"], "warning_fg_color": on(p["yellow"], "#ffffff", "#000000"), "warning_color": p["yellow"],
+        "error_bg_color": p["red"], "error_fg_color": on(p["red"], "#ffffff", "#000000"), "error_color": p["red"],
+    }
+    head = f"/* WRITTEN BY rice-theme (theme: {theme}) -- overwritten on theme change. */\n"
+    named = "".join(f"@define-color {k} {v};\n" for k, v in c.items())
+    vars_ = ":root {\n" + "".join(f"  --{k.replace('_', '-')}: {v};\n" for k, v in c.items()) + "}\n"
+    write(os.path.join(HOME, ".config/gtk-4.0/gtk.css"), head + named + vars_)
+    write(os.path.join(HOME, ".config/gtk-3.0/gtk.css"), head + named)
+    for d in ("gtk-3.0", "gtk-4.0"):
+        f = os.path.join(HOME, ".config", d, "settings.ini")
+        s = open(f).read() if os.path.exists(f) else "[Settings]\n"
+        s = re.sub(r"(?m)^gtk-application-prefer-dark-theme=.*$", f"gtk-application-prefer-dark-theme={0 if light else 1}", s)
+        if "gtk-application-prefer-dark-theme" not in s:
+            s += f"gtk-application-prefer-dark-theme={0 if light else 1}\n"
+        write(f, s)
+    gs = lambda k, v: subprocess.run(["gsettings", "set", "org.gnome.desktop.interface", k, v])
+    gs("color-scheme", "prefer-light" if light else "prefer-dark")
+    gs("gtk-theme", "adw-gtk3" if light else "adw-gtk3-dark")
+    h, l, s_ = hls(p["accent"])
+    deg = h * 360
+    name = "slate" if s_ < 0.18 else next(n for lim, n in ((15, "red"), (40, "orange"), (65, "yellow"), (160, "green"),
+                                                           (190, "teal"), (250, "blue"), (290, "purple"), (345, "pink"), (361, "red")) if deg < lim)
+    gs("accent-color", name)
+
+
+def qt(p, theme):
+    """qt6ct palette + a Kvantum theme ("Rice") made from KvFlat / KvFlatLight with the palette's colours."""
+    light = p["mode"] == "light"
+    A = lambda h: "#ff" + h.lstrip("#")
+    hl_fg = on(p["accent"], "#ffffff", "#000000") if light else on(p["accent"], p["bg"], p["text"])
+    # QPalette roles in qt6ct order: WindowText, Button, Light, Midlight, Dark, Mid, Text, BrightText, ButtonText,
+    # Base, Window, Shadow, Highlight, HighlightedText, Link, LinkVisited, AlternateBase, NoRole, ToolTipBase,
+    # ToolTipText, PlaceholderText
+    roles = [p["text"], p["surface"], p["hover"], p["raised"], p["bg"], p["raised"], p["text"], "#ffffff", p["text"],
+             p["bg"], p["surface"], "#000000", p["accent"], hl_fg, p["accent"], p["accent2"], p["surface"], p["bg"],
+             p["surface"], p["text"], p["muted"]]
+    act = ", ".join(A(x) for x in roles)
+    dis = ", ".join(A(p["dim"]) if i in (0, 6, 8, 13) else A(x) for i, x in enumerate(roles))
+    write(os.path.join(HOME, ".config/qt6ct/colors/rice.conf"),
+          f"[ColorScheme]\nactive_colors={act}\ndisabled_colors={dis}\ninactive_colors={act}\n")
+    conf = os.path.join(HOME, ".config/qt6ct/qt6ct.conf")
+    s = open(conf).read() if os.path.exists(conf) else ""
+    def setk(s, sec, k, v):
+        if f"[{sec}]" not in s:
+            s += f"\n[{sec}]\n"
+        if re.search(rf"(?m)^{k}=", s):
+            return re.sub(rf"(?m)^{k}=.*$", f"{k}={v}", s)
+        return s.replace(f"[{sec}]\n", f"[{sec}]\n{k}={v}\n", 1)
+    s = setk(s, "Appearance", "style", "kvantum")
+    s = setk(s, "Appearance", "custom_palette", "true")
+    s = setk(s, "Appearance", "color_scheme_path", os.path.join(HOME, ".config/qt6ct/colors/rice.conf"))
+    s = setk(s, "Fonts", "general", '"Iosevka Nerd Font,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"')
+    write(conf, s.lstrip("\n"))
+    # Kvantum: recolour the flat base theme's SVG + colours. Greys map by lightness onto the theme's
+    # bg..text ramp; coloured parts (the base's blue) become the accent at the same lightness.
+    base = "KvFlatLight" if light else "KvFlat"
+    svg = open(f"/usr/share/Kvantum/{base}/{base}.svg").read()
+    kv = open(f"/usr/share/Kvantum/{base}/{base}.kvconfig").read()
+    greys = [c for c in set(m.lower() for m in re.findall(r"#[0-9a-fA-F]{6}\b", svg)) if hls(c)[2] < 0.25]
+    ls_ = [hls(c)[1] for c in greys] or [0, 1]
+    lo, hi = min(ls_), max(ls_)
+    dark_end, light_end = (p["text"], p["bg"]) if light else (p["bg"], p["text"])
+    def remap(m):
+        c = m.group(0).lower()
+        h, l, s_ = hls(c)
+        if s_ >= 0.25:
+            ah, al, as_ = hls(p["accent"])
+            return from_hls(ah, al + (l - 0.5) * 0.35, as_)
+        t = (l - lo) / (hi - lo) if hi > lo else 0.5
+        return mix(dark_end, light_end, t)
+    svg = re.sub(r"#[0-9a-fA-F]{6}\b", remap, svg)
+    gc = {"window.color": p["surface"], "base.color": p["bg"], "alt.base.color": p["surface"],
+          "button.color": p["raised"], "light.color": p["hover"], "mid.light.color": p["raised"],
+          "dark.color": p["bg"], "mid.color": p["raised"], "highlight.color": p["accent"],
+          "inactive.highlight.color": p["accentDeep"], "text.color": p["text"], "window.text.color": p["text"],
+          "button.text.color": p["text"], "disabled.text.color": p["dim"], "tooltip.text.color": p["text"],
+          "highlight.text.color": hl_fg, "link.color": p["accent"], "link.visited.color": p["accent2"]}
+    gen = "[GeneralColors]\n" + "".join(f"{k}={v}\n" for k, v in gc.items())
+    kv = re.sub(r"\[GeneralColors\][^\[]*", gen + "\n", kv, count=1)
+    d = os.path.join(HOME, ".config/Kvantum/Rice")
+    write(os.path.join(d, "Rice.svg"), svg)
+    write(os.path.join(d, "Rice.kvconfig"), f"# WRITTEN BY rice-theme (theme: {theme}, base {base})\n" + kv)
+    write(os.path.join(HOME, ".config/Kvantum/kvantum.kvconfig"), "[General]\ntheme=Rice\n")
+
+
+def wallpaper(img, pos=None, transition="grow"):
+    args = ["awww", "img", img, "--resize", "crop", "--transition-fps", "120"]
+    if transition == "none":
+        args += ["--transition-type", "none"]
+    elif transition == "wipe" or not pos:
+        args += ["--transition-type", "wipe", "--transition-angle", "30", "--transition-duration", "1.1",
+                 "--transition-bezier", ".45,0,.2,1"]
+    else:
+        args += ["--transition-type", "grow", "--transition-pos", pos, "--invert-y", "--transition-duration", "1.2",
+                 "--transition-bezier", ".45,0,.2,1"]
+    subprocess.run(args, capture_output=True)
+
+
+GRUB = "/boot/grub/themes/rice"          # owned by the user (chown once), so no password is needed here
+IOSEVKA = "/usr/share/fonts/TTF/IosevkaNerdFont-Regular.ttf"   # same font as the notch (Theme.font)
+
+
+def grub(p, theme, img):
+    """GRUB = 'glowing terminal': the wallpaper faint behind a dark screen with scanlines, monospace entries,
+    the chosen one in the accent with a > in front. Fonts (term-*.pf2) were made once with grub-mkfont."""
+    if not os.access(GRUB, os.W_OK):
+        return
+    dark = mix(p["bg"], "#000000", 0.25) if p["mode"] == "dark" else p["bg"]
+    # background: theme colour, the wallpaper at 16 %, every other 2 px line darkened (scanlines), baked in
+    sub = subprocess.run(
+        ["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", f"color=c={dark}:s=2560x1600", "-i", img,
+         "-filter_complex",
+         "[1]scale=2560:1600:force_original_aspect_ratio=increase,crop=2560:1600,format=rgba,colorchannelmixer=aa=0.16[w];"
+         "[0][w]overlay=format=auto,format=rgb24,"
+         "geq=r='r(X,Y)*if(lt(mod(Y,4),2),1,0.72)':g='g(X,Y)*if(lt(mod(Y,4),2),1,0.72)':b='b(X,Y)*if(lt(mod(Y,4),2),1,0.72)'",
+         "-frames:v", "1", "-pix_fmt", "rgb24", os.path.join(GRUB, "background.png")], capture_output=True)   # PNG: GRUB rejects 4:4:4 JPEG
+    if sub.returncode:
+        return
+    # selection: a faint accent band + a > glyph on its left edge (9-slice pixmaps; empty slices are 1x1 clear)
+    ar, ag, ab = (int(p["accent"][i:i + 2], 16) for i in (1, 3, 5))
+    def png(name, vf, size="1x1"):
+        subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", f"color=c=black@0.0:s={size},format=rgba",
+                        "-vf", vf, "-frames:v", "1", os.path.join(GRUB, name)], capture_output=True)
+    for s in ("n", "ne", "e", "se", "s", "sw", "nw"):
+        png(f"select_{s}.png", "format=rgba")
+    png("select_c.png", f"format=rgba,geq=r={ar}:g={ag}:b={ab}:a=26")
+    png("select_w.png", f"format=rgba,drawtext=fontfile={IOSEVKA}:text='>':fontsize=34:fontcolor={p['accent']}:x=10:y=(h-th)/2-2",
+        "44x56")
+    ver = subprocess.run(["pacman", "-Q", "grub"], capture_output=True, text=True).stdout.split()[-1:] or ["2"]
+    ver = ver[0].split(":")[-1].split("-")[0]
+    txt = f"""# rice GRUB theme -- written by rice-theme for "{theme}"; edit rice-theme, not this file.
+title-text: ""
+desktop-image: "background.png"
+desktop-color: "{dark}"
+terminal-font: "RiceTerm Regular 24"
+terminal-left: "0"
+terminal-top: "0"
+terminal-width: "100%"
+terminal-height: "100%"
+terminal-border: "0"
+
++ label {{
+    left = 128
+    top = 110
+    width = 2300
+    height = 40
+    text = "GNU GRUB {ver} · arch · theme: {theme}"
+    font = "RiceTerm Regular 24"
+    color = "{p['dim']}"
+}}
+
++ boot_menu {{
+    left = 84
+    top = 210
+    width = 1600
+    height = 820
+    item_font = "RiceTerm Regular 34"
+    selected_item_font = "RiceTermBold Bold 34"
+    item_color = "{p['text']}"
+    selected_item_color = "{p['accent']}"
+    selected_item_pixmap_style = "select_*.png"
+    item_height = 56
+    item_padding = 0
+    item_spacing = 8
+    icon_width = 0
+    icon_height = 0
+    item_icon_space = 0
+    scrollbar = false
+}}
+
++ label {{
+    id = "__timeout__"
+    left = 128
+    top = 1130
+    width = 1200
+    height = 40
+    text = "booting in %d_"
+    font = "RiceTerm Regular 24"
+    color = "{p['muted']}"
+}}
+
++ label {{
+    left = 128
+    top = 1470
+    width = 2300
+    height = 40
+    text = "up/down choose    enter boot    e edit    c console"
+    font = "RiceTerm Regular 24"
+    color = "{p['dim']}"
+}}
+"""
+    write(os.path.join(GRUB, "theme.txt"), txt)
+
+
+GREETER = "/var/lib/rice-greeter"       # owned by the user, readable by greetd's "greeter" user
+LOGIN_SRC = os.path.join(HOME, ".config/quickshell/login")
+
+
+def greeter(p, img):
+    """Boot login + lock screen share /var/lib/rice-greeter: the QML (copied from ~/.config/quickshell/login),
+    theme.json (colours that read on the dark scrim, also for light themes) and wallpaper.jpg."""
+    if not os.access(GREETER, os.W_OK):
+        return
+    fg = p["text"] if lum(p["text"]) > lum(p["bg"]) else p["bg"]            # light themes: their light bg
+    acc = p["accent"]
+    while contrast(acc, "#101010") < 4.5 and lum(acc) < 0.95:              # lift dark accents (light themes)
+        acc = mix(acc, "#ffffff", 0.15)
+    cols = {"fg": fg, "accent": acc, "dim": mix(fg, "#000000", 0.55),
+            "scrim": mix(p["bg"], "#000000", 0.6) if p["mode"] == "dark" else "#0c0c0e"}
+    write(os.path.join(GREETER, "theme.json"), json.dumps(cols, indent=2) + "\n")
+    tmp = os.path.join(GREETER, "wallpaper.tmp.jpg")
+    r = subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", img, "-vf",
+                        "scale=2560:1600:force_original_aspect_ratio=increase,crop=2560:1600",
+                        "-frames:v", "1", "-q:v", "2", tmp], capture_output=True)
+    if r.returncode == 0:
+        os.replace(tmp, os.path.join(GREETER, "wallpaper.jpg"))
+    for name, dest in (("LoginScreen.qml", "LoginScreen.qml"), ("greeter-shell.qml", "shell.qml")):
+        src = os.path.join(LOGIN_SRC, name)
+        if os.path.exists(src):
+            write(os.path.join(GREETER, dest), open(src).read())
+
+
+def ncspot(p):
+    """ncspot (Spotify TUI): ~/.config/ncspot/config.toml = config.base.toml (edit that one) + a [theme] table.
+    Background = the terminal's (kitty is themed already). ncspot reads it at start (or type :reload inside)."""
+    f = os.path.join(HOME, ".config/ncspot/config.toml")
+    base = os.path.join(HOME, ".config/ncspot/config.base.toml")   # your settings; config.toml = base + theme
+    if not os.path.isdir(os.path.dirname(f)):
+        return
+    src = base if os.path.exists(base) else f
+    old = open(src).read() if os.path.exists(src) else ""
+    keep, skip = [], False
+    for line in old.splitlines():
+        if line.strip().startswith("["):
+            skip = line.strip() == "[theme]"
+        if not skip and not line.startswith("# theme: written by rice-theme"):
+            keep.append(line)
+    theme = {
+        "background": "terminal", "primary": p["text"], "secondary": p["muted"], "title": p["accent"],
+        "playing": p["accent"], "playing_selected": p["accent2"], "playing_bg": "terminal",
+        "highlight": p["bg"], "highlight_bg": p["accent"], "highlight_inactive_bg": p["raised"],
+        "error": p["bg"], "error_bg": p["warn"], "statusbar": p["accent"], "statusbar_progress": p["accent"],
+        "statusbar_bg": p["surface"], "cmdline": p["text"], "cmdline_bg": p["surface"], "search_match": p["accent2"],
+    }
+    body = "\n".join(keep).rstrip()
+    body = (body + "\n\n" if body else "") + "# theme: written by rice-theme on every theme change (edit rice-theme, not this table)\n[theme]\n"
+    body += "".join(f'{k} = "{v}"\n' for k, v in theme.items())
+    write(f, body)
+
+
+def cava(p):
+    """cava (audio visualiser under ncspot, ~/.local/bin/music): bars fade from accent2 (top) to accent (bottom)
+    on the terminal background. Whole file written here; a running cava reloads it on SIGUSR1."""
+    f = os.path.join(HOME, ".config/cava/config")
+    write(f, f"""# cava -- written by rice-theme on every theme change (edit rice-theme, not this file)
+[general]
+framerate = 60
+bar_width = 2
+bar_spacing = 1
+
+[output]
+method = noncurses
+
+[color]
+gradient = 1
+gradient_count = 2
+gradient_color_1 = '{p["accent"]}'
+gradient_color_2 = '{p["accent2"]}'
+
+[smoothing]
+noise_reduction = 77
+""")
+    subprocess.run(["pkill", "-USR1", "-x", "cava"], capture_output=True)
+
+
+ZEN = os.path.join(HOME, ".config/zen")
+
+
+
+def btop(p):
+    """btop (system monitor, Settings > Performance / the launcher): ~/.config/btop/themes/rice.theme from the palette,
+    selected in btop.conf (only the color_theme line is changed, your other btop settings stay). A running btop
+    reloads its config on SIGUSR2."""
+    d = os.path.join(HOME, ".config/btop")
+    th = {
+        "main_bg": p["bg"], "main_fg": p["text"], "title": p["text"], "hi_fg": p["accent"],
+        "selected_bg": p["raised"], "selected_fg": p["accent2"], "inactive_fg": p["dim"], "graph_text": p["muted"],
+        "meter_bg": p["raised"], "proc_misc": p["accent2"], "div_line": p["hover"],
+        "cpu_box": p["accent"], "mem_box": p["accent"], "net_box": p["accent"], "proc_box": p["accent"],
+        "temp_start": p["accent"], "temp_mid": p["accent2"], "temp_end": p["warn"],
+        "cpu_start": p["accentDeep"], "cpu_mid": p["accent"], "cpu_end": p["accent2"],
+        "free_start": p["dim"], "free_mid": p["muted"], "free_end": p["text"],
+        "cached_start": p["accentDeep"], "cached_mid": p["accent"], "cached_end": p["accent2"],
+        "available_start": p["dim"], "available_mid": p["muted"], "available_end": p["text"],
+        "used_start": p["accentDeep"], "used_mid": p["accent"], "used_end": p["accent2"],
+        "download_start": p["accentDeep"], "download_mid": p["accent"], "download_end": p["accent2"],
+        "upload_start": p["accentDeep"], "upload_mid": p["accent2"], "upload_end": p["warn"],
+        "process_start": p["accent"], "process_mid": p["accent2"], "process_end": p["warn"],
+    }
+    write(os.path.join(d, "themes/rice.theme"), "# btop theme -- written by rice-theme on every theme change\n"
+          + "".join(f'theme[{k}]="{v}"\n' for k, v in th.items()))
+    conf = os.path.join(d, "btop.conf")
+    old = open(conf).read() if os.path.exists(conf) else ""
+    if re.search(r"^color_theme\s*=", old, re.M):
+        new = re.sub(r"^color_theme\s*=.*$", 'color_theme = "rice"', old, flags=re.M)
+    else:
+        new = old + ('' if old.endswith("\n") or not old else "\n") + 'color_theme = "rice"\n'
+    if new != old:
+        write(conf, new)
+    subprocess.run(["pkill", "-USR2", "-x", "btop"], capture_output=True)
+
+def zen_profile():
+    """The profile Zen actually starts (installs.ini Default=), e.g. 'q1rkruby.Default (release)'."""
+    try:
+        for line in open(os.path.join(ZEN, "installs.ini")):
+            if line.startswith("Default="):
+                d = os.path.join(ZEN, line.split("=", 1)[1].strip())
+                if os.path.isdir(d):
+                    return d
+    except OSError:
+        pass
+    return None
+
+
+def zen(p):
+    """Zen browser: chrome/rice-colors.css pins Zen's own colour variables (it normally derives them from its
+    gradient picker) to the theme -- !important beats the values Zen sets on the window at runtime.
+    userChrome.css / userContent.css only @import our files. Zen reads them at START (restart Zen to see a
+    new theme). Websites follow dark/light through the system colour scheme gtk() already sets."""
+    prof = zen_profile()
+    if not prof:
+        return
+    chrome = os.path.join(prof, "chrome")
+    scheme = "light" if p["mode"] == "light" else "dark"
+    sel = mix(p["raised"], p["accent"], 0.22)
+    write(os.path.join(chrome, "rice-colors.css"), f"""/* rice-colors.css -- written by rice-theme on every theme change (edit rice-theme, not this file).
+   Loaded by userChrome.css. Restart Zen to see a new theme. */
+:root {{
+  color-scheme: {scheme} !important;
+  --zen-primary-color: {p['accent']} !important;
+  --zen-branding-bg: {p['bg']} !important;
+  --zen-main-browser-background: {p['bg']} !important;
+  --zen-main-browser-background-toolbar: {p['bg']} !important;
+  --zen-themed-toolbar-bg-transparent: {p['bg']} !important;
+  --zen-colors-primary: {sel} !important;
+  --zen-colors-secondary: {p['surface']} !important;
+  --zen-colors-tertiary: {p['bg']} !important;
+  --zen-colors-hover-bg: {p['hover']} !important;
+  --zen-colors-primary-foreground: {p['accent']} !important;
+  --zen-colors-border: {p['raised']} !important;
+  --zen-colors-border-contrast: {p['raised']} !important;
+  --zen-colors-input-bg: {p['surface']} !important;
+  --zen-urlbar-background: {p['surface']} !important;
+  --zen-urlbar-background-base: {p['surface']} !important;
+  --zen-dialog-background: {p['surface']} !important;
+  --zen-in-content-dialog-background: {p['surface']} !important;
+  --zen-selected-bg: {sel} !important;
+  --zen-selected-color: {p['text']} !important;
+  --zen-accent-button-color: {p['accent']} !important;
+  --zen-accent-button-background: {p['accent']} !important;
+  --zen-loading-progress-bar-color: {p['accent']} !important;
+  --zen-sidebar-themed-icon-fill: {p['muted']} !important;
+  --toolbar-bgcolor: {p['bg']} !important;
+  --toolbar-color: {p['text']} !important;
+  --toolbar-field-background-color: {p['surface']} !important;
+  --toolbar-field-color: {p['text']} !important;
+  --toolbar-field-focus-background-color: {p['surface']} !important;
+  --toolbar-field-focus-border-color: {p['accent']} !important;
+  --toolbarbutton-icon-fill: {p['text']} !important;
+  --tab-selected-bgcolor: {sel} !important;
+  --tab-selected-textcolor: {p['text']} !important;
+  --arrowpanel-background: {p['surface']} !important;
+  --arrowpanel-color: {p['text']} !important;
+  --arrowpanel-border-color: {p['raised']} !important;
+  --focus-outline-color: {p['accent']} !important;
+  --sidebar-background-color: {p['bg']} !important;
+  --sidebar-text-color: {p['text']} !important;
+}}
+""")
+    write(os.path.join(chrome, "rice-content.css"), f"""/* rice-content.css -- Zen's own pages (new tab, settings, add-ons) in the theme; loaded by userContent.css */
+@-moz-document url-prefix("about:") {{
+  :root {{
+    color-scheme: {scheme} !important;
+    --in-content-page-background: {p['bg']} !important;
+    --in-content-page-color: {p['text']} !important;
+    --in-content-box-background: {p['surface']} !important;
+    --in-content-box-border-color: {p['raised']} !important;
+    --in-content-accent-color: {p['accent']} !important;
+    --in-content-primary-button-background: {p['accent']} !important;
+    --in-content-primary-button-text-color: {p['bg']} !important;
+    --newtab-background-color: {p['bg']} !important;
+    --newtab-background-color-secondary: {p['surface']} !important;
+    --newtab-text-primary-color: {p['text']} !important;
+    --zen-colors-tertiary: {p['bg']} !important;
+    --zen-primary-color: {p['accent']} !important;
+  }}
+}}
+""")
+    for name, target in (("userChrome.css", "rice-colors.css"), ("userContent.css", "rice-content.css")):
+        f = os.path.join(chrome, name)
+        line = f'@import url("{target}");   /* rice-theme colours */\n'
+        old = open(f).read() if os.path.exists(f) else ""
+        if target not in old:
+            write(f, line + old)                  # @import must come first
+    uj = os.path.join(prof, "user.js")
+    old = open(uj).read() if os.path.exists(uj) else ""
+    add = ""
+    # only what the theme needs (your own Zen settings are yours: design ships, personal choices stay)
+    for note, pref in (("let Zen load chrome/userChrome.css + userContent.css (theme colours from rice-theme)",
+                        'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'),):
+        if pref not in old:
+            add += f"// rice: {note}\n{pref}\n"
+    if add:
+        write(uj, old.rstrip("\n") + "\n" + add)
+
+
+def viewers(p):
+    """File viewers in the theme: zathura (PDF / ePub / comics), imv (pictures), mpv's on-screen bar.
+    Read at their next start (zathura: also `:source` inside)."""
+    dark = p["mode"] == "dark"
+    write(os.path.join(HOME, ".config/zathura/zathurarc"), f"""# zathura -- written by rice-theme on every theme change (edit rice-theme, not this file)
+set font "Iosevka Nerd Font 11"
+set selection-clipboard clipboard
+set adjust-open width
+set guioptions none
+set default-bg "{p['bg']}"
+set default-fg "{p['text']}"
+set statusbar-bg "{p['surface']}"
+set statusbar-fg "{p['text']}"
+set inputbar-bg "{p['surface']}"
+set inputbar-fg "{p['text']}"
+set notification-bg "{p['surface']}"
+set notification-fg "{p['text']}"
+set notification-error-bg "{p['surface']}"
+set notification-error-fg "{p['warn']}"
+set notification-warning-bg "{p['surface']}"
+set notification-warning-fg "{p['accent2']}"
+set highlight-color "{p['accent']}"
+set highlight-active-color "{p['accent2']}"
+set completion-bg "{p['surface']}"
+set completion-fg "{p['text']}"
+set completion-highlight-bg "{p['raised']}"
+set completion-highlight-fg "{p['accent']}"
+set index-bg "{p['bg']}"
+set index-fg "{p['text']}"
+set index-active-bg "{p['raised']}"
+set index-active-fg "{p['accent']}"
+# Ctrl+R = pages in the theme colours (dark themes start that way)
+set recolor {"true" if dark else "false"}
+set recolor-keephue true
+set recolor-lightcolor "{p['bg']}"
+set recolor-darkcolor "{p['text']}"
+""")
+    write(os.path.join(HOME, ".config/imv/config"), f"""# imv -- written by rice-theme on every theme change (edit rice-theme, not this file)
+[options]
+background = {p['bg'].lstrip('#')}
+overlay_font = Iosevka Nerd Font:12
+overlay_text_color = {p['text'].lstrip('#')}
+overlay_background_color = {p['surface'].lstrip('#')}
+overlay_background_alpha = e6
+suppress_default_binds = false
+
+[aliases]
+
+[binds]
+""")
+    def ass(h):                                   # mpv/ASS colours are #RRGGBB here (osc.conf accepts that)
+        return h
+    write(os.path.join(HOME, ".config/mpv/script-opts/osc.conf"), f"""# mpv on-screen bar -- written by rice-theme on every theme change
+background_color={ass(p['bg'])}
+buttons_color={ass(p['text'])}
+top_buttons_color={ass(p['text'])}
+small_buttonsL_color={ass(p['muted'])}
+small_buttonsR_color={ass(p['muted'])}
+held_element_color={ass(p['accent'])}
+timecode_color={ass(p['text'])}
+time_pos_color={ass(p['accent'])}
+title_color={ass(p['text'])}
+""")
+
+
+def office(p):
+    """OnlyOffice: a "Rice" interface theme (View > Interface theme) in its user themes folder, rewritten on
+    every theme change; OnlyOffice reads it at start. Document pages stay white (what you print / send)."""
+    if not shutil.which("onlyoffice-desktopeditors"):
+        return                                     # optional app, not installed here
+    dark = p["mode"] == "dark"
+    d = os.path.join(HOME, ".local/share/onlyoffice/desktopeditors/uithemes")
+    kinds = ("document", "spreadsheet", "presentation", "pdf", "visio")
+    colors = {
+        "background-normal": p["bg"], "background-toolbar": p["surface"], "background-toolbar-tab": p["surface"],
+        "background-toolbar-additional": p["raised"], "background-pane": p["surface"], "background-pane-additional": p["raised"],
+        "background-accent-button": p["accent"], "background-primary-dialog-button": p["accent"],
+        "background-contrast-popover": p["surface"], "background-notification-popover": p["raised"],
+        "highlight-button-hover": p["hover"], "highlight-button-pressed": p["raised"], "highlight-button-pressed-hover": p["hover"],
+        "highlight-primary-dialog-button-hover": p["accent2"], "highlight-text-select": p["accent"],
+        "border-toolbar": p["raised"], "border-divider": p["raised"], "border-regular-control": p["dim"],
+        "border-control-focus": p["accent"], "border-preview-select": p["accent"], "border-contrast-popover": p["raised"],
+        "text-normal": p["text"], "text-normal-pressed": p["text"], "text-secondary": p["muted"], "text-tertiary": p["dim"],
+        "text-link": p["accent"], "text-link-hover": p["accent2"], "text-link-active": p["accent"], "text-link-visited": p["accent"],
+        "text-inverse": p["bg"], "text-toolbar-header": p["text"], "text-contrast-background": p["text"],
+        "icon-normal": p["text"], "icon-normal-pressed": p["text"], "icon-toolbar-header": p["text"],
+        "canvas-background": p["bg"], "canvas-page-border": p["raised"], "canvas-ruler-background": p["surface"],
+        "canvas-ruler-border": p["raised"], "canvas-ruler-margins-background": p["raised"], "canvas-ruler-mark": p["muted"],
+        "canvas-cell-title-text": p["text"], "canvas-cell-title-background": p["surface"],
+        "canvas-cell-title-background-hover": p["hover"], "canvas-cell-title-background-selected": p["raised"],
+        "canvas-cell-title-border": p["raised"],
+    }
+    for k in kinds:
+        colors[f"toolbar-header-{k}"] = p["bg"]
+        colors[f"text-toolbar-header-on-background-{k}"] = p["bg"]
+        colors[f"highlight-header-tab-underline-{k}"] = p["accent"]
+        colors[f"highlight-toolbar-tab-underline-{k}"] = p["accent"]
+    values = {                                     # the desktop app's own window (tabs, menus, download list)
+        "window-background": p["bg"], "window-border": p["raised"], "border-control-focus": p["accent"],
+        "text-normal": p["text"], "text-pretty": p["text"], "text-inverse": p["bg"],
+        "tool-button-background": p["surface"], "tool-button-hover-background": p["hover"],
+        "tool-button-pressed-background": p["raised"], "tool-button-active-background": p["raised"],
+        "menu-background": p["surface"], "menu-border": p["raised"], "menu-item-hover-background": p["hover"],
+        "menu-text": p["text"], "menu-text-item-hover": p["text"], "menu-text-item-disabled": p["dim"], "menu-separator": p["raised"],
+        "tooltip-text": p["text"], "tooltip-border": p["raised"], "tooltip-background": p["surface"],
+        "tab-active-background": p["surface"], "tab-simple-active-background": p["surface"], "tab-simple-active-text": p["text"],
+        "tab-default-active-background": p["surface"], "tab-default-active-text": p["text"], "tab-divider": p["raised"],
+        "logo-type": "light" if dark else "dark",
+    }
+    for k in ("word", "slide", "cell", "pdf", "draw"):
+        values[f"brand-{k}"] = p["bg"]
+    theme = {"name": "Rice", "id": "theme-rice", "type": "dark" if dark else "light", "colors": colors, "values": values}
+    write(os.path.join(d, "rice.json"), json.dumps(theme, indent=2) + "\n")
+
+
+def reload_apps():
+    subprocess.run(["hyprctl", "reload"], capture_output=True)
+    subprocess.run(["pkill", "-USR1", "-x", "kitty"])
+
+
+# ---------------- listing ----------------
+def themes():
+    out = []
+    for d in sorted(os.listdir(WALLS)):
+        full = os.path.join(WALLS, d)
+        if d in SKIP or not os.path.isdir(full):
+            continue
+        imgs = sorted(os.path.join(full, f) for f in os.listdir(full) if f.lower().endswith(IMG))
+        if imgs:
+            out.append((d, full, imgs))
+    return out
+
+
+def thumb(img):
+    st = os.stat(img)
+    f = os.path.join(THUMBS, hashlib.sha1(f"{img}|{st.st_mtime_ns}".encode()).hexdigest() + ".jpg")
+    if not os.path.exists(f):
+        os.makedirs(THUMBS, exist_ok=True)
+        subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", img, "-vf",
+                        "scale=640:400:force_original_aspect_ratio=increase,crop=640:400", "-frames:v", "1", "-q:v", "4", f])
+    return f
+
+
+def state():
+    try:
+        return json.load(open(STATE))
+    except Exception:
+        return {}
+
+
+def cmd_list():
+    cur = state()
+    res = []
+    for name, full, imgs in themes():
+        base, variable = base_palette(full)
+        try:
+            p = base or matugen_palette(cur.get("wallpaper") if cur.get("theme") == name else imgs[0],
+                                        theme_cfg(full).get("scheme", "scheme-vibrant"))
+        except Exception:
+            p = None
+        p = guard(p) if p else None
+        res.append({"id": name, "name": name, "source": "preset" if variable else ("pinned" if base else "wallpaper"),
+                    "mode": p["mode"] if p else "dark", "wallpapers": imgs, "thumbs": [thumb(i) for i in imgs],
+                    "swatch": [p["bg"], p["accent"], p["accent2"], p["text"]] if p else [],
+                    # full palette for the switcher: the UI colours + the 16 terminal colours
+                    "ui": [p[k] for k in ("bg", "surface", "raised", "dim", "muted", "text", "accent", "accent2")] if p else [],
+                    "ansi": p["ansi"] if p else [],
+                    "current": cur.get("theme") == name})
+    res.sort(key=colour_order)
+    print(json.dumps({"themes": res, "current": cur}))
+
+
+def colour_order(t):
+    """Themes in colour order (user 2026-09-26): neighbours look alike. Dark themes first, light ones after;
+    within each: greys (colourless accent) from dark to light, then by accent hue around the colour wheel
+    (red -> orange -> yellow -> green -> teal -> blue -> purple -> pink), darker backgrounds first."""
+    if not t["swatch"]:
+        return (2, 0, 0, 0)
+    bg, acc = t["swatch"][0], t["swatch"][1]
+    h, l, s_ = hls(acc)
+    light = 1 if t["mode"] == "light" else 0
+    if s_ < 0.18:
+        return (light, 0, round(lum(bg), 3), 0)
+    return (light, 1, round((h + 0.02) % 1.0, 3), round(lum(bg), 3))
+
+
+# ---------------- apply ----------------
+def cmd_apply(img, pos=None, transition="grow"):
+    img = os.path.abspath(os.path.expanduser(img))
+    if not os.path.isfile(img):
+        sys.exit(f"no such image: {img}")
+    theme = os.path.basename(os.path.dirname(img))
+    p = palette_for(img)
+    wallpaper(img, pos, transition)                # starts the animation; colours switch while it runs
+    quickshell(p)
+    # keyboard light in the new accent right away, if "follow theme" is on (does nothing elsewhere)
+    kbd = os.path.join(HOME, ".local/bin/rice-kbd")          # only on laptops whose device folder has it
+    if os.path.exists(kbd):
+        subprocess.Popen([kbd, "theme"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    hypr(p, theme); kitty(p, theme); starship(p); fastfetch(p); gtk(p, theme); qt(p, theme)
+    grub(p, theme, img); greeter(p, img); ncspot(p); cava(p); btop(p); zen(p); viewers(p); office(p)
+    reload_apps()
+    write(STATE, json.dumps({"theme": theme, "wallpaper": img}) + "\n")
+    print(f"{theme}: {os.path.basename(img)}")
+
+
+def new_theme_dir(name):
+    """A new theme folder. When the themes are links into the Udiksa repo, it is made there and linked into
+    ~/Pictures/Wallpapers (the same relative link Stow makes), so it ships with the repo."""
+    d = os.path.join(WALLS, name)
+    if os.path.exists(d):
+        return d
+    for e in os.listdir(WALLS):
+        link = os.path.join(WALLS, e)
+        if os.path.islink(link) and os.path.isdir(link):
+            repo_d = os.path.join(os.path.dirname(os.path.realpath(link)), name)
+            os.makedirs(repo_d, exist_ok=True)
+            os.symlink(os.path.relpath(repo_d, WALLS), d)
+            return d
+    os.makedirs(d, exist_ok=True)
+    return d
+
+def cmd_import(url):
+    """Import a theme repo from GitHub: its colors.toml + background/wallpaper pictures."""
+    m = re.match(r"(?:https?://github\.com/)?([^/\s]+)/([^/\s#?]+?)(?:\.git)?/?$", url.strip())
+    if not m:
+        sys.exit("give a GitHub link like https://github.com/user/some-theme")
+    owner, repo = m.group(1), m.group(2)
+    api = f"https://api.github.com/repos/{owner}/{repo}"
+    info = json.loads(subprocess.run(["curl", "-sfL", api], capture_output=True, text=True).stdout or "{}")
+    branch = info.get("default_branch") or "main"
+    tree = json.loads(subprocess.run(["curl", "-sfL", f"{api}/git/trees/{branch}?recursive=1"], capture_output=True, text=True).stdout or "{}").get("tree", [])
+    paths = [t["path"] for t in tree if t.get("type") == "blob" and (not t["path"].lower().endswith(IMG) or t.get("size", 0) > 30000)]   # skip tiny logos
+    colors = next((x for x in paths if x.split("/")[-1] == "colors.toml"), None)
+    walls = [x for x in paths if x.lower().endswith(IMG) and ("background" in x.lower() or "wallpaper" in x.lower())]
+    name = re.sub(r"(^theme-|-theme$)", "", repo).replace("-", " ").replace("_", " ").title()
+    d = new_theme_dir(name)
+    raw = lambda x: f"https://raw.githubusercontent.com/{owner}/{repo}/{branch}/{x}"
+    if colors:
+        tmp = os.path.join(d, ".colors.import")
+        subprocess.run(["curl", "-sfL", "-o", tmp, raw(colors)])
+        try:
+            write_toml(d, tomllib.load(open(tmp, "rb")), f"# (imported from github.com/{owner}/{repo})")
+        finally:
+            os.path.exists(tmp) and os.remove(tmp)
+    for x in walls[:12]:
+        subprocess.run(["curl", "-sfL", "-o", os.path.join(d, os.path.basename(x)), raw(x)])
+    write(os.path.join(d, "SOURCES.txt"), f"Theme: {name}\nImported from https://github.com/{owner}/{repo} ({'colors.toml' if colors else 'no colors.toml: colours from the wallpaper'})\n\nWallpapers:\n"
+          + "".join(f"  {os.path.basename(x)}  <-  https://github.com/{owner}/{repo}/blob/{branch}/{x}\n" for x in walls[:12]))
+    n = len([f for f in os.listdir(d) if f.lower().endswith(IMG)])
+    print(f"{name}: {'colors.toml + ' if colors else ''}{n} wallpapers -> {d}")
+    if n == 0:
+        print("no wallpapers found in that repo: drop some pictures into the folder")
+
+
+def cmd_colors(img):
+    """Show a picture's colours in the terminal: its main colours (how much of the picture each covers) and the
+    theme colours that would be made from it -- to design / tweak a colors.toml by hand."""
+    img = os.path.abspath(os.path.expanduser(img))
+    if not os.path.isfile(img):
+        sys.exit(f"no such picture: {img}")
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-i", img, "-vf", "scale=64:64", "-frames:v", "1",
+                          "-f", "rawvideo", "-pix_fmt", "rgb24", "-"], capture_output=True).stdout
+    px = [tuple(raw[i:i + 3]) for i in range(0, len(raw) - 2, 3)]
+    # k-means, 8 groups: the picture's main colours
+    import random
+    random.seed(1)
+    cent = random.sample(px, 8)
+    for _ in range(12):
+        groups = [[] for _ in cent]
+        for q in px:
+            j = min(range(len(cent)), key=lambda k: sum((q[i] - cent[k][i]) ** 2 for i in range(3)))
+            groups[j].append(q)
+        cent = [tuple(sum(c[i] for c in g) // len(g) for i in range(3)) if g else cent[k] for k, g in enumerate(groups)]
+    main = sorted(((len(g), cent[k]) for k, g in enumerate(groups) if g), reverse=True)
+    blk = lambda c: f"\033[48;2;{c[0]};{c[1]};{c[2]}m      \033[0m"
+    hx = lambda c: "#%02x%02x%02x" % c
+    print(f"\n  {os.path.basename(img)}\n\n  MAIN COLOURS (share of the picture)")
+    for n, c in main:
+        print(f"  {blk(c)}  {hx(c)}  {100 * n / len(px):5.1f} %")
+    p = guard(matugen_palette(img))
+    rows = [("accent", p["accent"], "THE theme colour"), ("selection", p["raised"], "buttons, slider tracks"),
+            ("muted", p["dim"], "faint things"), ("background", p["bg"], "main background"),
+            ("lighter_background", p["surface"], "panels"), ("foreground", p["text"], "text"),
+            ("dark_foreground", p["muted"], "labels")]
+    print("\n  THEME COLOURS IT WOULD MAKE (colors.toml keys)")
+    for k, v, why in rows:
+        print(f"  {blk(rgb_255(v))}  {k:<19} = \"{v}\"   {why}")
+    names = ["red", "green", "yellow", "blue", "magenta", "cyan"]
+    print("\n  TERMINAL COLOURS")
+    print("  " + "".join(blk(rgb_255(p["ansi"][i + 1])) for i in range(6)) + "   " + " ".join(names))
+    print("\n  To use a colour: put its #hex into the theme's colors.toml, then `rice-theme reapply`.\n")
+
+
+def rgb_255(h):
+    h = h.lstrip("#")
+    return tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+
+
+def cmd_step(delta):
+    cur = state()
+    if cur.get("wallpaper") and not os.path.exists(cur["wallpaper"]):
+        sys.exit("the theme in use was removed: pick another with Super+T")
+    for name, full, imgs in themes():
+        if name == cur.get("theme"):
+            i = imgs.index(cur["wallpaper"]) if cur.get("wallpaper") in imgs else -1
+            return cmd_apply(imgs[(i + delta) % len(imgs)], None, "wipe")
+    sys.exit("no current theme")
+
+
+if __name__ == "__main__":
+    a = sys.argv[1:]
+    opt = lambda k: a[a.index(k) + 1] if k in a and a.index(k) + 1 < len(a) else None
+    if not a or a[0] in ("-h", "--help", "help"):
+        print(__doc__)
+    elif a[0] == "list":
+        cmd_list()
+    elif a[0] == "apply" and len(a) > 1:
+        cmd_apply(a[1], opt("--pos"), opt("--transition") or "grow")
+    elif a[0] in ("next", "prev"):
+        cmd_step(1 if a[0] == "next" else -1)
+    elif a[0] == "reapply":
+        w = state().get("wallpaper")
+        if not w or not os.path.exists(w):
+            sys.exit("the theme in use was removed (or none applied yet): pick one with Super+T")
+        cmd_apply(w, None, "none")
+    elif a[0] == "current":
+        print(json.dumps(state()))
+    elif a[0] == "import" and len(a) > 1:
+        cmd_import(a[1])
+    elif a[0] in ("colors", "colours") and len(a) > 1:
+        cmd_colors(a[1])
+    elif a[0] == "thumbs":
+        for _, _, imgs in themes():
+            for i in imgs:
+                thumb(i)
+    else:
+        sys.exit(__doc__)

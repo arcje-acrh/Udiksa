@@ -1,0 +1,14 @@
+Theme: Everforest Light
+Colours: official Everforest light, medium (green accent) -- github.com/sainnhe/everforest (MIT)
+
+Wallpapers:
+  01-a-drawing-of-a-horse-carriage-on-a-bridg.png  <-  https://github.com/dharmx/walls/blob/main/anime/a_drawing_of_a_horse_carriage_on_a_bridge.png  (no licence stated by the collection; rights stay with the original artist)
+  02-a-bird-on-a-branch.png  <-  https://github.com/dharmx/walls/blob/main/anime/a_bird_on_a_branch.png  (no licence stated by the collection; rights stay with the original artist)
+  03-a-potted-plant-on-a-blue-surface.jpg  <-  https://github.com/dharmx/walls/blob/main/interior/a_potted_plant_on_a_blue_surface.jpg  (no licence stated by the collection; rights stay with the original artist)
+  04-a-plant-with-white-flowers-and-a-tape.png  <-  https://github.com/dharmx/walls/blob/main/centered/a_plant_with_white_flowers_and_a_tape.png  (no licence stated by the collection; rights stay with the original artist)
+  05-a-group-of-mountains-with-a-building-in-.jpg  <-  https://github.com/dharmx/walls/blob/main/unsorted/a_group_of_mountains_with_a_building_in_the_background.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-a-cartoon-of-trees-on-a-hill-01.png  <-  https://github.com/dharmx/walls/blob/main/minimal/a_cartoon_of_trees_on_a_hill_01.png  (no licence stated by the collection; rights stay with the original artist)
+  07-chinese-hills.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/minimalistic/light/chinese-hills.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-a-pixel-art-of-a-person-walking-by-a-bui.jpg  <-  https://github.com/dharmx/walls/blob/main/pixel/a_pixel_art_of_a_person_walking_by_a_building.jpg  (no licence stated by the collection; rights stay with the original artist)
+  09-a-cartoon-of-a-man-and-woman-holding-umb.jpg  <-  https://github.com/dharmx/walls/blob/main/anime/a_cartoon_of_a_man_and_woman_holding_umbrellas_in_the_rain.jpeg  (no licence stated by the collection; rights stay with the original artist)
+  10-a-cat-sitting-next-to-a-computer.jpg  <-  https://github.com/dharmx/walls/blob/main/centered/a_cat_sitting_next_to_a_computer.jpg  (no licence stated by the collection; rights stay with the original artist)

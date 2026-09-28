@@ -1,0 +1,3 @@
+[keybindings]
+"p" = "playpause"       # play / pause
+"s" = "focus search"   # search (was save / like; that is now :save)

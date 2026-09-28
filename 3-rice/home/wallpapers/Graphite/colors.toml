@@ -1,0 +1,37 @@
+# Graphite -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (hand-made greyscale palette)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#b9bcc4"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#3b3c41"             # buttons, empty part of sliders, selected text background
+muted = "#55575d"                 # faint things: icons that are off, hints, disabled text
+
+background = "#1b1c1f"            # main background: the notch, the terminal, app windows
+dark_background = "#151618"       # a darker shade of the background
+darker_background = "#101113"     # the darkest shade
+lighter_background = "#25262a"    # panels and cards (a bit lighter than the background)
+
+foreground = "#d4d5d9"            # normal text
+dark_foreground = "#8c8e95"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#e2e3e6"      # brighter text
+bright_foreground = "#f0f0f2"     # brightest text + the terminal cursor
+
+red = "#c98e8e"                   # terminal + errors
+yellow = "#cdbb94"                # terminal + warnings
+orange = "#c9a28a"                # terminal
+green = "#9fb59d"                 # terminal + success
+cyan = "#95b3b6"                  # terminal
+blue = "#98a6c0"                  # terminal + links
+magenta = "#b39ab5"               # terminal + git changes in the prompt
+brown = "#8f7f72"                 # terminal
+
+bright_red = "#dca7a7"            # terminal (bold/bright versions)
+bright_yellow = "#dfd0ad"
+bright_green = "#b8cbb6"
+bright_cyan = "#afc8ca"
+bright_blue = "#b3bfd4"
+bright_magenta = "#c9b4cb"

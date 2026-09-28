@@ -1,0 +1,14 @@
+Theme: Everforest Dark
+Colours: official Everforest dark, medium (green accent)
+
+Wallpapers:
+  01-fog-forest-alt-2.png  <-  https://github.com/Apeiros-46B/everforest-walls/blob/main/nature/fog_forest_alt_2.png  (no licence stated by the collection; rights stay with the original artist)
+  02-green-forest-2.png  <-  https://github.com/Apeiros-46B/everforest-walls/blob/main/nature/green_forest_2.png  (no licence stated by the collection; rights stay with the original artist)
+  03-forest-foggy-misty-cloudy.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/photography/forest-foggy-misty-cloudy.png  (no licence stated by the collection; rights stay with the original artist)
+  04-forest-stairs.jpg  <-  https://github.com/Apeiros-46B/everforest-walls/blob/main/nature/forest_stairs.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-pixelart-forest.jpg  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/pixelart_forest.jpg  (MIT)
+  06-a-mountain-range-with-snow-on-top.jpg  <-  https://github.com/dharmx/walls/blob/main/mountain/a_mountain_range_with_snow_on_top.jpeg  (no licence stated by the collection; rights stay with the original artist)
+  07-golden-mountains.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/golden-mountains.png  (MIT)
+  08-a-silhouette-of-a-person-standing-in-a-r.png  <-  https://github.com/dharmx/walls/blob/main/nord/a_silhouette_of_a_person_standing_in_a_room_with_a_window.png  (no licence stated by the collection; rights stay with the original artist)
+  09-114133447-p0.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/anime/114133447_p0.png  (no licence stated by the collection; rights stay with the original artist)
+  10-gruv-wallhaven-m9e9m1.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/anime/gruv-wallhaven-m9e9m1.png  (no licence stated by the collection; rights stay with the original artist)

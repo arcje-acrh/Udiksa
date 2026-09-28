@@ -1,0 +1,17 @@
+Theme: Rosé Pine
+Colours: official Rosé Pine, main variant (rose accent)
+
+Wallpapers:
+  01-chess-gate.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/chess-gate.jpeg  (no licence stated by the collection; rights stay with the original artist)
+  02-tengoku-underthee.webp  <-  https://github.com/rose-pine/wallpapers/blob/main/minecraft/tengoku-underthee.webp  (CC0-1.0)
+  03-snowy-evergreen.jpg  <-  https://github.com/rose-pine/wallpapers/blob/main/photography/snowy-evergreen.jpg  (CC0-1.0)
+  04-railroad-flowers.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/railroad-flowers.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-bluehour.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/bluehour.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-gentlemen-sunset.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/gentlemen-sunset.png  (no licence stated by the collection; rights stay with the original artist)
+  07-purple-horizon.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/purple-horizon.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-yohoho.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/yohoho.jpg  (no licence stated by the collection; rights stay with the original artist)
+  09-lit-up-sky.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/lit-up-sky.png  (no licence stated by the collection; rights stay with the original artist)
+  10-flying-comets-clouds.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/flying-comets-clouds.jpg  (no licence stated by the collection; rights stay with the original artist)
+  11-flowers-4.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/flowers-4.jpg  (no licence stated by the collection; rights stay with the original artist)
+  12-fox.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/fox.png  (no licence stated by the collection; rights stay with the original artist)
+  13-earrings.jpg  <-  https://github.com/rose-pine/wallpapers/blob/main/anime/earrings.jpg  (CC0-1.0)

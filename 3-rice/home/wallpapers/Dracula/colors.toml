@@ -1,0 +1,36 @@
+# Dracula -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Dracula (purple accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#bd93f9"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#44475a"             # buttons, empty part of sliders, selected text background
+muted = "#6272a4"                 # faint things: icons that are off, hints, disabled text
+
+background = "#282a36"            # main background: the notch, the terminal, app windows
+dark_background = "#21222c"       # a darker shade of the background
+darker_background = "#191a21"     # the darkest shade
+lighter_background = "#343746"    # panels and cards (a bit lighter than the background)
+
+foreground = "#f8f8f2"            # normal text
+dark_foreground = "#a9abb3"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#f8f8f2"      # brighter text
+bright_foreground = "#ffffff"     # brightest text + the terminal cursor
+
+red = "#ff5555"                   # terminal + errors
+yellow = "#f1fa8c"                # terminal + warnings
+orange = "#ffb86c"                # terminal
+green = "#50fa7b"                 # terminal + success
+cyan = "#8be9fd"                  # terminal
+blue = "#bd93f9"                  # terminal + links
+magenta = "#ff79c6"               # terminal + git changes in the prompt
+
+bright_red = "#ff6e6e"            # terminal (bold/bright versions)
+bright_yellow = "#ffffa5"
+bright_green = "#69ff94"
+bright_cyan = "#a4ffff"
+bright_blue = "#d6acff"
+bright_magenta = "#ff92df"

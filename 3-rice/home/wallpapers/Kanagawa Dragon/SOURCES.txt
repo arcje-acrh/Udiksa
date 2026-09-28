@@ -1,0 +1,15 @@
+Theme: Kanagawa Dragon
+Colours: official Kanagawa Dragon (dragonGreen accent) -- github.com/rebelot/kanagawa.nvim (MIT)
+
+Wallpapers:
+  01-a-mountain-with-snow-on-top-and-a-body-o.jpg  <-  https://github.com/dharmx/walls/blob/main/mountain/a_mountain_with_snow_on_top_and_a_body_of_water.jpg  (no licence stated by the collection; rights stay with the original artist)
+  02-a-body-of-water-with-rocks-and-a-cliff.jpg  <-  https://github.com/dharmx/walls/blob/main/mountain/a_body_of_water_with_rocks_and_a_cliff.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-a-pink-flower-on-a-pond.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_pink_flower_on_a_pond.jpg  (no licence stated by the collection; rights stay with the original artist)
+  04-plant.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/plant.png  (MIT)
+  05-a-close-up-of-a-flower-12.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_close_up_of_a_flower_12.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-rails.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/photography/rails.jpg  (no licence stated by the collection; rights stay with the original artist)
+  07-a-mountain-with-a-lake-in-the-background.jpg  <-  https://github.com/dharmx/walls/blob/main/abstract/a_mountain_with_a_lake_in_the_background.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-a-person-in-a-hat-standing-in-a-room-wit.png  <-  https://github.com/dharmx/walls/blob/main/gruvbox/a_person_in_a_hat_standing_in_a_room_with_windows.png  (no licence stated by the collection; rights stay with the original artist)
+  09-gruvbox-image46.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/pixelart/gruvbox_image46.png  (no licence stated by the collection; rights stay with the original artist)
+  10-gruvbox15.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/mix/gruvbox15.png  (no licence stated by the collection; rights stay with the original artist)
+  11-glt-gruvbox.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/anime/glt_gruvbox.png  (no licence stated by the collection; rights stay with the original artist)

@@ -1,0 +1,18 @@
+[terminal]
+# The VT to run the greeter on. Can be "next", "current" or a number
+# designating the VT.
+vt = 1
+
+# The default session, also known as the greeter.
+[default_session]
+# rice login screen (Quickshell): ~/.config/quickshell/login/ -> /var/lib/rice-greeter/ (rice-theme copies it)
+command = "env WLR_LOG_LEVEL=error QT_WAYLAND_DISABLE_WINDOWDECORATION=1 XCURSOR_SIZE=24 XCURSOR_THEME=Adwaita XDG_CACHE_HOME=/var/cache/rice-greeter XDG_STATE_HOME=/var/cache/rice-greeter XDG_DATA_HOME=/var/cache/rice-greeter cage -s -- qs -p /var/lib/rice-greeter"
+
+# `agreety` is the bundled agetty/login-lookalike. You can replace `/bin/sh`
+# with whatever you want started, such as `sway`.
+# command = "agreety --cmd /bin/sh"
+
+# The user to run the command as. The privileges this user must have depends
+# on the greeter. A graphical greeter may for example require the user to be
+# in the `video` group.
+user = "greeter"

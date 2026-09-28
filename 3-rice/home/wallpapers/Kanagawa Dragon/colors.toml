@@ -1,0 +1,36 @@
+# Kanagawa Dragon -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Kanagawa Dragon (dragonGreen accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#87a987"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#393836"             # buttons, empty part of sliders, selected text background
+muted = "#737c73"                 # faint things: icons that are off, hints, disabled text
+
+background = "#181616"            # main background: the notch, the terminal, app windows
+dark_background = "#12120f"       # a darker shade of the background
+darker_background = "#0d0c0c"     # the darkest shade
+lighter_background = "#282727"    # panels and cards (a bit lighter than the background)
+
+foreground = "#c5c9c5"            # normal text
+dark_foreground = "#a6a69c"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#c8c093"      # brighter text
+bright_foreground = "#c8c093"     # brightest text + the terminal cursor
+
+red = "#c4746e"                   # terminal + errors
+yellow = "#c4b28a"                # terminal + warnings
+orange = "#b6927b"                # terminal
+green = "#8a9a7b"                 # terminal + success
+cyan = "#8ea4a2"                  # terminal
+blue = "#8ba4b0"                  # terminal + links
+magenta = "#a292a3"               # terminal + git changes in the prompt
+
+bright_red = "#e46876"            # terminal (bold/bright versions)
+bright_yellow = "#e6c384"
+bright_green = "#87a987"
+bright_cyan = "#7aa89f"
+bright_blue = "#7fb4ca"
+bright_magenta = "#938aa9"

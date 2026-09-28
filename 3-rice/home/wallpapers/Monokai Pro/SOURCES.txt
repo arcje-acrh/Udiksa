@@ -1,0 +1,15 @@
+Theme: Monokai Pro
+Colours: official Monokai Pro, classic filter (yellow accent)
+
+Wallpapers:
+  01-a-snowy-mountain-with-dark-clouds.jpg  <-  https://github.com/dharmx/walls/blob/main/cold/a_snowy_mountain_with_dark_clouds.jpg  (no licence stated by the collection; rights stay with the original artist)
+  02-foggy-forest-with-clouds-in-the-sky.jpg  <-  https://github.com/dharmx/walls/blob/main/fogsmoke/foggy_forest_with_clouds_in_the_sky.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-a-white-rose-with-a-black-background.png  <-  https://github.com/dharmx/walls/blob/main/flowers/a_white_rose_with_a_black_background.png  (no licence stated by the collection; rights stay with the original artist)
+  04-a-close-up-of-a-flower-10.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_close_up_of_a_flower_10.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-a-close-up-of-a-dandelion.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_close_up_of_a_dandelion.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-a-close-up-of-a-plant-01.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_close_up_of_a_plant_01.jpg  (no licence stated by the collection; rights stay with the original artist)
+  07-a-group-of-black-leaves.jpg  <-  https://github.com/dharmx/walls/blob/main/nature/a_group_of_black_leaves.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-a-city-skyline-at-night.jpg  <-  https://github.com/dharmx/walls/blob/main/gruvbox/a_city_skyline_at_night.jpg  (no licence stated by the collection; rights stay with the original artist)
+  09-a-bridge-with-lights-on-it.jpg  <-  https://github.com/dharmx/walls/blob/main/architecture/a_bridge_with_lights_on_it.jpg  (no licence stated by the collection; rights stay with the original artist)
+  10-a-group-of-deer-with-antlers-and-rocks.png  <-  https://github.com/dharmx/walls/blob/main/fauna/a_group_of_deer_with_antlers_and_rocks.png  (no licence stated by the collection; rights stay with the original artist)
+  11-serial-experiments-lain.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/36592_serial_experiments_lain.png  (MIT)

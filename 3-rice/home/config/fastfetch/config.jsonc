@@ -1,0 +1,63 @@
+{
+    // fastfetch config -- layout adapted from JaKooLit/Hyprland-Dots (the popular
+    // grouped-tree style: coloured section headers, nerd-font icon per line).
+    // Needs a Nerd Font in the terminal (Iosevka Nerd Font Mono, already set).
+    //
+    // COLOURS: section colours are NAMED ANSI ("red", "yellow"): they resolve
+    // through the terminal palette (~/.config/kitty/colors.conf), so a theme /
+    // auto-themer change recolours them for free.
+    //     cyan = coral (#ff8a5c, ANSI slot 6 of the warm set)     yellow = amber (#f3bc7b)
+    //     (red is now rose-red #ff4d6d = errors, so it is not used for chrome)
+    // (No palette row on purpose. The 16 ANSI slots in colors.conf are themed warm.)
+
+    "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
+
+    // LOGO: a SQUARE image (kitty graphics protocol), not the tall ASCII art.
+    // Terminal cells are ~1:2, so 38x19 cells = square, as tall as the 19-row text block; padding top 1 shifts it one row down (user preferred this look over exact centring) (raise width/height together to grow it; keep width = 2 x height). Source is the Arch logo
+    // (/usr/share/pixmaps/archlinux-logo.svg) tinted amber->coral:
+    //   logo.svg = tinted source (edit/regenerate this),  logo.png = rendered from it
+    //   rsvg-convert -w 512 -h 512 logo.svg -o logo.png
+    // Only works in kitty (kitty-direct); other terminals show no logo.
+    "logo": {
+        "type": "kitty-direct",
+        "source": "~/.config/fastfetch/logo.png",
+        "width": 38,
+        "height": 19,
+        "padding": { "top": 1, "left": 1, "right": 2 }
+    },
+
+    "display": {
+        "color": { "separator": "bright_black", "title": "cyan" },
+        // fixed key column so every value lines up (headers and tree keys differ in length)
+        "key": { "width": 10 },
+        "separator": " 󰑃  "
+    },
+
+    "modules": [
+        "break",
+        "title",
+        "break",
+
+        // ---- DISTRO (amber) ----
+        { "type": "os", "key": " DISTRO", "keyColor": "yellow" },
+        { "type": "kernel", "key": "│ ├", "keyColor": "yellow" },
+        { "type": "uptime", "key": "│ ├󰅐", "keyColor": "yellow" },
+        { "type": "packages", "key": "│ ├󰏖", "keyColor": "yellow" },
+        { "type": "shell", "key": "│ └", "keyColor": "yellow" },
+
+        // ---- DE/WM (coral) ----
+        { "type": "wm", "key": " DE/WM", "keyColor": "cyan" },
+        { "type": "display", "key": "│ ├󰍹", "keyColor": "cyan", "compactType": "original-with-refresh-rate" },
+        { "type": "terminal", "key": "│ └", "keyColor": "cyan" },
+
+        // ---- SYSTEM (amber) ----
+        { "type": "host", "key": "󰌢 SYSTEM", "keyColor": "yellow" },
+        { "type": "cpu", "key": "│ ├󰻠", "keyColor": "yellow" },
+        { "type": "gpu", "key": "│ ├󰻑", "keyColor": "yellow" },
+        // one line of GPU state from ~/.local/bin/gpu-state (never wakes the dGPU)
+        { "type": "command", "key": "│ ├󰘚", "keyColor": "yellow",
+          "text": "g=$HOME/.local/bin/gpu-state; echo \"$($g mode) · screen on $($g display) · dGPU $($g dgpu)\"" },
+        { "type": "memory", "key": "│ ├󰾆", "keyColor": "yellow" },
+        { "type": "disk", "key": "│ └󰋊", "keyColor": "yellow" }
+    ]
+}

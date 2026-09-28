@@ -1,0 +1,15 @@
+Theme: Rosé Pine Dawn
+Colours: official Rosé Pine Dawn (iris accent)
+
+Wallpapers:
+  01-voyager-12.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/voyager-12.jpg  (no licence stated by the collection; rights stay with the original artist)
+  02-snow-desert-sunset.jpg  <-  https://github.com/rose-pine/wallpapers/blob/main/minecraft/snow-desert-sunset.jpg  (CC0-1.0)
+  03-flower-field.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/flower-field.jpg  (no licence stated by the collection; rights stay with the original artist)
+  04-sakura-trees-over-river.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/sakura-trees-over-river.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-flowers-16.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/flowers-16.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-flowers-18.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/flowers-18.jpg  (no licence stated by the collection; rights stay with the original artist)
+  07-temple.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/temple.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-dragon.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/dragon.jpg  (no licence stated by the collection; rights stay with the original artist)
+  09-jurassic-dino.jpg  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/Jurassic-dino.jpg  (MIT)
+  10-eating-cake.jpg  <-  https://github.com/rose-pine/wallpapers/blob/main/anime/eating-cake.jpg  (CC0-1.0)
+  11-a-cartoon-of-a-man-sleeping-on-a-road.jpg  <-  https://github.com/dharmx/walls/blob/main/unsorted/a_cartoon_of_a_man_sleeping_on_a_road.jpg  (no licence stated by the collection; rights stay with the original artist)

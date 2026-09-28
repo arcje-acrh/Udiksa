@@ -1,0 +1,36 @@
+# Catppuccin Mocha -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Catppuccin Mocha (mauve accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#cba6f7"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#45475a"             # buttons, empty part of sliders, selected text background
+muted = "#6c7086"                 # faint things: icons that are off, hints, disabled text
+
+background = "#1e1e2e"            # main background: the notch, the terminal, app windows
+dark_background = "#181825"       # a darker shade of the background
+darker_background = "#11111b"     # the darkest shade
+lighter_background = "#313244"    # panels and cards (a bit lighter than the background)
+
+foreground = "#cdd6f4"            # normal text
+dark_foreground = "#a6adc8"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#bac2de"      # brighter text
+bright_foreground = "#f5e0dc"     # brightest text + the terminal cursor
+
+red = "#f38ba8"                   # terminal + errors
+yellow = "#f9e2af"                # terminal + warnings
+orange = "#fab387"                # terminal
+green = "#a6e3a1"                 # terminal + success
+cyan = "#94e2d5"                  # terminal
+blue = "#89b4fa"                  # terminal + links
+magenta = "#f5c2e7"               # terminal + git changes in the prompt
+
+bright_red = "#f38ba8"            # terminal (bold/bright versions)
+bright_yellow = "#f9e2af"
+bright_green = "#a6e3a1"
+bright_cyan = "#94e2d5"
+bright_blue = "#89b4fa"
+bright_magenta = "#f5c2e7"

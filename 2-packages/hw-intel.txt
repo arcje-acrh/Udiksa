@@ -1,0 +1,2 @@
+# Installed only with an Intel GPU (VA-API video decoding).
+intel-media-driver

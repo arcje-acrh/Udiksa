@@ -1,0 +1,35 @@
+# Rosé Pine Dawn -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Rosé Pine Dawn (iris accent) -- change anything you like)
+
+mode = "light"                    # dark or light (light = light backgrounds, dark text)
+
+accent = "#907aa9"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#dfdad9"             # buttons, empty part of sliders, selected text background
+muted = "#9893a5"                 # faint things: icons that are off, hints, disabled text
+
+background = "#faf4ed"            # main background: the notch, the terminal, app windows
+dark_background = "#f2e9e1"       # a darker shade of the background
+darker_background = "#e9dfd6"     # the darkest shade
+lighter_background = "#fffaf3"    # panels and cards (a bit lighter than the background)
+
+foreground = "#575279"            # normal text
+dark_foreground = "#797593"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#575279"      # brighter text
+bright_foreground = "#464261"     # brightest text + the terminal cursor
+
+red = "#b4637a"                   # terminal + errors
+yellow = "#ea9d34"                # terminal + warnings
+green = "#286983"                 # terminal + success
+cyan = "#d7827e"                  # terminal
+blue = "#56949f"                  # terminal + links
+magenta = "#907aa9"               # terminal + git changes in the prompt
+
+bright_red = "#b4637a"            # terminal (bold/bright versions)
+bright_yellow = "#ea9d34"
+bright_green = "#286983"
+bright_cyan = "#d7827e"
+bright_blue = "#56949f"
+bright_magenta = "#907aa9"

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# rice-shell -- start (or --restart) Quickshell at the design's PHYSICAL size on any screen and any scale.
+# The design is drawn for a 191 ppi panel at 125 % (2560x1600, 340 mm wide): one design pixel = 1.25 / 191.25 inch. Here the
+# shell (notch, panels, Settings, lock) is scaled by  QT_SCALE_FACTOR = 1.25 / scale x ppi / 191.25  (focused screen),
+# so at 115 % the notch keeps exactly the size it had at 125 %, and a bigger / smaller-dpi screen shows it the same
+# size in centimetres. Screens that report no physical size: 1.25 / scale. Kept between 0.7 and 1.8.
+# Used by autostart.lua, the Restart-shell script and Settings > Display after a scale change.
+restart=0; [[ ${1:-} == --restart ]] && { restart=1; shift; }
+f=$(hyprctl monitors -j 2>/dev/null | jq -r '(map(select(.focused)) + .)[0] |
+    (if (.physicalWidth // 0) > 0 then (.width / (.physicalWidth / 25.4)) else 191.25 end) as $ppi |
+    (1.25 / .scale * $ppi / 191.25) | if . < 0.7 then 0.7 elif . > 1.8 then 1.8 else . end | . * 1000 | round / 1000' 2>/dev/null)
+[[ $f =~ ^[0-9.]+$ ]] || f=1
+if ((restart)); then pkill -x quickshell; sleep 0.5; fi
+QT_SCALE_FACTOR=$f exec quickshell "$@"

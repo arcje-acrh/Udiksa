@@ -1,0 +1,16 @@
+Theme: Gruvbox Light
+Colours: official gruvbox light, medium contrast (orange accent)
+
+Wallpapers:
+  01-mountains2.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/photography/mountains2.jpg  (no licence stated by the collection; rights stay with the original artist)
+  02-a-landscape-of-mountains-and-trees.jpg  <-  https://github.com/dharmx/walls/blob/main/minimal/a_landscape_of_mountains_and_trees.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-chris-lawton-5ihz5whosqe.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/photography/chris-lawton-5IHz5WhosQE.jpg  (no licence stated by the collection; rights stay with the original artist)
+  04-a-painting-of-a-tree-branch-with-pink-fl.png  <-  https://github.com/dharmx/walls/blob/main/cherry/a_painting_of_a_tree_branch_with_pink_flowers.png  (no licence stated by the collection; rights stay with the original artist)
+  05-a-cup-of-coffee-with-foam.jpg  <-  https://github.com/dharmx/walls/blob/main/aerial/a_cup_of_coffee_with_foam.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-koi-fish.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/minimalistic/light/koi-fish.png  (no licence stated by the collection; rights stay with the original artist)
+  07-orbit.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/minimalistic/light/orbit.png  (no licence stated by the collection; rights stay with the original artist)
+  08-sif.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/mix/light/Sif.png  (no licence stated by the collection; rights stay with the original artist)
+  09-a-woman-holding-an-umbrella-and-standing.png  <-  https://github.com/dharmx/walls/blob/main/anime/a_woman_holding_an_umbrella_and_standing_on_a_sidewalk.png  (no licence stated by the collection; rights stay with the original artist)
+  10-a-cartoon-of-a-girl-and-a-dog.png  <-  https://github.com/dharmx/walls/blob/main/anime/a_cartoon_of_a_girl_and_a_dog.png  (no licence stated by the collection; rights stay with the original artist)
+  11-paper-airplane-balcony.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/anime/light/paper-airplane-balcony.jpg  (no licence stated by the collection; rights stay with the original artist)
+  12-a-drawing-on-a-spiral-bound-notebook.jpg  <-  https://github.com/dharmx/walls/blob/main/anime/a_drawing_on_a_spiral_bound_notebook.jpg  (no licence stated by the collection; rights stay with the original artist)

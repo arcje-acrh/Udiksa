@@ -1,0 +1,15 @@
+Theme: Tokyo Night
+Colours: official Tokyo Night, night variant (blue accent)
+
+Wallpapers:
+  01-towashi.jpg  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/towashi.jpg  (MIT)
+  02-urban-architecture.jpg  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/pixelart/urban_architecture.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-nord-street.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/nord-street.png  (MIT)
+  04-stars-in-the-sky-at-night.png  <-  https://github.com/dharmx/walls/blob/main/anime/stars_in_the_sky_at_night.png  (no licence stated by the collection; rights stay with the original artist)
+  05-dark-waves.jpg  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/dark-waves.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-trippy-purple.png  <-  https://github.com/orangci/walls-catppuccin-mocha/blob/master/trippy-purple.png  (no licence stated by the collection; rights stay with the original artist)
+  07-swirls.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/swirls.png  (MIT)
+  08-alfa.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/alfa.png  (MIT)
+  09-leave-planet.jpg  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/leave-planet.jpg  (MIT)
+  10-a-group-of-symbols-on-a-black-background.jpg  <-  https://github.com/dharmx/walls/blob/main/geometry/a_group_of_symbols_on_a_black_background.jpg  (no licence stated by the collection; rights stay with the original artist)
+  11-a-colorful-mask-on-a-black-background.jpg  <-  https://github.com/dharmx/walls/blob/main/retro/a_colorful_mask_on_a_black_background.jpg  (no licence stated by the collection; rights stay with the original artist)

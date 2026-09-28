@@ -1,0 +1,15 @@
+Theme: Gruvbox Dark
+Colours: official gruvbox dark, medium contrast (yellow accent)
+
+Wallpapers:
+  01-night-moon.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/mix/night_moon.png  (no licence stated by the collection; rights stay with the original artist)
+  02-gruvbox-image31.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/pixelart/gruvbox_image31.png  (no licence stated by the collection; rights stay with the original artist)
+  03-great-wave-of-kanagawa-gruvbox.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/minimalistic/great-wave-of-kanagawa-gruvbox.png  (no licence stated by the collection; rights stay with the original artist)
+  04-space-shuttle.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/minimalistic/space-shuttle.png  (no licence stated by the collection; rights stay with the original artist)
+  05-galaxy.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/mix/galaxy.png  (no licence stated by the collection; rights stay with the original artist)
+  06-atoms.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/minimalistic/atoms.png  (no licence stated by the collection; rights stay with the original artist)
+  07-gruvb-solarsys.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/minimalistic/gruvb_solarsys.png  (no licence stated by the collection; rights stay with the original artist)
+  08-solar-system-minimal.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/minimalistic/solar-system-minimal.png  (no licence stated by the collection; rights stay with the original artist)
+  09-gamepad.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/minimalistic/gamepad.png  (no licence stated by the collection; rights stay with the original artist)
+  10-mustacho.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/minimalistic/mustacho.png  (no licence stated by the collection; rights stay with the original artist)
+  11-gruv-wallhaven-4gmevq.png  <-  https://github.com/AngelJumbo/gruvbox-wallpapers/blob/main/wallpapers/anime/gruv-wallhaven-4gmevq.png  (no licence stated by the collection; rights stay with the original artist)

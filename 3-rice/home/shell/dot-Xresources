@@ -1,0 +1,7 @@
+! X11 apps (XWayland): Hyprland draws them unscaled (misc.lua xwayland.force_zero_scaling), so they must size
+! themselves. Xft.dpi is set at login from the real screen scale (~/.local/bin/rice-xdpi: 96 x scale).
+Xft.antialias: 1
+Xft.hinting: 1
+Xft.hintstyle: hintslight
+Xft.rgba: rgb
+Xcursor.size: 24

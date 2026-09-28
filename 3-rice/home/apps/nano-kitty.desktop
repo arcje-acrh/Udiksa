@@ -1,0 +1,11 @@
+[Desktop Entry]
+# rice: text / code files open in nano inside kitty (default for text types, set in ~/.config/mimeapps.list)
+Type=Application
+Name=Text Editor (nano)
+GenericName=Text Editor
+Comment=Edit text and code in nano
+Exec=kitty --class rice-edit -e nano %F
+Icon=accessories-text-editor
+Terminal=false
+Categories=Utility;TextEditor;
+MimeType=text/plain;text/markdown;text/x-log;text/csv;text/x-python;text/x-shellscript;application/x-shellscript;text/x-c;text/x-c++;text/x-csrc;text/x-chdr;text/x-java;text/x-lua;text/css;text/xml;application/xml;application/json;application/toml;application/x-yaml;text/x-yaml;application/javascript;text/javascript;text/x-rust;text/x-go;application/x-desktop;text/x-makefile;text/x-cmake;application/x-zerosize;

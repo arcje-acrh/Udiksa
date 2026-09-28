@@ -1,0 +1,36 @@
+# Zenburn -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official Zenburn (bbatsov/zenburn-emacs values, green accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#8fb28f"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#4f4f4f"             # buttons, empty part of sliders, selected text background
+muted = "#6f6f6f"                 # faint things: icons that are off, hints, disabled text
+
+background = "#3f3f3f"            # main background: the notch, the terminal, app windows
+dark_background = "#383838"       # a darker shade of the background
+darker_background = "#2b2b2b"     # the darkest shade
+lighter_background = "#494949"    # panels and cards (a bit lighter than the background)
+
+foreground = "#dcdccc"            # normal text
+dark_foreground = "#989890"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#ffffef"      # brighter text
+bright_foreground = "#ffffef"     # brightest text + the terminal cursor
+
+red = "#cc9393"                   # terminal + errors
+yellow = "#f0dfaf"                # terminal + warnings
+orange = "#dfaf8f"                # terminal
+green = "#7f9f7f"                 # terminal + success
+cyan = "#93e0e3"                  # terminal
+blue = "#8cd0d3"                  # terminal + links
+magenta = "#dc8cc3"               # terminal + git changes in the prompt
+
+bright_red = "#dca3a3"            # terminal (bold/bright versions)
+bright_yellow = "#e0cf9f"
+bright_green = "#bfebbf"
+bright_cyan = "#93e0e3"
+bright_blue = "#94bff3"
+bright_magenta = "#dc8cc3"

@@ -1,0 +1,36 @@
+# One Dark -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official One Dark / Atom (blue accent) -- change anything you like)
+
+mode = "dark"                     # dark or light (light = light backgrounds, dark text)
+
+accent = "#61afef"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#3e4451"             # buttons, empty part of sliders, selected text background
+muted = "#5c6370"                 # faint things: icons that are off, hints, disabled text
+
+background = "#282c34"            # main background: the notch, the terminal, app windows
+dark_background = "#21252b"       # a darker shade of the background
+darker_background = "#1b1d23"     # the darkest shade
+lighter_background = "#2c313a"    # panels and cards (a bit lighter than the background)
+
+foreground = "#abb2bf"            # normal text
+dark_foreground = "#828997"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#c8ccd4"      # brighter text
+bright_foreground = "#dcdfe4"     # brightest text + the terminal cursor
+
+red = "#e06c75"                   # terminal + errors
+yellow = "#e5c07b"                # terminal + warnings
+orange = "#d19a66"                # terminal
+green = "#98c379"                 # terminal + success
+cyan = "#56b6c2"                  # terminal
+blue = "#61afef"                  # terminal + links
+magenta = "#c678dd"               # terminal + git changes in the prompt
+
+bright_red = "#e06c75"            # terminal (bold/bright versions)
+bright_yellow = "#e5c07b"
+bright_green = "#98c379"
+bright_cyan = "#56b6c2"
+bright_blue = "#61afef"
+bright_magenta = "#c678dd"

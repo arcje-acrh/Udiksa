@@ -1,0 +1,77 @@
+# starship prompt (bash) — minimal style: no pills, one accent colour, muted extras.
+# The palettes.rice colours below are placeholders: ~/.local/bin/rice-theme writes a themed copy of this file
+# to ~/.local/state/rice/starship.toml on every theme change (.bashrc points STARSHIP_CONFIG at it)
+# (text, accent = the ❯, path = the ~/directory, warn = git changes, danger = errors, muted = branch/time).
+#
+#   ~/dir  branch !2
+#   ❯ command here                                          23:24   <- ble.sh right prompt
+
+"$schema" = 'https://starship.rs/config-schema.json'
+
+palette = "rice"
+add_newline = true
+command_timeout = 500
+
+format = """
+$directory$git_branch$git_status$cmd_duration
+$character"""
+
+# Right-hand prompt (the clock). Real right prompts need ble.sh (installed;
+# starship hands this string to ble.sh's `prompt_rps1` before every prompt).
+right_format = "$time"
+
+[palettes.rice]
+text   = "#f8f8f2"
+accent = "#ac93f9"   # prompt character, highlights
+path   = "#d3c0fc"   # directory
+warn   = "#ff79c6"   # git changes
+danger = "#ff5555"   # failed command / read-only
+muted  = "#a9abb3"   # branch, duration, time
+
+[directory]
+format = "[$path]($style)[$read_only]($read_only_style) "
+style = "bold fg:path"
+read_only = " "
+read_only_style = "fg:danger"
+truncation_length = 3
+truncation_symbol = "…/"
+home_symbol = "~"
+
+[git_branch]
+symbol = " "
+format = "[$symbol$branch]($style) "
+style = "fg:muted"
+
+[git_status]
+format = "([$all_status$ahead_behind]($style) )"
+style = "fg:warn"
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed = "$"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+[cmd_duration]
+min_time = 2000
+format = "[took $duration]($style) "
+style = "fg:muted"
+
+# The clock is shown through `right_format` above, i.e. ble.sh's real
+# right-hand prompt: it repaints correctly on window resize and is erased
+# after Enter (bleopt prompt_rps1_transient in ~/.blerc). (Text pushed to the
+# right edge with starship's $fill gets wrapped onto stray lines by the
+# terminal whenever it narrows.)
+[time]
+disabled = false
+time_format = "%H:%M"
+format = "[$time]($style)"
+style = "fg:muted"
+
+[character]
+success_symbol = "[❯](bold fg:accent)"
+error_symbol   = "[❯](bold fg:danger)"

@@ -1,0 +1,18 @@
+Theme: White
+Colours: preset palette (MIT licence, (c) 37signals)
+
+Wallpapers:
+  01-a-snowy-mountain-with-clouds-in-the-sky.jpg  <-  https://github.com/dharmx/walls/blob/main/fogsmoke/a_snowy_mountain_with_clouds_in_the_sky.jpg  (no licence stated by the collection; rights stay with the original artist)
+  02-a-mountain-with-snow-and-trees.jpg  <-  https://github.com/dharmx/walls/blob/main/cold/a_mountain_with_snow_and_trees.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-a-large-rock-in-the-ocean.jpg  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_large_rock_in_the_ocean.jpg  (no licence stated by the collection; rights stay with the original artist)
+  04-a-pile-of-logs-in-a-snowy-field.jpg  <-  https://github.com/dharmx/walls/blob/main/nature/a_pile_of_logs_in_a_snowy_field.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-a-road-going-through-a-desert.jpg  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_road_going_through_a_desert.jpeg  (no licence stated by the collection; rights stay with the original artist)
+  06-a-person-standing-on-a-rocky-cliff.png  <-  https://github.com/dharmx/walls/blob/main/cold/a_person_standing_on_a_rocky_cliff.png  (no licence stated by the collection; rights stay with the original artist)
+  07-a-close-up-of-a-white-flower.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_close_up_of_a_white_flower.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-a-white-staircase-with-a-handrail.jpg  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_white_staircase_with_a_handrail.jpg  (no licence stated by the collection; rights stay with the original artist)
+  09-two-black-and-white-images-of-mountains.jpg  <-  https://github.com/dharmx/walls/blob/main/abstract/two_black_and_white_images_of_mountains.jpg  (no licence stated by the collection; rights stay with the original artist)
+  10-a-pattern-of-black-triangles.png  <-  https://github.com/dharmx/walls/blob/main/tile/a_pattern_of_black_triangles.png  (no licence stated by the collection; rights stay with the original artist)
+  11-a-map-of-a-city.jpg  <-  https://github.com/dharmx/walls/blob/main/abstract/a_map_of_a_city.jpg  (no licence stated by the collection; rights stay with the original artist)
+  12-a-black-and-white-drawing-of-a-person-wi.png  <-  https://github.com/dharmx/walls/blob/main/abstract/a_black_and_white_drawing_of_a_person_with_a_blindfold.png  (no licence stated by the collection; rights stay with the original artist)
+  13-a-cartoon-of-a-woman-with-glasses.png  <-  https://github.com/dharmx/walls/blob/main/anime/a_cartoon_of_a_woman_with_glasses.png  (no licence stated by the collection; rights stay with the original artist)
+  14-a-cartoon-of-a-woman-with-long-hair.png  <-  https://github.com/dharmx/walls/blob/main/anime/a_cartoon_of_a_woman_with_long_hair.png  (no licence stated by the collection; rights stay with the original artist)

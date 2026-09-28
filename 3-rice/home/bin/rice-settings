@@ -1,0 +1,428 @@
+#!/usr/bin/env python3
+"""rice-settings -- the back end of the Settings app (~/.config/quickshell/settings/).
+
+Hyprland options changed in Settings are saved in ~/.local/state/rice/settings.json and written to
+~/.config/hypr/local/settings.lua (the PERSONAL LAYER, not in the Udiksa repo), which hyprland.lua loads last, so
+they override the shipped design without touching it (delete it / use "reset" to go back). Every change is also
+applied live with `hyprctl eval 'hl.config({...})'`.
+
+  rice-settings get                   JSON: current values of every option below (+ idle times)
+  rice-settings set <key> <value>     save + apply one option
+  rice-settings reset [section]       forget saved options (all, or look / layout / input), reload Hyprland
+  rice-settings power                 JSON: lock / screen-off / sleep timers, lid + power-button actions
+  rice-settings power apply           write hypridle.conf + logind from ~/.config/hypr/power.json (first login)
+  rice-settings power <key> <value>   change one (timers rewrite ~/.config/hypr/hypridle.conf; lid, power button and
+                                      "hibernate after" go to logind via `sudo -n /usr/local/bin/udiksa-power`)
+  rice-settings monitor set <output> '<json>'  a screen's setup (Settings > Display): {"mode": "2560x1440@144",
+                                      "scale": 1.25, "position": "auto-right", "transform": 0, "mirror": "", "disabled": false};
+                                      <output> = "desc:<make model serial>" (follows the screen to any port) or a port name
+  rice-settings monitor many '<json>' several at once: {"<output>": {...}, ...} (layouts: extend / mirror / only one);
+                                      screens that stay on are applied first, so there is always one on
+  rice-settings monitor rm <output>   back to automatic for that screen
+      (saved in ~/.config/hypr/local/monitors.json + monitors.lua = personal layer, applied live)
+  rice-settings startup add|rm <command>     your own startup commands (run at the next login)
+  rice-settings bind add <keys> <command>    your own shortcut, e.g. "SUPER + B" "zen-browser"
+  rice-settings bind rm <keys>
+"""
+import json, os, re, subprocess, sys
+
+HOME = os.path.expanduser("~")
+STATE = os.path.join(HOME, ".local/state/rice/settings.json")
+LUA = os.path.join(HOME, ".config/hypr/local/settings.lua")        # personal layer (git-ignored)
+IDLE = os.path.join(HOME, ".config/hypr/hypridle.conf")              # generated from the power choices (git-ignored)
+POWER_FILE = os.path.join(HOME, ".config/hypr/local/power.json")    # Settings > Battery & sleep choices (personal layer)
+
+# key: (section, lua path, hyprctl option, type)
+OPTS = {
+    "gaps_in":          ("look", "general.gaps_in", "general:gaps_in", "int"),
+    "gaps_out":         ("look", "general.gaps_out", "general:gaps_out", "int"),
+    "border_size":      ("look", "general.border_size", "general:border_size", "int"),
+    "rounding":         ("look", "decoration.rounding", "decoration:rounding", "int"),
+    "active_opacity":   ("look", "decoration.active_opacity", "decoration:active_opacity", "float"),
+    "inactive_opacity": ("look", "decoration.inactive_opacity", "decoration:inactive_opacity", "float"),
+    "dim_inactive":     ("look", "decoration.dim_inactive", "decoration:dim_inactive", "bool"),
+    "blur":             ("look", "decoration.blur.enabled", "decoration:blur:enabled", "bool"),
+    "blur_size":        ("look", "decoration.blur.size", "decoration:blur:size", "int"),
+    "shadow":           ("look", "decoration.shadow.enabled", "decoration:shadow:enabled", "bool"),
+    "shadow_range":     ("look", "decoration.shadow.range", "decoration:shadow:range", "int"),
+    "shadow_power":     ("look", "decoration.shadow.render_power", "decoration:shadow:render_power", "int"),
+    "shadow_color":     ("look", "decoration.shadow.color", "decoration:shadow:color", "color"),
+    "blur_passes":      ("look", "decoration.blur.passes", "decoration:blur:passes", "int"),
+    "animations":       ("look", "animations.enabled", "animations:enabled", "bool"),
+    # tiling (Settings > Windows > Tiling)
+    "layout":           ("layout", "general.layout", "general:layout", "str"),
+    "force_split":      ("layout", "dwindle.force_split", "dwindle:force_split", "int"),
+    "split_ratio":      ("layout", "dwindle.default_split_ratio", "dwindle:default_split_ratio", "float"),
+    "preserve_split":   ("layout", "dwindle.preserve_split", "dwindle:preserve_split", "bool"),
+    "master_side":      ("layout", "master.orientation", "master:orientation", "str"),
+    "master_new":       ("layout", "master.new_status", "master:new_status", "str"),
+    "master_new_top":   ("layout", "master.new_on_top", "master:new_on_top", "bool"),
+    "master_size":      ("layout", "master.mfact", "master:mfact", "float"),
+    "scroll_direction": ("layout", "scrolling.direction", "scrolling:direction", "str"),
+    "scroll_width":     ("layout", "scrolling.column_width", "scrolling:column_width", "float"),
+    "kb_layout":        ("input", "input.kb_layout", "input:kb_layout", "str"),
+    "kb_variant":       ("input", "input.kb_variant", "input:kb_variant", "str"),
+    "repeat_rate":      ("input", "input.repeat_rate", "input:repeat_rate", "int"),
+    "repeat_delay":     ("input", "input.repeat_delay", "input:repeat_delay", "int"),
+    "sensitivity":      ("input", "input.sensitivity", "input:sensitivity", "float"),
+    "natural_scroll":   ("input", "input.touchpad.natural_scroll", "input:touchpad:natural_scroll", "bool"),
+    "tap_to_click":     ("input", "input.touchpad.tap-to-click", "input:touchpad:tap-to-click", "bool"),
+    "disable_while_typing": ("input", "input.touchpad.disable_while_typing", "input:touchpad:disable_while_typing", "bool"),
+}
+
+
+def load():
+    try:
+        return json.load(open(STATE))
+    except (OSError, ValueError):
+        return {}
+
+
+def save(d):
+    os.makedirs(os.path.dirname(os.path.realpath(STATE)), exist_ok=True)
+    json.dump(d, open(STATE, "w"), indent=2)
+
+
+def conv(v, typ):
+    if typ == "int":
+        return int(round(float(v)))
+    if typ == "float":
+        return round(float(v), 3)
+    if typ == "bool":
+        return str(v).lower() in ("1", "true", "yes", "on")
+    if typ == "color":                      # "#rrggbb" / "#rrggbbaa" -> "rrggbbaa"
+        h = str(v).lstrip("#").lower()
+        return (h + "ff")[:8] if len(h) == 6 else h[:8]
+    return str(v)
+
+
+def lua_value(v):
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    if isinstance(v, (int, float)):
+        return repr(v)
+    return '"' + str(v).replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def lua_key(k):
+    return k if re.fullmatch(r"[A-Za-z_][A-Za-z0-9_]*", k) else '["' + k + '"]'
+
+
+def nest(pairs):
+    """[(path, value)] -> nested dict."""
+    root = {}
+    for path, v in pairs:
+        d = root
+        parts = path.split(".")
+        for p in parts[:-1]:
+            d = d.setdefault(p, {})
+        d[parts[-1]] = v
+    return root
+
+
+def lua_table(d, ind=1):
+    pad = "    " * ind
+    out = ["{"]
+    for k, v in d.items():
+        val = lua_table(v, ind + 1) if isinstance(v, dict) else lua_value(v)
+        out.append(f"{pad}{lua_key(k)} = {val},")
+    out.append("    " * (ind - 1) + "}")
+    return "\n".join(out)
+
+
+def lua_val(k, v):
+    return f"rgba({v})" if OPTS[k][3] == "color" else v
+
+
+def lua_str(x):
+    return '"' + str(x).replace("\\", "\\\\").replace('"', '\\"') + '"'
+
+
+def write_lua(d):
+    pairs = [(OPTS[k][1], lua_val(k, v)) for k, v in d.items() if k in OPTS]
+    body = lua_table(nest(pairs)) if pairs else "{}"
+    txt = ("-- settings.lua -- written by the Settings app (~/.local/bin/rice-settings); loaded LAST by hyprland.lua,\n"
+           "-- so these override the other conf files. Do not edit by hand: change it in Settings, or delete this\n"
+           "-- file (or `rice-settings reset`) to go back to the hand-written values.\n"
+           f"hl.config({body})\n")
+    if d.get("_startup"):
+        txt += "\n-- startup apps added in Settings\nhl.on(\"hyprland.start\", function()\n"
+        txt += "".join(f"    hl.exec_cmd({lua_str(c)})\n" for c in d["_startup"]) + "end)\n"
+    if d.get("_binds"):
+        txt += "\n-- shortcuts added in Settings\n"
+        txt += "".join(f"hl.bind({lua_str(b['keys'])}, hl.dsp.exec_cmd({lua_str(b['cmd'])}))\n" for b in d["_binds"])
+    real = os.path.realpath(LUA)             # through the stow link into ~/Udiksa
+    os.makedirs(os.path.dirname(real), exist_ok=True)
+    tmp = real + ".tmp"
+    open(tmp, "w").write(txt)
+    os.replace(tmp, real)
+
+
+def hypr(args):
+    return subprocess.run(["hyprctl"] + args, capture_output=True, text=True).stdout
+
+
+def current(opt, typ):
+    try:
+        j = json.loads(hypr(["getoption", "-j", opt]))
+    except ValueError:
+        return None
+    if "css" in j:
+        return int(j["css"].split()[0])
+    if "gradient" in j:
+        c = j["gradient"].split()[0].lower()
+        return c[2:8] + c[0:2]
+    for t in ("int", "float", "bool", "str"):
+        if t in j:
+            return j[t]
+    return None
+
+
+MON_JSON = os.path.join(HOME, ".config/hypr/local/monitors.json")
+MON_LUA = os.path.join(HOME, ".config/hypr/local/monitors.lua")
+
+
+def mon_lua(out, v):
+    parts = [f"output = {lua_str(out)}"]
+    if v.get("disabled"):
+        parts.append("disabled = true")
+    else:
+        parts.append(f"mode = {lua_str(v.get('mode') or 'preferred')}")
+        parts.append(f"position = {lua_str(v.get('position') or 'auto')}")
+        sc = v.get("scale", "auto")
+        parts.append(f"scale = {sc if isinstance(sc, (int, float)) else lua_str(sc)}")
+        # always spelled out: Hyprland MERGES rules for the same screen, so a missing field keeps the old value
+        # (tested: a rule without transform left the screen rotated)
+        parts.append(f"transform = {int(v.get('transform') or 0)}")
+        parts.append(f"mirror = {lua_str(v.get('mirror') or '')}")
+        parts.append("disabled = false")
+    return "hl.monitor({ " + ", ".join(parts) + " })"
+
+
+def cmd_monitor(op, out, data=None):
+    try:
+        d = json.load(open(MON_JSON))
+    except (OSError, ValueError):
+        d = {}
+    many = {}
+    if op == "set":
+        d[out] = json.loads(data)
+    elif op == "many":
+        many = json.loads(out)
+        d.update(many)
+    elif op == "rm":
+        d.pop(out, None)
+    else:
+        sys.exit("monitor set|rm")
+    for path, txt in ((MON_JSON, json.dumps(d, indent=2) + "\n"),
+                      (MON_LUA, "-- monitors.lua -- written by Settings > Display (~/.local/bin/rice-settings monitor);\n"
+                                "-- personal layer, loaded after the shipped monitors.lua. Delete it to go back to automatic.\n"
+                                + "".join(mon_lua(k, v) + "\n" for k, v in d.items()))):
+        real = os.path.realpath(path)
+        os.makedirs(os.path.dirname(real), exist_ok=True)
+        open(real + ".tmp", "w").write(txt)
+        os.replace(real + ".tmp", real)
+    if op == "set":
+        hypr(["eval", mon_lua(out, d[out])])
+    elif op == "many":
+        for k in sorted(many, key=lambda k: bool(many[k].get("disabled"))):     # the ones staying on first
+            hypr(["eval", mon_lua(k, many[k])])
+    else:
+        hypr(["reload"])
+    subprocess.run([os.path.join(HOME, ".local/bin/rice-xdpi")])       # X11 apps follow a new scale
+    print(json.dumps(d))
+
+
+# Settings > Power. Minutes, 0 = never. Actions: sleep / hibernate / lock / poweroff / ignore ("sleep" becomes
+# suspend-then-hibernate while "hibernate after" is set).
+POWER = {
+    "lock": 10, "off_bat": 10, "off_ac": 10, "sleep_bat": 30, "sleep_ac": 0, "hib_after": 180,
+    "lid_bat": "sleep", "lid_ac": "sleep", "lid_dock": "ignore", "power_key": "poweroff",
+}
+ACTIONS = ("sleep", "hibernate", "lock", "poweroff", "ignore")
+
+
+def can_hibernate():
+    r = subprocess.run(["busctl", "call", "org.freedesktop.login1", "/org/freedesktop/login1",
+                        "org.freedesktop.login1.Manager", "CanHibernate"], capture_output=True, text=True)
+    return '"yes"' in r.stdout
+
+
+def power_saved():
+    try:
+        return json.load(open(POWER_FILE))
+    except (OSError, ValueError):
+        return load().get("_power", {})            # older place (before 2026-09-28)
+
+
+def power_state():
+    p = dict(POWER)
+    p.update(power_saved())
+    p["can_hibernate"] = can_hibernate()
+    if not p["can_hibernate"]:
+        p["hib_after"] = 0
+    return p
+
+
+def write_idle(p):
+    """hypridle.conf from the timers; battery / charger timers both run, rice-idle skips the other source's."""
+    ri = "$HOME/.local/bin/rice-idle"
+    out = ["# hypridle -- written by Settings > Power (~/.local/bin/rice-settings power); change the times there.",
+           "# Locking = the Quickshell lock screen (~/.config/quickshell/Lock.qml), via its IPC call.", "",
+           "general {",
+           "    lock_cmd = qs ipc call lock lock                                  # loginctl lock-session ends up here",
+           "    before_sleep_cmd = loginctl lock-session                          # lock before sleep / hibernate (lid, key, timer)",
+           "    after_sleep_cmd = hyprctl dispatch 'hl.dsp.dpms({action = \"on\"})' # screen on after waking",
+           "}"]
+
+    def listener(minutes, cmd, note, resume=None):
+        out.extend(["", f"# {note}", "listener {", f"    timeout = {int(minutes) * 60}", f"    on-timeout = {cmd}"]
+                   + ([f"    on-resume = {resume}"] if resume else []) + ["}"])
+
+    if p["lock"]:
+        listener(p["lock"], "loginctl lock-session", f"lock after {p['lock']} min without input")
+    on = "hyprctl dispatch 'hl.dsp.dpms({action = \"on\"})'"
+    for what, name in (("off", "screen off"), ("sleep", "sleep")):
+        bat, ac = p[what + "_bat"], p[what + "_ac"]
+        res = on if what == "off" else None
+        if bat == ac:
+            if bat:
+                listener(bat, f"{ri} {what} any", f"{name} after {bat} min", res)
+        else:
+            if bat:
+                listener(bat, f"{ri} {what} bat", f"{name} after {bat} min on battery", res)
+            if ac:
+                listener(ac, f"{ri} {what} ac", f"{name} after {ac} min on the charger", res)
+    open(os.path.realpath(IDLE), "w").write("\n".join(out) + "\n")
+    subprocess.run(["pkill", "-x", "hypridle"])
+    hypr(["dispatch", 'hl.dsp.exec_cmd("hypridle")'])
+
+
+def apply_logind(p):
+    def act(a):
+        if a == "sleep":
+            return "suspend-then-hibernate" if p["hib_after"] else "suspend"
+        return {"hibernate": "hibernate", "lock": "lock", "poweroff": "poweroff"}.get(a, "ignore")
+    r = subprocess.run(["sudo", "-n", "/usr/local/bin/udiksa-power", act(p["lid_bat"]), act(p["lid_ac"]),
+                        act(p["lid_dock"]), act(p["power_key"]), str(int(p["hib_after"]))], capture_output=True, text=True)
+    if r.returncode:
+        sys.exit("lid / power button not changed: " + (r.stderr or r.stdout).strip())
+
+
+def cmd_power(key=None, value=None):
+    if key is None:
+        print(json.dumps(power_state()))
+        return
+    if key == "apply":                               # first login on a new machine: everything from power.json
+        p = power_state()
+        write_idle(p)
+        apply_logind(p)
+        return
+    if key not in POWER:
+        sys.exit(f"unknown power setting: {key}")
+    if isinstance(POWER[key], int):
+        v = max(0, int(float(value)))
+    elif value in ACTIONS:
+        v = value
+    else:
+        sys.exit(f"{key}: one of {', '.join(ACTIONS)}")
+    saved = power_saved()
+    saved[key] = v
+    real = os.path.realpath(POWER_FILE)              # through the stow link into ~/Udiksa
+    os.makedirs(os.path.dirname(real), exist_ok=True)
+    open(real + ".tmp", "w").write(json.dumps(saved, indent=2, sort_keys=True) + "\n")
+    os.replace(real + ".tmp", real)
+    p = power_state()
+    if key in ("lock", "off_bat", "off_ac", "sleep_bat", "sleep_ac"):
+        write_idle(p)
+    if key.startswith("lid_") or key in ("power_key", "hib_after"):
+        apply_logind(p)
+    print(json.dumps(p))
+
+
+def cmd_get():
+    saved = load()
+    out = {k: current(o[2], o[3]) for k, o in OPTS.items()}
+    out["_saved"] = sorted(k for k in saved if not k.startswith("_"))
+    out["startup"] = saved.get("_startup", [])
+    out["binds"] = saved.get("_binds", [])
+    out["power"] = power_state()
+    print(json.dumps(out))
+
+
+def cmd_set(key, value):
+    if key not in OPTS:
+        sys.exit(f"unknown option: {key}")
+    sec, path, opt, typ = OPTS[key]
+    v = conv(value, typ)
+    d = load()
+    d[key] = v
+    save(d)
+    write_lua(d)
+    hypr(["eval", "hl.config(" + lua_table(nest([(path, lua_val(key, v))])) + ")"])
+    print(json.dumps({key: current(opt, typ)}))
+
+
+def cmd_list(kind, op, *args):
+    d = load()
+    if kind == "startup":
+        lst = d.setdefault("_startup", [])
+        if op == "add" and args[0] not in lst:
+            lst.append(args[0])
+        elif op == "rm":
+            d["_startup"] = [c for c in lst if c != args[0]]
+    elif kind == "bind":
+        lst = [b for b in d.get("_binds", []) if b["keys"] != args[0]]
+        if op == "add":
+            lst.append({"keys": args[0], "cmd": args[1]})
+        d["_binds"] = lst
+    save(d)
+    write_lua(d)
+    if kind == "bind":
+        hypr(["reload"])
+    print(json.dumps({"startup": d.get("_startup", []), "binds": d.get("_binds", [])}))
+
+
+def cmd_reset(section=None):
+    d = load()
+    d = {k: v for k, v in d.items() if k.startswith("_") or (section and OPTS.get(k, ("",))[0] != section)}
+    save(d)
+    write_lua(d)
+    hypr(["reload"])
+
+
+def cmd_idle(lock_min, off_min):
+    lock_s, off_s = int(float(lock_min) * 60), int(float(off_min) * 60)
+    if off_s <= lock_s:
+        off_s = lock_s + 60
+    s = open(IDLE).read()
+    n = [0]
+    def rep(m):
+        n[0] += 1
+        return m.group(1) + str(lock_s if n[0] == 1 else off_s)
+    s = re.sub(r"^(\s*timeout\s*=\s*)\d+", rep, s, flags=re.M)
+    s = re.sub(r"# lock after \d+ min", f"# lock after {lock_s // 60} min", s)
+    open(IDLE, "w").write(s)
+    subprocess.run(["pkill", "-x", "hypridle"])
+    hypr(["dispatch", 'hl.dsp.exec_cmd("hypridle")'])
+    print(json.dumps(idle_times()))
+
+
+if __name__ == "__main__":
+    a = sys.argv[1:]
+    if not a or a[0] == "get":
+        cmd_get()
+    elif a[0] == "set" and len(a) == 3:
+        cmd_set(a[1], a[2])
+    elif a[0] == "reset":
+        cmd_reset(a[1] if len(a) > 1 else None)
+    elif a[0] in ("startup", "bind") and len(a) >= 3:
+        cmd_list(a[0], a[1], *a[2:])
+    elif a[0] == "monitor" and len(a) >= 3 and a[1] == "many":
+        cmd_monitor("many", a[2])
+    elif a[0] == "monitor" and len(a) >= 3:
+        cmd_monitor(a[1], a[2], a[3] if len(a) > 3 else None)
+    elif a[0] == "power" and len(a) in (1, 2, 3):
+        cmd_power(*a[1:])
+    else:
+        sys.exit(__doc__)

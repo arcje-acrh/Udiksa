@@ -1,0 +1,16 @@
+Theme: Catppuccin Latte
+Colours: official Catppuccin Latte (mauve accent)
+
+Wallpapers:
+  01-a-tree-in-the-snow.jpg  <-  https://github.com/dharmx/walls/blob/main/abstract/a_tree_in_the_snow.jpg  (no licence stated by the collection; rights stay with the original artist)
+  02-a-mountain-with-clouds-in-the-sky.jpg  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_mountain_with_clouds_in_the_sky.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-a-lighthouse-in-front-of-a-building.jpg  <-  https://github.com/dharmx/walls/blob/main/architecture/a_lighthouse_in_front_of_a_building.jpg  (no licence stated by the collection; rights stay with the original artist)
+  04-a-close-up-of-a-flower-09.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_close_up_of_a_flower_09.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-a-close-up-of-a-plant.jpg  <-  https://github.com/dharmx/walls/blob/main/flowers/a_close_up_of_a_plant.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-a-branch-with-pink-flowers-02.jpg  <-  https://github.com/dharmx/walls/blob/main/cherry/a_branch_with_pink_flowers_02.jpg  (no licence stated by the collection; rights stay with the original artist)
+  07-a-group-of-potted-plants.jpg  <-  https://github.com/dharmx/walls/blob/main/abstract/a_group_of_potted_plants.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-a-landscape-of-mountains-and-snow.png  <-  https://github.com/dharmx/walls/blob/main/nord/a_landscape_of_mountains_and_snow.png  (no licence stated by the collection; rights stay with the original artist)
+  09-ign-solitude-1.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/Solitude/ign_Solitude-1.png  (MIT)
+  10-ign-waterhill-1.png  <-  https://github.com/linuxdotexe/nordic-wallpapers/blob/master/dynamic-wallpapers/WaterHill/ign_WaterHill-1.png  (MIT)
+  11-a-drawing-of-a-spiral-with-a-spiral-in-t.jpg  <-  https://github.com/dharmx/walls/blob/main/nord/a_drawing_of_a_spiral_with_a_spiral_in_the_middle.jpg  (no licence stated by the collection; rights stay with the original artist)
+  12-a-woman-with-long-hair-wearing-sunglasse.png  <-  https://github.com/dharmx/walls/blob/main/abstract/a_woman_with_long_hair_wearing_sunglasses.png  (no licence stated by the collection; rights stay with the original artist)

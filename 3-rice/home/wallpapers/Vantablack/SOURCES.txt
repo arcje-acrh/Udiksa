@@ -1,0 +1,16 @@
+Theme: Vantablack
+Colours: preset palette (MIT licence, (c) 37signals)
+
+Wallpapers:
+  01-a-mountain-with-snow-on-it.jpg  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_mountain_with_snow_on_it.jpeg  (no licence stated by the collection; rights stay with the original artist)
+  02-a-mountain-with-snow-on-it.jpg  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_mountain_with_snow_on_it.jpg  (no licence stated by the collection; rights stay with the original artist)
+  03-a-cave-in-a-rocky-area.jpg  <-  https://github.com/dharmx/walls/blob/main/basalt/a_cave_in_a_rocky_area.jpg  (no licence stated by the collection; rights stay with the original artist)
+  04-a-person-walking-on-a-street-between-two.jpg  <-  https://github.com/dharmx/walls/blob/main/architecture/a_person_walking_on_a_street_between_two_tall_buildings.jpg  (no licence stated by the collection; rights stay with the original artist)
+  05-a-group-of-lights-on-poles.jpg  <-  https://github.com/dharmx/walls/blob/main/anime/a_group_of_lights_on_poles.jpg  (no licence stated by the collection; rights stay with the original artist)
+  06-a-white-line-drawing-of-a-group-of-trees.jpg  <-  https://github.com/dharmx/walls/blob/main/abstract/a_white_line_drawing_of_a_group_of_trees.jpg  (no licence stated by the collection; rights stay with the original artist)
+  07-a-white-pyramids-on-a-black-background.jpg  <-  https://github.com/dharmx/walls/blob/main/retro/a_white_pyramids_on_a_black_background.jpg  (no licence stated by the collection; rights stay with the original artist)
+  08-wavy-dark.png  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/wavy_dark.png  (MIT)
+  09-a-black-and-white-drawing-of-a-horse.png  <-  https://github.com/dharmx/walls/blob/main/fauna/a_black_and_white_drawing_of_a_horse.png  (no licence stated by the collection; rights stay with the original artist)
+  10-horror-cult.jpg  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/horror_cult.jpg  (MIT)
+  11-a-person-playing-a-guitar.png  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_person_playing_a_guitar.png  (no licence stated by the collection; rights stay with the original artist)
+  12-mobile-girl.jpg  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/mobile-girl.jpg  (MIT)

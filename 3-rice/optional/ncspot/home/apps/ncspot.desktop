@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=ncspot
+Comment=Cross-platform ncurses Spotify client written in Rust
+TryExec=ncspot
+Exec=music
+Icon=ncspot
+Terminal=false
+Categories=AudioVideo;Audio;Player;ConsoleOnly
+Keywords=spotify;music;player

@@ -1,0 +1,36 @@
+# Gruvbox Light -- the colours of this theme.
+# HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
+# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# Delete this file and the colours are made from this folder's pictures again.
+# (official gruvbox light, medium contrast (orange accent) -- change anything you like)
+
+mode = "light"                    # dark or light (light = light backgrounds, dark text)
+
+accent = "#af3a03"                # THE theme colour: selected / active things, switches that are on, window border, prompt ❯, highlights
+selection = "#d5c4a1"             # buttons, empty part of sliders, selected text background
+muted = "#a89984"                 # faint things: icons that are off, hints, disabled text
+
+background = "#fbf1c7"            # main background: the notch, the terminal, app windows
+dark_background = "#f2e5bc"       # a darker shade of the background
+darker_background = "#ebdbb2"     # the darkest shade
+lighter_background = "#f2e5bc"    # panels and cards (a bit lighter than the background)
+
+foreground = "#3c3836"            # normal text
+dark_foreground = "#665c54"       # secondary text: labels, notes, the prompt's branch/time
+light_foreground = "#504945"      # brighter text
+bright_foreground = "#282828"     # brightest text + the terminal cursor
+
+red = "#cc241d"                   # terminal + errors
+yellow = "#d79921"                # terminal + warnings
+orange = "#d65d0e"                # terminal
+green = "#98971a"                 # terminal + success
+cyan = "#689d6a"                  # terminal
+blue = "#458588"                  # terminal + links
+magenta = "#b16286"               # terminal + git changes in the prompt
+
+bright_red = "#9d0006"            # terminal (bold/bright versions)
+bright_yellow = "#b57614"
+bright_green = "#79740e"
+bright_cyan = "#427b58"
+bright_blue = "#076678"
+bright_magenta = "#8f3f71"

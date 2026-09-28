@@ -1,0 +1,5 @@
+#!/bin/sh
+# rice-onlyoffice -- OnlyOffice sized for this screen: it is an X11 app (drawn unscaled, misc.lua), so it gets the
+# focused screen's scale, and the window's own title bar is off (Hyprland draws none; Super+Q closes).
+s=$(hyprctl monitors -j 2>/dev/null | jq -r '(map(select(.focused)) + .)[0].scale // 1')
+exec /usr/bin/onlyoffice-desktopeditors --force-scale="$s" --system-title-bar "$@"
