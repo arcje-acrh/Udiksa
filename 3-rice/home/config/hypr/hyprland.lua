@@ -41,6 +41,17 @@ for _, name in ipairs({ "env", "device", "monitors", "settings" }) do
         if not ok then errors[#errors + 1] = "local/" .. name .. ": " .. tostring(err) end
     end
 end
+-- The built-in panel's refresh rate is switched live (60 Hz on battery, higher on the charger: ~/.local/bin/rice-panel-hz),
+-- which saves the mode it set here. Re-applied last, so a reload (every theme switch) keeps the rate the panel is
+-- running at: a reload that picked another rate would change the display mode, and the screen blanks for a moment.
+do
+    local f = io.open(os.getenv("HOME") .. "/.local/state/rice/panel-mode", "r")
+    if f then
+        local out, mode = (f:read("*l") or ""):match("^(%S+)%s+(%S+)$")
+        f:close()
+        if out then hl.monitor({ output = out, mode = mode }) end
+    end
+end
 if #errors > 0 then
     error("failed to load config modules:\n" .. table.concat(errors, "\n"), 0)
 end

@@ -1,10 +1,14 @@
 #!/usr/bin/env bash
 # rice-panel-hz <hz> -- set the refresh rate of the laptop's own panel (eDP / LVDS / DSI), keeping its current
 # resolution, position and scale. Used by the notch / Settings (Power.qml: 60 Hz on battery, high on the charger).
-# No built-in panel, or that rate not offered by it: does nothing.
+# No built-in panel, or that rate not offered by it: does nothing. Only the mode changes (scale and position stay).
 hz=${1:?usage: rice-panel-hz <hz>}
 hyprctl monitors -j | jq -r --argjson hz "$hz" '
   .[] | select(.name | test("^(eDP|LVDS|DSI)")) | . as $m |
   select(any($m.availableModes[]; startswith("\($m.width)x\($m.height)@\($hz)"))) |
-  "hl.monitor({ output = \"\(.name)\", mode = \"\(.width)x\(.height)@\($hz)\", position = \"\(.x)x\(.y)\", scale = \(.scale) })"' |
-  head -1 | while read -r lua; do hyprctl eval "$lua" >/dev/null; done
+  "\(.name) \(.width)x\(.height)@\($hz)"' |
+  head -1 | while read -r out mode; do
+      hyprctl eval "hl.monitor({ output = \"$out\", mode = \"$mode\" })" >/dev/null
+      # remembered for config reloads (hyprland.lua re-applies it last), so a reload never changes the rate
+      mkdir -p "$HOME/.local/state/rice" && echo "$out $mode" > "$HOME/.local/state/rice/panel-mode"
+  done

@@ -200,6 +200,11 @@ def mon_lua(out, v):
 
 
 def cmd_monitor(op, out, data=None):
+    # a screen chosen here wins over the rate rice-panel-hz last set live (hyprland.lua re-applies that on reloads)
+    try:
+        os.remove(os.path.join(HOME, ".local/state/rice/panel-mode"))
+    except OSError:
+        pass
     try:
         d = json.load(open(MON_JSON))
     except (OSError, ValueError):

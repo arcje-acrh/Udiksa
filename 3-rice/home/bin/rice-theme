@@ -892,7 +892,16 @@ def office(p):
 
 
 def reload_apps():
-    subprocess.run(["hyprctl", "reload"], capture_output=True)
+    # Hyprland reloads by itself when conf/colors.lua changes (its config watcher); a second `hyprctl reload`
+    # would repaint everything twice. Only reload here when that watcher is switched off.
+    try:
+        auto_off = json.loads(subprocess.run(["hyprctl", "getoption", "misc:disable_autoreload", "-j"],
+                                             capture_output=True, text=True).stdout)
+        auto_off = auto_off.get("bool", auto_off.get("int", 0))
+    except ValueError:
+        auto_off = 1
+    if auto_off:
+        subprocess.run(["hyprctl", "reload"], capture_output=True)
     subprocess.run(["pkill", "-USR1", "-x", "kitty"])
 
 
