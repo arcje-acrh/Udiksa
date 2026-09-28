@@ -153,7 +153,6 @@ stage_system() {
     say "Services"
     local svc=(NetworkManager bluetooth greetd systemd-timesyncd power-profiles-daemon)
     pacman -Qq tailscale &>/dev/null && svc+=(tailscaled)             # optional app
-    pacman -Qq ollama &>/dev/null && svc+=(ollama)                     # optional app (local AI models)
     for s in "${svc[@]}"; do
         systemctl list-unit-files "$s.service" >/dev/null 2>&1 && S systemctl enable "$s" 2>/dev/null || note "skip $s (not installed)"
     done

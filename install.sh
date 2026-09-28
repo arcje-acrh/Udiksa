@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # install.sh -- Udiksa: a fresh (or existing) Arch -> this rice, in three parts:
 #   1  Arch itself        OPTIONAL, only for a blank machine: wipes the disk you pick (from the Arch USB, as root)
-#   2  the apps           core apps + the optional ones you say yes to (Zen, OnlyOffice, ncspot, Tailscale, Ollama)
+#   2  the apps           core apps + the optional ones you say yes to (Zen, OnlyOffice, ncspot, Tailscale)
 #   3  the rice           configs, themes, shell, login screen, boot splash + GRUB theme (if GRUB), hibernation (asked)
 #   after 3              hardware support, offered only where it fits (hardware/<name>/detect): ASUS laptops,
 #                        hybrid NVIDIA laptops. Run one by hand: hardware/<name>/install.sh

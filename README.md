@@ -29,9 +29,6 @@
   updating the rice never overwrites your choices.
 - **Adapts to the machine**: screens, GPU, battery, Bluetooth and boot loader are detected. ASUS laptops and hybrid
   NVIDIA laptops get extra support, offered only where it fits.
-- **AI in a keypress**: <kbd>Super</kbd>+<kbd>A</kbd> opens `ai`, a terminal chat with saved sessions. Run models on your
-  own machine (Ollama, llama.cpp) or use Claude, OpenAI, OpenRouter, Groq; switch with `/source`, add one with `/add`.
-  With `/shell on` it can run commands for you, each one only after you say yes.
 - **Batteries included**: login screen, lock screen, boot splash, hibernation, btrfs snapshots, mirror refresh and
   cleanup scripts, a clipboard history, an emoji picker and a calculator in the launcher.
 
@@ -118,7 +115,7 @@ git clone https://github.com/arcje-acrh/Udiksa ~/Udiksa
 cd ~/Udiksa && ./install.sh 2 3
 ```
 
-- **Part 2, apps**: the core apps, then asks about each optional one (Zen Browser, OnlyOffice, ncspot, Tailscale, Ollama).
+- **Part 2, apps**: the core apps, then asks about each optional one (Zen Browser, OnlyOffice, ncspot, Tailscale).
 - **Part 3, the rice**: links the configs, installs the login screen, boot splash and GRUB theme (if you use GRUB),
   and sets up hibernation (uses your swap, or makes a swap file).
 - **Hardware**: on an ASUS laptop or a hybrid NVIDIA laptop, it offers the matching support (see `hardware/`).
@@ -137,7 +134,6 @@ Afterwards: Wi-Fi passwords, signing in to your apps, and `sudo tailscale up` if
 | <kbd>Super</kbd>+<kbd>Enter</kbd> | Terminal (kitty) |
 | <kbd>Super</kbd>+<kbd>R</kbd> | Launcher |
 | <kbd>Super</kbd>+<kbd>I</kbd> | Settings |
-| <kbd>Super</kbd>+<kbd>A</kbd> | AI chat (`ai`), show / hide |
 | <kbd>Super</kbd>+<kbd>T</kbd> / <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd> | Theme switcher / next wallpaper |
 | <kbd>Super</kbd>+<kbd>E</kbd> | Files |
 | <kbd>Super</kbd>+<kbd>Q</kbd> | Close window |

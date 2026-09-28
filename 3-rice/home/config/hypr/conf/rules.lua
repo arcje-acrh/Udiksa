@@ -165,15 +165,6 @@ hl.layer_rule({
 -- music (~/.local/bin/music): ncspot + cava as ONE centred block on the scratchpad (user 2026-09-26).
 -- ncspot 968x640 on top, 12 px gap, cava 968x220 below; block height 872 -> top = centre - 436
 -- (+15 for the 30 px bar at the top of the screen).
--- the `ai` chat (Super+A, ~/.local/bin/ai-open): floating in the middle on its own scratchpad
-hl.window_rule({
-    name      = "ai-window",
-    match     = { class = "^rice-ai$" },
-    float     = true,
-    size      = "1100 720",
-    move      = "monitor_w*0.5-550 monitor_h*0.5-360",
-    workspace = "special:ai",
-})
 hl.window_rule({
     name      = "music-ncspot",
     match     = { class = "^rice-ncspot$" },

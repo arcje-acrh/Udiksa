@@ -13,8 +13,6 @@ hl.bind(mainMod .. " + E",             hl.dsp.exec_cmd(programs.fileManager))
 hl.bind(mainMod .. " + R",             hl.dsp.exec_cmd(programs.menu))
 -- Settings (full screen, ~/.config/quickshell/Settings.qml)
 hl.bind(mainMod .. " + I",             hl.dsp.exec_cmd("qs ipc call settings toggle"))
--- AI chat (~/.local/bin/ai): opens once, then shows / hides its floating window
-hl.bind(mainMod .. " + A",             hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/ai-open"))
 
 -- window state / layout
 hl.bind(mainMod .. " + V",             hl.dsp.window.float({ action = "toggle" }))
