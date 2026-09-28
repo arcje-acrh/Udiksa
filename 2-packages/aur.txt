@@ -1,3 +1,5 @@
 # AUR apps (installed with yay).
 matugen-bin
 quickshell-git
+# the Claude source of `ai` (Super+A)
+python-anthropic

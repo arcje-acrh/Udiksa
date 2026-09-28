@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# ai-open -- Super+A: the `ai` chat in a floating window on its own scratchpad (special:ai). Opens it the first time,
+# afterwards shows / hides it (the chat keeps running in between). Window rule "ai-window" in conf/rules.lua.
+if hyprctl clients -j | jq -e 'any(.[]; .class == "rice-ai")' >/dev/null; then
+    hyprctl dispatch 'hl.dsp.workspace.toggle_special("ai")' >/dev/null
+else
+    exec kitty --class rice-ai -T ai -e "$HOME/.local/bin/ai"
+fi

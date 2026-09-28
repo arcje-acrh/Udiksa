@@ -1,0 +1,513 @@
+#!/usr/bin/env python3
+"""ai -- a small terminal AI chat with sessions and switchable sources (Super+A opens it in a floating window).
+
+  ai                      chat (last source, new session)
+  ai "question"           one answer, then exit
+  ai -s <source>          start with that source      ai -r   resume the last session
+
+Sources ~/.config/rice-ai/sources.json (yours; made on first run), keys ~/.config/rice-ai/keys.json (mode 600),
+sessions ~/.local/share/rice-ai/sessions/. Two kinds of source:
+  anthropic   Claude, through the official `anthropic` Python SDK (package python-anthropic)
+  openai      anything with an OpenAI-style /chat/completions API: Ollama and llama.cpp (local), OpenAI,
+              OpenRouter, Groq, LM Studio, ... (plain HTTP, no extra packages)
+With /shell on, the model may run shell commands; each one is shown and runs only after you say yes.
+Type /help inside for the commands.
+"""
+import getpass, json, os, re, readline, shutil, subprocess, sys, time, urllib.error, urllib.request
+
+HOME = os.path.expanduser("~")
+CONF = os.path.join(HOME, ".config/rice-ai")
+SOURCES = os.path.join(CONF, "sources.json")
+KEYS = os.path.join(CONF, "keys.json")
+DATA = os.path.join(HOME, ".local/share/rice-ai")
+SESS = os.path.join(DATA, "sessions")
+HIST = os.path.join(DATA, "input-history")
+
+# colours: named ANSI, so they follow the terminal theme (rice-theme recolours kitty)
+C = {k: f"\033[{v}m" for k, v in dict(dim="2", b="1", acc="36", acc2="33", err="31", ok="32", off="0").items()}
+if not sys.stdout.isatty():
+    C = {k: "" for k in C}
+
+TEMPLATES = {    # /add offers these; base URLs are the services' public defaults
+    "ollama":     {"type": "openai", "base_url": "http://localhost:11434/v1", "model": "", "key": False,
+                   "note": "local models: sudo pacman -S ollama; systemctl enable --now ollama; ollama pull qwen3:8b"},
+    "llama.cpp":  {"type": "openai", "base_url": "http://localhost:8080/v1", "model": "local", "key": False,
+                   "note": "local: llama-server -m model.gguf"},
+    "lmstudio":   {"type": "openai", "base_url": "http://localhost:1234/v1", "model": "", "key": False, "note": "local"},
+    "claude":     {"type": "anthropic", "model": "claude-opus-5-5", "key": True,
+                   "note": "API key from console.anthropic.com (or ANTHROPIC_API_KEY / `ant auth login`)"},
+    "openai":     {"type": "openai", "base_url": "https://api.openai.com/v1", "model": "", "key": True, "note": ""},
+    "openrouter": {"type": "openai", "base_url": "https://openrouter.ai/api/v1", "model": "", "key": True,
+                   "note": "one key, many models"},
+    "groq":       {"type": "openai", "base_url": "https://api.groq.com/openai/v1", "model": "", "key": True, "note": ""},
+    "custom":     {"type": "openai", "base_url": "", "model": "", "key": True, "note": "any OpenAI-compatible server"},
+}
+
+SYSTEM = ("You are a helpful assistant in a terminal on the user's Arch Linux desktop (Hyprland). "
+          "Be concise; use plain text or light Markdown. When a shell tool is available, use it for tasks that need "
+          "the system (files, packages, logs); the user approves every command.")
+
+SHELL_TOOL = {"name": "run_shell", "description": "Run a bash command on the user's machine and return its output "
+              "(stdout and stderr, cut at 12000 characters). The user sees and approves every command first.",
+              "input_schema": {"type": "object", "properties": {"command": {"type": "string",
+                               "description": "The bash command to run"}}, "required": ["command"]}}
+
+
+# ---------------- files ----------------
+def load_json(path, default):
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (OSError, ValueError):
+        return default
+
+
+def save_json(path, data, private=False):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600 if private else 0o644), "w") as f:
+        json.dump(data, f, indent=2)
+    os.replace(tmp, path)
+
+
+def conf():
+    c = load_json(SOURCES, None)
+    if c is None:       # first run: one local source, ready once Ollama runs
+        c = {"current": "ollama", "shell": False, "sources": {"ollama": {
+            k: v for k, v in TEMPLATES["ollama"].items() if k in ("type", "base_url", "model")}}}
+        save_json(SOURCES, c)
+    return c
+
+
+def key_for(name, src):
+    return load_json(KEYS, {}).get(name) or (os.environ.get(src["key_env"]) if src.get("key_env") else None)
+
+
+# ---------------- sessions (stored provider-neutral: text turns + tool calls as text) ----------------
+class Session:
+    def __init__(self, path=None):
+        self.path = path or os.path.join(SESS, time.strftime("%Y-%m-%d_%H-%M-%S") + f"-{os.getpid()}.json")
+        d = load_json(self.path, {}) if path else {}
+        self.title = d.get("title", "")
+        self.turns = d.get("turns", [])        # [{"role": "user"|"assistant", "text": ...}]
+
+    def add(self, role, text):
+        if not text.strip():
+            return
+        self.turns.append({"role": role, "text": text})
+        if role == "user" and not self.title:
+            self.title = text.strip().splitlines()[0][:70]
+        self.save()
+
+    def drop_last(self):          # the last question failed: forget it
+        if self.turns:
+            self.turns.pop()
+            self.save()
+
+    def save(self):
+        save_json(self.path, {"title": self.title, "turns": self.turns})
+
+
+def sessions():
+    os.makedirs(SESS, exist_ok=True)
+    out = []
+    for f in sorted(os.listdir(SESS), reverse=True):
+        if f.endswith(".json"):
+            p = os.path.join(SESS, f)
+            out.append((p, load_json(p, {}).get("title", "(empty)")))
+    return out
+
+
+# ---------------- shell tool ----------------
+def run_shell(cmd):
+    print(f"\n{C['acc2']}  $ {cmd}{C['off']}")
+    try:
+        a = input(f"{C['dim']}  run it? [y/N] {C['off']}").strip().lower()
+    except (EOFError, KeyboardInterrupt):
+        a = ""
+    if a not in ("y", "yes"):
+        return "The user declined to run this command.", True
+    try:
+        r = subprocess.run(["bash", "-c", cmd], capture_output=True, text=True, timeout=300)
+        out = (r.stdout + (("\n[stderr]\n" + r.stderr) if r.stderr else "")).strip() or "(no output)"
+        out = f"exit code {r.returncode}\n{out}"
+    except subprocess.TimeoutExpired:
+        out = "Timed out after 300 s."
+    shown = out if len(out) < 1500 else out[:1500] + f"\n... ({len(out)} characters)"
+    print(f"{C['dim']}{shown}{C['off']}")
+    return out[:12000], False
+
+
+# ---------------- Claude (official SDK) ----------------
+FALLBACK_MODELS = ("claude-fable-5-1", "claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5")
+
+
+class Claude:
+    def __init__(self, name, src):
+        try:
+            import anthropic
+        except ImportError:
+            raise RuntimeError("the Claude source needs the Anthropic SDK: yay -S python-anthropic")
+        self.anthropic = anthropic
+        k = key_for(name, src)
+        # no key stored: the SDK finds ANTHROPIC_API_KEY or an `ant auth login` profile by itself
+        self.client = anthropic.Anthropic(api_key=k) if k else anthropic.Anthropic()
+        self.model = src.get("model") or "claude-opus-5-5"
+        self.effort = src.get("effort", "medium")
+        self.history = []                      # native content, append-only within this run
+
+    def load(self, turns):
+        self.history = [{"role": t["role"], "content": t["text"]} for t in turns]
+
+    def models(self):
+        return [m.id for m in self.client.models.list()]
+
+    def ask(self, text, shell):
+        self.history.append({"role": "user", "content": text})
+        tools = [dict(SHELL_TOOL, eager_input_streaming=True)] if shell else []
+        said = []
+        while True:
+            params = dict(model=self.model, max_tokens=64000, system=SYSTEM, messages=self.history,
+                          output_config={"effort": self.effort})
+            if tools:
+                params["tools"] = tools
+            if self.model in FALLBACK_MODELS:     # a safety decline is re-run on the recommended model
+                stream_fn = self.client.beta.messages.stream
+                params.update(betas=["server-side-fallback-2026-07-01"], extra_body={"fallbacks": "default"})
+            else:
+                stream_fn = self.client.messages.stream
+            try:
+                with stream_fn(**params) as stream:
+                    for event in stream:
+                        if event.type == "text":
+                            print(event.text, end="", flush=True)
+                    msg = stream.get_final_message()
+            except ValueError:                    # a streamed tool input that is not JSON at all
+                self.history.append({"role": "user", "content": "(Your last tool call was malformed; try again.)"})
+                continue
+            self.history.append({"role": "assistant", "content": msg.content})
+            said += [b.text for b in msg.content if b.type == "text"]
+            if msg.stop_reason == "refusal":
+                print(f"\n{C['err']}[declined by the model's safety checks]{C['off']}")
+                break
+            if msg.stop_reason == "pause_turn":
+                continue
+            calls = [b for b in msg.content if b.type == "tool_use"]
+            if msg.stop_reason != "tool_use" or not calls:
+                if msg.stop_reason == "max_tokens":
+                    print(f"\n{C['dim']}[cut at the length limit]{C['off']}")
+                break
+            results = []
+            for b in calls:
+                cmd = b.input.get("command") if isinstance(b.input, dict) else None
+                if b.name != "run_shell" or not isinstance(cmd, str) or not cmd.strip():
+                    results.append({"type": "tool_result", "tool_use_id": b.id, "is_error": True,
+                                    "content": "Invalid tool call: run_shell needs a non-empty 'command' string."})
+                    continue
+                out, err = run_shell(cmd)
+                said.append(f"$ {cmd}")
+                results.append({"type": "tool_result", "tool_use_id": b.id, "content": out, "is_error": err})
+            self.history.append({"role": "user", "content": results})
+        return "\n".join(said)
+
+
+# ---------------- OpenAI-style APIs (Ollama, llama.cpp, OpenAI, OpenRouter, Groq, ...) ----------------
+class OpenAIish:
+    def __init__(self, name, src):
+        self.base = src.get("base_url", "").rstrip("/")
+        self.model = src.get("model", "")
+        self.key = key_for(name, src)
+        self.history = []
+        self.no_tools = False
+
+    def load(self, turns):
+        self.history = [{"role": t["role"], "content": t["text"]} for t in turns]
+
+    def req(self, path, body=None):
+        h = {"Content-Type": "application/json"}
+        if self.key:
+            h["Authorization"] = "Bearer " + self.key
+        r = urllib.request.Request(self.base + path, data=json.dumps(body).encode() if body else None, headers=h)
+        return urllib.request.urlopen(r, timeout=600)
+
+    def models(self):
+        with self.req("/models") as r:
+            return sorted(m["id"] for m in json.load(r).get("data", []))
+
+    def ask(self, text, shell):
+        if not self.model:
+            ms = self.models()
+            if not ms:
+                raise RuntimeError("this source has no models yet (Ollama: ollama pull qwen3:8b)")
+            self.model = ms[0]
+            print(f"{C['dim']}[model: {self.model} -- /model to change]{C['off']}")
+        self.history.append({"role": "user", "content": text})
+        said = []
+        while True:
+            body = {"model": self.model, "stream": True,
+                    "messages": [{"role": "system", "content": SYSTEM}] + self.history}
+            if shell and not self.no_tools:
+                body["tools"] = [{"type": "function", "function": {"name": SHELL_TOOL["name"],
+                                  "description": SHELL_TOOL["description"], "parameters": SHELL_TOOL["input_schema"]}}]
+            try:
+                resp = self.req("/chat/completions", body)
+            except urllib.error.HTTPError as e:
+                detail = e.read().decode(errors="replace")[:400]
+                if "tools" in body and e.code in (400, 404, 422) and "tool" in detail.lower():
+                    self.no_tools = True
+                    print(f"{C['dim']}[this model can't use tools; chatting without the shell]{C['off']}")
+                    continue
+                raise RuntimeError(f"HTTP {e.code}: {detail}")
+            content, calls, finish = "", {}, None
+            with resp:
+                for raw in resp:
+                    line = raw.decode(errors="replace").strip()
+                    if not line.startswith("data:"):
+                        continue
+                    data = line[5:].strip()
+                    if data == "[DONE]":
+                        break
+                    try:
+                        ch = json.loads(data)["choices"][0]
+                    except (ValueError, KeyError, IndexError):
+                        continue
+                    d = ch.get("delta") or {}
+                    if d.get("content"):
+                        print(d["content"], end="", flush=True)
+                        content += d["content"]
+                    for tc in d.get("tool_calls") or []:
+                        c = calls.setdefault(tc.get("index", 0), {"id": "", "name": "", "args": ""})
+                        c["id"] = tc.get("id") or c["id"]
+                        fn = tc.get("function") or {}
+                        c["name"] += fn.get("name") or ""
+                        c["args"] += fn.get("arguments") or ""
+                    finish = ch.get("finish_reason") or finish
+            said.append(content)
+            msg = {"role": "assistant", "content": content}
+            if calls:
+                msg["tool_calls"] = [{"id": c["id"] or f"call_{i}", "type": "function",
+                                      "function": {"name": c["name"], "arguments": c["args"] or "{}"}}
+                                     for i, c in sorted(calls.items())]
+            self.history.append(msg)
+            if not calls:
+                break
+            for tc in msg["tool_calls"]:
+                try:
+                    cmd = json.loads(tc["function"]["arguments"]).get("command")
+                except (ValueError, AttributeError):
+                    cmd = None
+                if tc["function"]["name"] != "run_shell" or not isinstance(cmd, str) or not cmd.strip():
+                    out = "Invalid tool call: run_shell needs a non-empty 'command' string."
+                else:
+                    out, _ = run_shell(cmd)
+                    said.append(f"$ {cmd}")
+                self.history.append({"role": "tool", "tool_call_id": tc["id"], "content": out})
+        return "\n".join(s for s in said if s)
+
+
+def client_for(name, src):
+    return Claude(name, src) if src.get("type") == "anthropic" else OpenAIish(name, src)
+
+
+# ---------------- commands ----------------
+HELP = f"""{C['b']}Commands{C['off']}
+  /source [name]      list sources, or switch (the conversation carries over)
+  /model [name]       list the source's models, or switch
+  /add                add a source (Ollama, llama.cpp, Claude, OpenAI, OpenRouter, Groq, custom)
+  /remove <name>      remove a source            /key <name>   set or change its API key
+  /shell [on|off]     let the model run commands (each needs your yes)
+  /new                new session                /sessions     list saved sessions
+  /resume [n]         continue session n (1 = latest)          /delete <n>   delete a session
+  /clear              clear the screen           /quit         exit (also Ctrl+D)
+  End a line with \\ to keep typing on the next line."""
+
+
+def ask_line(prompt, default=""):
+    v = input(f"  {prompt}{f' [{default}]' if default else ''}: ").strip()
+    return v or default
+
+
+def cmd_add(c):
+    names = list(TEMPLATES)
+    for i, n in enumerate(names, 1):
+        t = TEMPLATES[n]
+        print(f"  {i}. {n:<11} {C['dim']}{t.get('base_url', 'Anthropic API')}  {t['note']}{C['off']}")
+    pick = ask_line("kind (number or name)", "1")
+    t = names[int(pick) - 1] if pick.isdigit() and 0 < int(pick) <= len(names) else pick
+    if t not in TEMPLATES:
+        print("  unknown kind"); return
+    tpl = TEMPLATES[t]
+    name = re.sub(r"\s+", "-", ask_line("name", t))
+    src = {"type": tpl["type"]}
+    if tpl["type"] == "openai":
+        src["base_url"] = ask_line("base URL", tpl["base_url"])
+    src["model"] = ask_line("model (empty = pick from its list later)", tpl["model"])
+    if tpl["key"]:
+        k = getpass.getpass("  API key (hidden; empty = none / from the environment): ").strip()
+        if k:
+            keys = load_json(KEYS, {}); keys[name] = k; save_json(KEYS, keys, private=True)
+    c["sources"][name] = src
+    save_json(SOURCES, c)
+    print(f"  {C['ok']}added {name}{C['off']} -- /source {name} to use it")
+
+
+def show_sources(c):
+    for n, s in c["sources"].items():
+        mark = f"{C['acc']}*{C['off']}" if n == c["current"] else " "
+        where = s.get("base_url", "Anthropic API")
+        print(f" {mark} {n:<14} {s.get('model') or '(model not set)':<28} {C['dim']}{where}{C['off']}")
+
+
+def banner(c):
+    s = c["sources"].get(c["current"], {})
+    shell = f"{C['acc2']}shell on{C['off']}" if c.get("shell") else f"{C['dim']}shell off{C['off']}"
+    print(f"{C['b']}{C['acc']}ai{C['off']}  {c['current']} · {s.get('model') or 'auto'} · {shell}"
+          f"  {C['dim']}/help{C['off']}")
+
+
+def read_input():
+    lines = []
+    while True:
+        line = input(f"{C['acc']}❯{C['off']} " if not lines else f"{C['dim']}…{C['off']} ")
+        if line.endswith("\\"):
+            lines.append(line[:-1]); continue
+        lines.append(line)
+        return "\n".join(lines)
+
+
+def main():
+    args = sys.argv[1:]
+    c = conf()
+    if "-s" in args:
+        i = args.index("-s")
+        if i + 1 < len(args) and args[i + 1] in c["sources"]:
+            c["current"] = args[i + 1]
+        del args[i:i + 2]
+    resume = "-r" in args
+    args = [a for a in args if a != "-r"]
+    if args and args[0] in ("-h", "--help"):
+        print(__doc__); return
+
+    sess = Session(sessions()[0][0]) if resume and sessions() else Session()
+    try:
+        cli = client_for(c["current"], c["sources"][c["current"]])
+    except (RuntimeError, KeyError) as e:
+        print(f"{C['err']}{e}{C['off']}"); cli = None
+    if cli:
+        cli.load(sess.turns)
+
+    if args:                                   # one-shot
+        if not cli:
+            sys.exit(1)
+        try:
+            sess.add("user", " ".join(args))
+            sess.add("assistant", cli.ask(" ".join(args), c.get("shell")))
+            print()
+        except urllib.error.URLError as e:
+            sys.exit(f"{C['err']}can't reach {c['current']}: {e.reason}{C['off']}")
+        except Exception as e:
+            sys.exit(f"{C['err']}{e}{C['off']}")
+        return
+
+    os.makedirs(DATA, exist_ok=True)
+    try:
+        readline.read_history_file(HIST)
+    except OSError:
+        pass
+    banner(c)
+    if resume and sess.turns:
+        print(f"{C['dim']}resumed: {sess.title} ({len(sess.turns)} turns){C['off']}")
+    while True:
+        try:
+            text = read_input().strip()
+        except EOFError:
+            print(); break
+        except KeyboardInterrupt:
+            print(); continue
+        if not text:
+            continue
+        readline.write_history_file(HIST)
+        if text.startswith("/"):
+            cmd, _, arg = text[1:].partition(" ")
+            arg = arg.strip()
+            try:
+                if cmd in ("quit", "exit", "q"):
+                    break
+                elif cmd == "help":
+                    print(HELP)
+                elif cmd == "clear":
+                    os.system("clear"); banner(c)
+                elif cmd == "source":
+                    if not arg:
+                        show_sources(c)
+                    elif arg not in c["sources"]:
+                        print(f"  no source '{arg}' (/add makes one)")
+                    else:
+                        cli = client_for(arg, c["sources"][arg]); cli.load(sess.turns)
+                        c["current"] = arg; save_json(SOURCES, c); banner(c)
+                elif cmd == "model":
+                    if not cli:
+                        print("  no working source"); continue
+                    if not arg:
+                        for m in cli.models():
+                            print(f"  {C['acc'] + '*' + C['off'] if m == cli.model else ' '} {m}")
+                    else:
+                        cli.model = arg; c["sources"][c["current"]]["model"] = arg
+                        save_json(SOURCES, c); banner(c)
+                elif cmd == "add":
+                    cmd_add(c)
+                elif cmd == "remove" and arg in c["sources"] and arg != c["current"]:
+                    del c["sources"][arg]; save_json(SOURCES, c)
+                    keys = load_json(KEYS, {}); keys.pop(arg, None); save_json(KEYS, keys, private=True)
+                    print(f"  removed {arg}")
+                elif cmd == "key" and arg in c["sources"]:
+                    k = getpass.getpass("  API key (hidden): ").strip()
+                    keys = load_json(KEYS, {}); keys[arg] = k; save_json(KEYS, keys, private=True)
+                    if arg == c["current"]:
+                        cli = client_for(arg, c["sources"][arg]); cli.load(sess.turns)
+                    print("  saved")
+                elif cmd == "shell":
+                    c["shell"] = (arg == "on") if arg in ("on", "off") else not c.get("shell")
+                    save_json(SOURCES, c); banner(c)
+                elif cmd == "new":
+                    sess = Session(); cli and cli.load([]); print(f"{C['dim']}new session{C['off']}")
+                elif cmd == "sessions":
+                    for i, (_, t) in enumerate(sessions()[:30], 1):
+                        print(f"  {i:>2}. {t}")
+                elif cmd in ("resume", "delete"):
+                    ss = sessions()
+                    n = int(arg) if arg.isdigit() else 1
+                    if not 0 < n <= len(ss):
+                        print("  no such session"); continue
+                    if cmd == "delete":
+                        os.remove(ss[n - 1][0]); print(f"  deleted: {ss[n - 1][1]}")
+                    else:
+                        sess = Session(ss[n - 1][0]); cli and cli.load(sess.turns)
+                        print(f"{C['dim']}resumed: {sess.title} ({len(sess.turns)} turns){C['off']}")
+                else:
+                    print("  unknown command -- /help")
+            except Exception as e:
+                print(f"  {C['err']}{e}{C['off']}")
+            continue
+        if not cli:
+            print(f"{C['err']}no working source -- /source or /add{C['off']}"); continue
+        sess.add("user", text)
+        try:
+            reply = cli.ask(text, c.get("shell"))
+            sess.add("assistant", reply)
+        except KeyboardInterrupt:
+            print(f"\n{C['dim']}[stopped]{C['off']}")
+            cli.load(sess.turns)              # history again from what was saved
+        except urllib.error.URLError as e:
+            local = "localhost" in c["sources"][c["current"]].get("base_url", "") or "127.0.0.1" in c["sources"][c["current"]].get("base_url", "")
+            hint = " -- is it running? (Ollama: systemctl enable --now ollama)" if local else ""
+            print(f"\n{C['err']}can't reach {c['current']}: {e.reason}{hint}{C['off']}")
+            sess.drop_last(); cli.load(sess.turns)
+        except Exception as e:
+            print(f"\n{C['err']}{type(e).__name__}: {e}{C['off']}")
+            sess.drop_last(); cli.load(sess.turns)
+        print()
+
+
+if __name__ == "__main__":
+    main()
