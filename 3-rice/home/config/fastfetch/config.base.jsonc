@@ -11,14 +11,14 @@
     "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
 
     // LOGO: a SQUARE image (kitty graphics protocol), not the tall ASCII art.
-    // Terminal cells are ~1:2, so 38x19 cells = square, as tall as the 19-row text block; padding top 1 shifts it one row down (user preferred this look over exact centring) (raise width/height together to grow it; keep width = 2 x height). Source is the Arch logo
+    // Terminal cells are ~1:2, so 32x16 cells = square, as tall as the text block (title + 14 info rows); padding top 1 shifts it one row down (user preferred this look over exact centring) (raise width/height together to grow it; keep width = 2 x height). Source is the Arch logo
     // (/usr/share/pixmaps/archlinux-logo.svg): logo.svg = template, rice-theme renders the tinted logo.png from it.
     // Only works in kitty (kitty-direct); other terminals show no logo.
     "logo": {
         "type": "kitty-direct",
         "source": "~/.config/fastfetch/logo.png",
-        "width": 38,
-        "height": 19,
+        "width": 32,
+        "height": 16,
         "padding": { "top": 1, "left": 1, "right": 2 }
     },
 
