@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+# cmatrix -- the real /usr/bin/cmatrix, on the terminal's own see-through background.
+# cmatrix paints every cell in ANSI black (ESC[40m), which shows as a darker box over the translucent kitty. Here it
+# runs with a terminal description identical to kitty's except that "black background" means "default background"
+# (ESC[49m). Made once in ~/.local/share/terminfo. Outside kitty, cmatrix runs unchanged.
+real=/usr/bin/cmatrix
+[[ -x $real ]] || { echo "cmatrix is not installed (sudo pacman -S cmatrix)"; exit 1; }
+[[ $TERM == xterm-kitty ]] || exec "$real" "$@"
+ti="$HOME/.local/share/terminfo"
+if ! TERMINFO="$ti" infocmp xterm-kitty-nobg >/dev/null 2>&1; then
+    mkdir -p "$ti"
+    printf '%s\n' 'xterm-kitty-nobg|kitty: black background = default background (for cmatrix),' \
+        '	setab=\E[%?%p1%{0}%=%t49%e%p1%{8}%<%t4%p1%d%e%p1%{16}%<%t10%p1%{8}%-%d%e48;5;%p1%d%;m,' \
+        '	use=xterm-kitty,' | tic -x -o "$ti" - 2>/dev/null || exec "$real" "$@"
+fi
+TERMINFO="$ti" TERM=xterm-kitty-nobg exec "$real" "$@"
