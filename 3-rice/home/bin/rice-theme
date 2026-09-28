@@ -735,10 +735,6 @@ noise_reduction = 77
     subprocess.run(["pkill", "-USR1", "-x", "cava"], capture_output=True)
 
 
-ZEN = os.path.join(HOME, ".config/zen")
-
-
-
 def btop(p):
     """btop (system monitor, Settings > Performance / the launcher): ~/.config/btop/themes/rice.theme from the palette,
     selected in btop.conf (only color_theme + theme_background are set, your other btop settings stay). A running btop
@@ -779,111 +775,6 @@ def btop(p):
     if new != old:
         write(conf, new)
     subprocess.run(["pkill", "-USR2", "-x", "btop"], capture_output=True)
-
-def zen_profile():
-    """The profile Zen actually starts (installs.ini Default=), e.g. 'q1rkruby.Default (release)'."""
-    try:
-        for line in open(os.path.join(ZEN, "installs.ini")):
-            if line.startswith("Default="):
-                d = os.path.join(ZEN, line.split("=", 1)[1].strip())
-                if os.path.isdir(d):
-                    return d
-    except OSError:
-        pass
-    return None
-
-
-def zen(p):
-    """Zen browser: chrome/rice-colors.css pins Zen's own colour variables (it normally derives them from its
-    gradient picker) to the theme -- !important beats the values Zen sets on the window at runtime.
-    userChrome.css / userContent.css only @import our files. Zen reads them at START (restart Zen to see a
-    new theme). Websites follow dark/light through the system colour scheme gtk() already sets."""
-    prof = zen_profile()
-    if not prof:
-        return
-    chrome = os.path.join(prof, "chrome")
-    scheme = "light" if p["mode"] == "light" else "dark"
-    sel = mix(p["raised"], p["accent"], 0.22)
-    write(os.path.join(chrome, "rice-colors.css"), f"""/* rice-colors.css -- written by rice-theme on every theme change (edit rice-theme, not this file).
-   Loaded by userChrome.css. Restart Zen to see a new theme. */
-:root {{
-  color-scheme: {scheme} !important;
-  --zen-primary-color: {p['accent']} !important;
-  --zen-branding-bg: {p['bg']} !important;
-  --zen-main-browser-background: {p['bg']} !important;
-  --zen-main-browser-background-toolbar: {p['bg']} !important;
-  --zen-themed-toolbar-bg-transparent: {p['bg']} !important;
-  --zen-colors-primary: {sel} !important;
-  --zen-colors-secondary: {p['surface']} !important;
-  --zen-colors-tertiary: {p['bg']} !important;
-  --zen-colors-hover-bg: {p['hover']} !important;
-  --zen-colors-primary-foreground: {p['accent']} !important;
-  --zen-colors-border: {p['raised']} !important;
-  --zen-colors-border-contrast: {p['raised']} !important;
-  --zen-colors-input-bg: {p['surface']} !important;
-  --zen-urlbar-background: {p['surface']} !important;
-  --zen-urlbar-background-base: {p['surface']} !important;
-  --zen-dialog-background: {p['surface']} !important;
-  --zen-in-content-dialog-background: {p['surface']} !important;
-  --zen-selected-bg: {sel} !important;
-  --zen-selected-color: {p['text']} !important;
-  --zen-accent-button-color: {p['accent']} !important;
-  --zen-accent-button-background: {p['accent']} !important;
-  --zen-loading-progress-bar-color: {p['accent']} !important;
-  --zen-sidebar-themed-icon-fill: {p['muted']} !important;
-  --toolbar-bgcolor: {p['bg']} !important;
-  --toolbar-color: {p['text']} !important;
-  --toolbar-field-background-color: {p['surface']} !important;
-  --toolbar-field-color: {p['text']} !important;
-  --toolbar-field-focus-background-color: {p['surface']} !important;
-  --toolbar-field-focus-border-color: {p['accent']} !important;
-  --toolbarbutton-icon-fill: {p['text']} !important;
-  --tab-selected-bgcolor: {sel} !important;
-  --tab-selected-textcolor: {p['text']} !important;
-  --arrowpanel-background: {p['surface']} !important;
-  --arrowpanel-color: {p['text']} !important;
-  --arrowpanel-border-color: {p['raised']} !important;
-  --focus-outline-color: {p['accent']} !important;
-  --sidebar-background-color: {p['bg']} !important;
-  --sidebar-text-color: {p['text']} !important;
-}}
-""")
-    write(os.path.join(chrome, "rice-content.css"), f"""/* rice-content.css -- Zen's own pages (new tab, settings, add-ons) in the theme; loaded by userContent.css */
-@-moz-document url-prefix("about:") {{
-  :root {{
-    color-scheme: {scheme} !important;
-    --in-content-page-background: {p['bg']} !important;
-    --in-content-page-color: {p['text']} !important;
-    --in-content-box-background: {p['surface']} !important;
-    --in-content-box-border-color: {p['raised']} !important;
-    --in-content-accent-color: {p['accent']} !important;
-    --in-content-primary-button-background: {p['accent']} !important;
-    --in-content-primary-button-text-color: {p['bg']} !important;
-    --newtab-background-color: {p['bg']} !important;
-    --newtab-background-color-secondary: {p['surface']} !important;
-    --newtab-text-primary-color: {p['text']} !important;
-    --zen-colors-tertiary: {p['bg']} !important;
-    --zen-primary-color: {p['accent']} !important;
-  }}
-}}
-""")
-    for name, target in (("userChrome.css", "rice-colors.css"), ("userContent.css", "rice-content.css")):
-        f = os.path.join(chrome, name)
-        line = f'@import url("{target}");   /* rice-theme colours */\n'
-        old = open(f).read() if os.path.exists(f) else ""
-        if target not in old:
-            write(f, line + old)                  # @import must come first
-    uj = os.path.join(prof, "user.js")
-    old = open(uj).read() if os.path.exists(uj) else ""
-    add = ""
-    # only what the theme needs (your own Zen settings are yours: design ships, personal choices stay)
-    for note, pref in (("let Zen load chrome/userChrome.css + userContent.css (theme colours from rice-theme)",
-                        'user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);'),):
-        if pref not in old:
-            add += f"// rice: {note}\n{pref}\n"
-    if add:
-        write(uj, old.rstrip("\n") + "\n" + add)
-
 
 def viewers(p):
     """File viewers in the theme: zathura (PDF / ePub / comics), imv (pictures), mpv's on-screen bar.
@@ -1085,7 +976,7 @@ def cmd_apply(img, pos=None, transition="grow"):
     if os.path.exists(kbd):
         subprocess.Popen([kbd, "theme"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     hypr(p, theme); kitty(p, theme); starship(p); fastfetch(p); gtk(p, theme); qt(p, theme)
-    grub(p, theme, img); greeter(p, img); ncspot(p); cava(p); btop(p); zen(p); viewers(p); office(p)
+    grub(p, theme, img); greeter(p, img); ncspot(p); cava(p); btop(p); viewers(p); office(p)
     reload_apps()
     write(STATE, json.dumps({"theme": theme, "wallpaper": img}) + "\n")
     print(f"{theme}: {os.path.basename(img)}")

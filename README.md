@@ -22,7 +22,7 @@
 - **The notch**: a slim bar at the top of the screen that opens into panels: launcher, system, sound, calendar, media,
   battery, Wi-Fi, Bluetooth, notifications. Volume, brightness and keyboard-light changes show inside it.
 - **22 themes, one key**: <kbd>Super</kbd>+<kbd>T</kbd> switches theme and wallpaper. Everything follows: window
-  borders, the shell, the terminal, GTK and Qt apps, btop, fastfetch, ncspot, cava, Zen, the login screen, even GRUB.
+  borders, the shell, the terminal, GTK and Qt apps, btop, fastfetch, ncspot, cava, the login screen, even GRUB.
 - **A real Settings app** (<kbd>Super</kbd>+<kbd>I</kbd>): tiling layout, gaps, shadows, displays (resolution, scale,
   rotation, several monitors), sound, keyboard, Wi-Fi, Bluetooth, battery and sleep, hibernation, apps, and more.
 - **Your own layer**: whatever you change in Settings lives in `~/.config/hypr/local/`, apart from the design, so
