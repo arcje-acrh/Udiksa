@@ -1,0 +1,11 @@
+#!/bin/sh
+# udiksa-grub-resume -- before hibernating, tell GRUB to boot Linux next (once), so waking up always resumes the saved
+# session, even when you last picked another system (e.g. Windows) and GRUB remembers that choice. Your usual choice
+# comes back after this one boot. systemd runs this with: $1 = pre|post, $2 = suspend|hibernate|hybrid-sleep|...
+[ "$1" = pre ] || exit 0
+case "$2" in hibernate|hybrid-sleep|suspend-then-hibernate) ;; *) exit 0 ;; esac
+command -v grub-reboot >/dev/null 2>&1 && [ -f /boot/grub/grub.cfg ] && [ -f /boot/grub/grubenv ] || exit 0
+# the first Linux entry of the menu (its id), whatever comes before it
+id=$(sed -n "s/^menuentry .*--class gnu-linux.*\$menuentry_id_option '\([^']*\)'.*/\1/p" /boot/grub/grub.cfg | head -n1)
+[ -n "$id" ] && grub-reboot "$id"
+exit 0
