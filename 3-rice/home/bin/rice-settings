@@ -278,6 +278,8 @@ def write_idle(p):
            "    lock_cmd = qs ipc call lock lock                                  # loginctl lock-session ends up here",
            "    before_sleep_cmd = loginctl lock-session                          # lock before sleep / hibernate (lid, key, timer)",
            "    after_sleep_cmd = hyprctl dispatch 'hl.dsp.dpms({action = \"on\"})' # screen on after waking",
+           "    inhibit_sleep = 3                                                 # hold sleep until the lock screen is really up,",
+           "                                                                      # so waking never shows the desktop first",
            "}"]
 
     def listener(minutes, cmd, note, resume=None):
