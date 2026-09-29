@@ -19,5 +19,7 @@ set_default nano-kitty.desktop $(types $L/nano-kitty.desktop '.')
 set_default onlyoffice-desktopeditors.desktop text/csv
 set_default zen.desktop text/html application/xhtml+xml x-scheme-handler/http x-scheme-handler/https
 set_default org.gnome.Nautilus.desktop inode/directory
+# disk images: the flasher (after File Roller, which claims them too)
+set_default rice-flash.desktop application/x-cd-image application/x-iso9660-image application/x-raw-disk-image application/x-raw-disk-image-xz-compressed application/vnd.efi.iso application/vnd.efi.img
 command -v xdg-settings >/dev/null && [[ -f $A/zen.desktop ]] && xdg-settings set default-web-browser zen.desktop 2>/dev/null
-echo "default apps set (pictures imv, video/music mpv, documents zathura, archives File Roller, text nano, office OnlyOffice)"
+echo "default apps set (pictures imv, video/music mpv, documents zathura, archives File Roller, disk images the flasher, text nano, office OnlyOffice)"

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# rice-flash [image] -- write a disk image (.iso .img, also .xz .gz .zst ...) to a USB stick / SD card with caligula:
+# it lists only removable drives, asks before writing, can verify afterwards, and asks for your password itself.
+# Launcher "Flash disk image" and double-clicking an image in Files open this (rice-flash.desktop).
+if ! command -v caligula >/dev/null; then
+    echo "caligula is not installed: sudo pacman -S caligula"; read -rp "Enter to close "; exit 1
+fi
+img=${1:-}
+if [[ -z $img ]]; then
+    # suggest the newest image in Downloads; Tab completes paths
+    latest=$(ls -t "$HOME"/Downloads/*.{iso,img,raw,iso.xz,img.xz,img.gz,img.zst,iso.zst} 2>/dev/null | head -n1)
+    echo "Write a disk image to a USB stick or SD card."
+    read -e -rp "Image file${latest:+ [$latest]}: " img
+    img=${img:-$latest}
+    img=${img/#\~/$HOME}
+fi
+if [[ ! -f $img ]]; then
+    echo "No such file: ${img:-(none)}"; read -rp "Enter to close "; exit 1
+fi
+caligula burn "$img"
+echo; read -rp "Done. Enter to close "

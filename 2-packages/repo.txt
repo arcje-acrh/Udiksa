@@ -16,6 +16,7 @@ file-roller
 greetd
 grim
 gvfs
+caligula
 gvfs-mtp
 hypridle
 hyprland

@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Flash disk image
+GenericName=Disk image writer
+Comment=Write an .iso / .img to a USB stick or SD card (caligula)
+Exec=kitty --class rice-flash -T "Flash disk image" -e rice-flash %f
+Icon=media-removable
+Terminal=false
+Categories=System;Utility;
+Keywords=usb;iso;img;flash;burn;bootable;writer;etcher;
+MimeType=application/x-cd-image;application/x-iso9660-image;application/x-raw-disk-image;application/x-raw-disk-image-xz-compressed;application/vnd.efi.iso;application/vnd.efi.img;
