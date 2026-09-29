@@ -52,6 +52,7 @@ SetApps SetApps.qml
 SetDisplay SetDisplay.qml
 SetSound SetSound.qml
 SetKeyboard SetKeyboard.qml
+SetSlash SetSlash.qml
 SetTailscale SetTailscale.qml
 SetPerformance SetPerformance.qml
 SetPower SetPower.qml

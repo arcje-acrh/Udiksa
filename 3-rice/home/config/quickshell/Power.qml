@@ -23,14 +23,15 @@ Singleton {
     // and the notch / Settings hide these parts) ----------
     property bool asus: false                  // asusctl: modes, watts, fans, charge limit, panel overdrive, keyboard light
     property bool gfx: false                   // supergfxctl: GPU modes
+    property bool slash: false                 // an ASUS Slash LED bar on the lid (~/.local/bin/rice-slash)
     property bool probed: false
     property bool startWanted: false
     Process {
         running: true
-        command: ["sh", "-c", "command -v asusctl >/dev/null && echo asus; command -v supergfxctl >/dev/null && echo gfx; true"]
+        command: ["sh", "-c", "command -v asusctl >/dev/null && echo asus; command -v supergfxctl >/dev/null && echo gfx; [ -x \"$HOME/.local/bin/rice-slash\" ] && \"$HOME/.local/bin/rice-slash\" | grep -q '\"capable\": true' && echo slash; true"]
         stdout: StdioCollector {
             onStreamFinished: {
-                root.asus = text.indexOf("asus") >= 0; root.gfx = text.indexOf("gfx") >= 0; root.probed = true
+                root.asus = text.indexOf("asus") >= 0; root.gfx = text.indexOf("gfx") >= 0; root.slash = text.indexOf("slash") >= 0; root.probed = true
                 if (root.startWanted) root.start()
             }
         }
@@ -116,7 +117,7 @@ Singleton {
         onExited: if (startAfter) { startAfter = false; root.loaded = true; root.applyAll() }
     }
     onModeChanged: if (loaded) applyMode()
-    onOnBatteryChanged: if (loaded) applyScreen()
+    onOnBatteryChanged: if (loaded) { applyScreen(); applySlash() }
 
     // pick a mode from the panel: with Auto on, it becomes the mode for the current power source
     function pickMode(m) {
@@ -133,7 +134,9 @@ Singleton {
     }
     Process { id: runner; onExited: root.next() }
 
-    function applyAll() { if (!asus) return; applyMode(); applyScreen(); applyOverdrive() }
+    function applyAll() { if (!asus) return; applyMode(); applyScreen(); applyOverdrive(); applySlash() }
+    // the Slash lid light: dark on battery unless "Also on battery" (rice-slash decides from the power source)
+    function applySlash() { if (slash) run([[Quickshell.env("HOME") + "/.local/bin/rice-slash", "apply"]]) }
     function applyMode() {
         if (!asus) return
         const m = modeCfg, p = profileOf[mode]

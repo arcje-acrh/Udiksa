@@ -1,13 +1,18 @@
 #!/usr/bin/env python3
 """rice-slash -- the Slash LED bar on the lid of ASUS laptops that have one (e.g. Zephyrus G16), for Settings >
-Keyboard & touchpad. asusd remembers the settings itself (/etc/asusd/slash.ron); without asusctl or a Slash bar
-every command prints {"capable": false} / does nothing, so the dotfiles stay the same everywhere.
+Keyboard & touchpad. asusd remembers animation, brightness etc. (/etc/asusd/slash.ron); the main on/off switch is kept
+in ~/.config/udiksa/slash.json, because the bar is switched off and on here depending on the power source: asusd
+applies its own "show on battery" only when the charger is plugged in or out, not when the setting changes.
+Without asusctl or a Slash bar every command prints {"capable": false} / does nothing.
 
   rice-slash                       JSON: capable, enabled, brightness (0-255), interval (0-5), mode, modes, and when it
                                    shows: boot, shutdown, sleep, battery, warning
   rice-slash set <key> <value>...  change one or more (keys as above; true/false for the switches)
+  rice-slash apply                 light or darken the bar for the power source now (the shell calls it on plug / unplug)
 """
-import json, re, subprocess, sys
+import glob, json, os, re, subprocess, sys
+
+CFG = os.path.join(os.path.expanduser("~"), ".config/udiksa/slash.json")
 
 SWITCHES = {"boot": "-B", "shutdown": "-S", "sleep": "-s", "battery": "-b", "warning": "-w"}
 LABELS = {"Slash LED": "enabled", "Brightness": "brightness", "Interval": "interval", "Mode": "mode",
@@ -46,6 +51,38 @@ def state():
     return s
 
 
+def want_on():
+    try:
+        return bool(json.load(open(CFG))["on"])
+    except (OSError, ValueError, KeyError):
+        return None                      # never chosen here yet: keep what asusd has
+
+
+def save_on(on):
+    os.makedirs(os.path.dirname(os.path.realpath(CFG)), exist_ok=True)
+    json.dump({"on": on}, open(os.path.realpath(CFG) if os.path.exists(CFG) else CFG, "w"))
+
+
+def on_charger():
+    for f in glob.glob("/sys/class/power_supply/*/online"):
+        try:
+            if open(f).read().strip() == "1":
+                return True
+        except OSError:
+            pass
+    return not glob.glob("/sys/class/power_supply/BAT*")   # no battery at all = mains
+
+
+def apply(s):
+    """The bar lights when the main switch is on and (on the charger, or "show on battery" is on)."""
+    on = want_on()
+    if on is None or not s.get("capable"):
+        return
+    lit = on and (s.get("battery") or on_charger())
+    if lit != s.get("enabled"):
+        asus("set", "--enable" if lit else "--disable")
+
+
 def truth(v):
     return str(v).lower() in ("1", "true", "yes", "on")
 
@@ -53,7 +90,13 @@ def truth(v):
 def main():
     a = sys.argv[1:]
     if not a:
-        print(json.dumps(state()))
+        s = state()
+        if s.get("capable") and want_on() is not None:
+            s["enabled"] = want_on()     # the switch, not whether the bar happens to be lit this moment
+        print(json.dumps(s))
+        return
+    if a[0] == "apply":
+        apply(state())
         return
     if a[0] != "set" or len(a) < 3 or len(a) % 2 == 0:
         sys.exit(__doc__)
@@ -62,7 +105,7 @@ def main():
     args = []
     for k, v in zip(a[1::2], a[2::2]):
         if k == "enabled":
-            args.append("--enable" if truth(v) else "--disable")
+            save_on(truth(v))            # lit or not is decided by apply() below
         elif k == "brightness":
             args += ["-l", str(max(0, min(255, int(float(v)))))]
         elif k == "interval":
@@ -73,7 +116,11 @@ def main():
             args += [SWITCHES[k], "true" if truth(v) else "false"]
     if args:
         asus("set", *args)
-    print(json.dumps(state()))
+    apply(state())
+    s = state()
+    if want_on() is not None:
+        s["enabled"] = want_on()
+    print(json.dumps(s))
 
 
 if __name__ == "__main__":

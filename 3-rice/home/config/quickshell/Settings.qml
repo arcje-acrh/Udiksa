@@ -20,6 +20,7 @@ Scope {
     readonly property var sections: [
         { id: "themes",    group: "Personalise", file: "Themes",      name: "Themes",             icon: "󰸉", desc: "theme, wallpaper, theme colours" },
         { id: "look",      group: "Personalise", file: "Look",        name: "Windows",            icon: "󰏘", desc: "tiling layout, new windows, gaps, borders, corners, shadows, blur" },
+        { id: "slash",     group: "Personalise", needs: "slash", file: "Slash", name: "Slash lighting", icon: "󰛨", desc: "the LED bar on the lid: animation, brightness, when it lights" },
         { id: "display",   group: "Devices",     file: "Display",     name: "Display",            icon: "󰍹", desc: "brightness, refresh rate, external monitor" },
         { id: "sound",     group: "Devices",     file: "Sound",       name: "Sound",              icon: "󰕾", desc: "output, microphone, app volumes, headphones" },
         { id: "keyboard",  group: "Devices",     file: "Keyboard",    name: "Keyboard & touchpad", icon: "󰌌", desc: "layout, key repeat, light, touchpad" },
@@ -40,8 +41,8 @@ Scope {
     ]
     property int tab: 0
     onSectionChanged: tab = 0
-    // sections for hardware this machine lacks are left out (needs: "asus" = asusctl, "gfx" = supergfxctl; Power.qml)
-    readonly property var shownSections: sections.filter(s => !s.needs || (s.needs === "asus" && Power.asus) || (s.needs === "gfx" && Power.gfx))
+    // sections for hardware this machine lacks are left out (needs: "asus" = asusctl, "gfx" = supergfxctl, "slash" = a Slash lid bar; Power.qml)
+    readonly property var shownSections: sections.filter(s => !s.needs || (s.needs === "asus" && Power.asus) || (s.needs === "gfx" && Power.gfx) || (s.needs === "slash" && Power.slash))
     readonly property var cur: shownSections.find(s => s.id === section) || shownSections[0]
 
     function toggle() { if (open) close(); else show(section) }
