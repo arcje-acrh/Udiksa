@@ -1,0 +1,80 @@
+#!/usr/bin/env python3
+"""rice-slash -- the Slash LED bar on the lid of ASUS laptops that have one (e.g. Zephyrus G16), for Settings >
+Keyboard & touchpad. asusd remembers the settings itself (/etc/asusd/slash.ron); without asusctl or a Slash bar
+every command prints {"capable": false} / does nothing, so the dotfiles stay the same everywhere.
+
+  rice-slash                       JSON: capable, enabled, brightness (0-255), interval (0-5), mode, modes, and when it
+                                   shows: boot, shutdown, sleep, battery, warning
+  rice-slash set <key> <value>...  change one or more (keys as above; true/false for the switches)
+"""
+import json, re, subprocess, sys
+
+SWITCHES = {"boot": "-B", "shutdown": "-S", "sleep": "-s", "battery": "-b", "warning": "-w"}
+LABELS = {"Slash LED": "enabled", "Brightness": "brightness", "Interval": "interval", "Mode": "mode",
+          "Show on boot": "boot", "Show on shutdown": "shutdown", "Show on sleep": "sleep",
+          "Show on battery": "battery", "Show battery warning": "warning"}
+
+
+def asus(*args):
+    try:
+        r = subprocess.run(["asusctl", "slash", *args], capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    return r.stdout if r.returncode == 0 else None
+
+
+def state():
+    out = asus("get")
+    if not out or "Slash LED" not in out:
+        return {"capable": False}
+    s = {"capable": True}
+    for line in out.splitlines():
+        k, _, v = line.partition(":")
+        key = LABELS.get(k.strip())
+        if not key:
+            continue
+        v = v.strip()
+        if key == "enabled":
+            s[key] = v.lower() == "enabled"
+        elif key in ("brightness", "interval"):
+            s[key] = int(v) if v.isdigit() else 0
+        elif key == "mode":
+            s[key] = v
+        else:
+            s[key] = v.lower() == "true"
+    s["modes"] = [m.strip() for m in (asus("list") or "").splitlines() if m.strip()]
+    return s
+
+
+def truth(v):
+    return str(v).lower() in ("1", "true", "yes", "on")
+
+
+def main():
+    a = sys.argv[1:]
+    if not a:
+        print(json.dumps(state()))
+        return
+    if a[0] != "set" or len(a) < 3 or len(a) % 2 == 0:
+        sys.exit(__doc__)
+    if not state().get("capable"):
+        return
+    args = []
+    for k, v in zip(a[1::2], a[2::2]):
+        if k == "enabled":
+            args.append("--enable" if truth(v) else "--disable")
+        elif k == "brightness":
+            args += ["-l", str(max(0, min(255, int(float(v)))))]
+        elif k == "interval":
+            args += ["--interval", str(max(0, min(5, int(float(v)))))]
+        elif k == "mode" and re.fullmatch(r"[A-Za-z]+", v):
+            args += ["--mode", v]
+        elif k in SWITCHES:
+            args += [SWITCHES[k], "true" if truth(v) else "false"]
+    if args:
+        asus("set", *args)
+    print(json.dumps(state()))
+
+
+if __name__ == "__main__":
+    main()

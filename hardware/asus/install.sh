@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # install.sh -- ASUS laptop support for Udiksa (see ./about). ~/Udiksa/install.sh offers it after part 3 when
 # ./detect finds an ASUS laptop; or run it yourself any time. Safe to run again.
-#   packages.txt (asusctl) | rice-kbd -> ~/.local/bin (keyboard light) | asus-fnlock service (ROG keyboards start
+#   packages.txt (asusctl) | rice-kbd + rice-slash -> ~/.local/bin (keyboard light, Slash lid light) | asus-fnlock service (ROG keyboards start
 #   with Fn-lock ON; this turns it off at boot and after sleep) | asusd on | battery charge limit 80 % (Settings changes it)
 set -euo pipefail
 HERE=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
@@ -16,7 +16,7 @@ say "ASUS: files"
 mkdir -p "$HOME/.local/bin"
 t="$HOME/.local/bin/rice-kbd"; [[ -L $t && ! -e $t ]] && rm "$t"
 stow -d "$HERE/home" -t "$HOME/.local/bin" --restow bin
-note "rice-kbd -> ~/.local/bin"
+note "rice-kbd, rice-slash -> ~/.local/bin"
 while IFS= read -r -d '' f; do
     sudo install -D -m "$(stat -c %a "$f")" "$f" "${f#"$HERE/system"}"
 done < <(find "$HERE/system" -type f -print0)
