@@ -17,5 +17,5 @@ fi
 if [[ ! -f $img ]]; then
     echo "No such file: ${img:-(none)}"; read -rp "Enter to close "; exit 1
 fi
-caligula burn "$img"
+caligula burn -z auto "$img"   # compression from the file name; it still asks about the checksum
 echo; read -rp "Done. Enter to close "
