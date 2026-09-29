@@ -199,6 +199,12 @@ SetPage {
     }
     SetRow {
         visible: page.slOn
+        title: "Also on battery"
+        desc: "Off: the bar stays dark while the laptop runs on battery (saves power)."
+        Seg { options: ["On", "Off"]; current: page.sl.battery ? 0 : 1; onPicked: (i) => page.sset("battery", i === 0) }
+    }
+    SetRow {
+        visible: page.slOn
         title: "Animation"
         Flow {
             width: 640
@@ -234,7 +240,7 @@ SetPage {
             spacing: 8
             Repeater {
                 model: [{ k: "boot", n: "Starting" }, { k: "shutdown", n: "Shutting down" }, { k: "sleep", n: "Going to sleep" },
-                        { k: "battery", n: "On battery" }, { k: "warning", n: "Low battery" }]
+                        { k: "warning", n: "Low battery" }]
                 delegate: Seg {
                     required property var modelData
                     options: [modelData.n]
