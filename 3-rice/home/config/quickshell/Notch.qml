@@ -222,13 +222,6 @@ Item {
                 color: Theme.muted
                 font.family: Theme.font; font.pixelSize: 12
             }
-            Text {   // weather now (Weather.qml), when a place is set and "in the notch" is on (Settings > Date & language)
-                visible: Weather.ok && Weather.w.notch !== false
-                anchors.verticalCenter: parent.verticalCenter
-                text: Weather.icon(Weather.now.code, Weather.now.day) + " " + Weather.deg(Weather.now.temp ?? 0)
-                color: Theme.muted
-                font.family: Theme.font; font.pixelSize: 12
-            }
             Text {   // running countdown timer (Agenda.qml): time left, amber while paused
                 visible: Agenda.timerOn
                 anchors.verticalCenter: parent.verticalCenter

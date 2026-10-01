@@ -8,7 +8,7 @@
 //                  "+ event, reminder or alarm" opens the Add tab.
 //          Upcoming everything coming up (events, reminders, alarms) (click = show that day, × = delete) + "new" (on the selected day)
 //          Timer   presets 1-60 min or any minutes; pause / resume / cancel
-//          󰖕       weather now + the next 4 days (Weather.qml; the place is set in Settings > Date & language)
+//          Weather weather now + the next 4 days (Weather.qml; the place is set in Settings > Date & language)
 //          Add     the form: text, date (type it, click a day on the left, Today / Tomorrow), time,
 //                  Event (time empty = all day; never rings) / Reminder / Alarm, Once / Daily / Yearly;
 //                  Enter = add (then shows Upcoming), Esc = back
@@ -28,6 +28,7 @@ Item {
     property string tab: "day"                                   // right side: day | alarms | timer | weather | add
     // (no `busy`: the notch closes on hover-off like every panel, and always reopens on Day)
     readonly property int wantHeight: adding ? 372 : 0                // the add form needs more room
+    readonly property int wantWidth: 980                              // wider than the resting notch: five tabs (Day, Next, Timer, Weather, Add)
 
     // 42 cells starting on the Monday on/before the 1st
     readonly property var cells: {
@@ -169,7 +170,7 @@ Item {
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: 12
                 readonly property var ids: ["day", "alarms", "timer", "weather", "add"]
-                options: ["󰃭 Day", "󰃱 Upcoming", "󱎫 Timer", "󰖕", "󰐕 Add"]
+                options: ["󰃭 Day", "󰃱 Next", "󱎫 Timer", "󰖕 Weather", "󰐕 Add"]
                 current: ids.indexOf(root.tab)
                 onPicked: (i) => ids[i] === "add" ? root.openForm() : root.tab = ids[i]
             }

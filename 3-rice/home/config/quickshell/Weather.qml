@@ -1,7 +1,6 @@
 // Weather.qml -- singleton: today's weather + the next days from Open-Meteo (free, no account or key). The place is
 // picked in Settings > Date & language (search by city name: Open-Meteo's geocoding), saved in Prefs.weather; nothing
-// is fetched until a place is set. Refreshed every 30 min. Shown in the calendar panel (Weather tab) and, small,
-// next to the date in the notch.
+// is fetched until a place is set. Refreshed every 30 min. Shown only in the clock panel (Weather tab + a line in Day).
 pragma Singleton
 import QtQuick
 import Quickshell

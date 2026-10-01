@@ -1,7 +1,7 @@
 // Prefs.qml -- singleton: the shell's own small choices (not Hyprland's), saved in ~/.local/state/quickshell/shell.json
 // (personal, not in the repo). Missing keys = the defaults below.
 //   batWarn / batCrit   low-battery warning levels in % (0 = off)              Settings > Battery & sleep
-//   weather             { on, name, lat, lon, units "c"|"f", notch }          Settings > Date & language
+//   weather             { on, name, lat, lon, units "c"|"f" }          Settings > Date & language
 //   toasts              short messages in the notch (charger, audio device, layout, VPN, ...)  Settings > Notifications
 pragma Singleton
 import QtQuick
@@ -12,7 +12,7 @@ Singleton {
     id: root
     readonly property var defaults: ({
         batWarn: 20, batCrit: 10, toasts: true,
-        weather: { on: true, name: "", lat: 0, lon: 0, units: "c", notch: true }
+        weather: { on: true, name: "", lat: 0, lon: 0, units: "c" }
     })
     property var v: JSON.parse(JSON.stringify(defaults))
     property bool loaded: false

@@ -70,7 +70,7 @@ SetPage {
     SetGroup { title: "Weather" }
     SetRow {
         title: "Weather"
-        desc: "In the calendar panel and next to the date. From Open-Meteo: free, no account; only the place you pick is sent."
+        desc: "In the clock panel (hover the clock). From Open-Meteo: free, no account; only the place you pick is sent."
         Seg { options: ["Off", "On"]; current: Prefs.v.weather.on === false ? 0 : 1; onPicked: (i) => Prefs.set(["weather", "on"], i === 1) }
     }
     SetRow {
@@ -101,12 +101,6 @@ SetPage {
         visible: Prefs.v.weather.on !== false
         title: "Units"
         Seg { options: ["°C · km/h", "°F · mph"]; current: Prefs.v.weather.units === "f" ? 1 : 0; onPicked: (i) => Prefs.set(["weather", "units"], i === 1 ? "f" : "c") }
-    }
-    SetRow {
-        visible: Prefs.v.weather.on !== false
-        title: "In the notch"
-        desc: "The icon and temperature next to the date."
-        Seg { options: ["Off", "On"]; current: Prefs.v.weather.notch === false ? 0 : 1; onPicked: (i) => Prefs.set(["weather", "notch"], i === 1) }
     }
 
     SetGroup { title: "Language" }
