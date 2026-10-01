@@ -9,6 +9,7 @@ ShellRoot {
         model: Quickshell.screens
         Bar {}
     }
+    ScreenCorners {}   // rounded screen corners, same radius as the windows
     PolkitDialog {}    // password prompt for apps that need administrator rights
     ThemeSwitcher {}   // Super+T: full-screen theme + wallpaper switcher
     FloatWatcher {}    // floats pop-ups that get their title after opening (e.g. the Bitwarden unlock window)

@@ -367,6 +367,8 @@ def cmd_set(key, value):
     save(d)
     write_lua(d)
     hypr(["eval", "hl.config(" + lua_table(nest([(path, lua_val(key, v))])) + ")"])
+    if key == "rounding":                            # the shell's rounded screen corners follow (ScreenCorners.qml)
+        subprocess.run(["qs", "ipc", "call", "corners", "refresh"], capture_output=True)
     print(json.dumps({key: current(opt, typ)}))
 
 

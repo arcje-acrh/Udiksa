@@ -75,3 +75,4 @@ singleton Modes Modes.qml
 singleton Recorder Recorder.qml
 singleton Weather Weather.qml
 UsagePanel UsagePanel.qml
+ScreenCorners ScreenCorners.qml
