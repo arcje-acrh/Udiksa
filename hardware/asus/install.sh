@@ -24,7 +24,7 @@ note "asus-fnlock service installed"
 
 say "ASUS: services"
 sudo systemctl enable --now asusd >/dev/null 2>&1 || true
-sudo systemctl enable asus-fnlock >/dev/null 2>&1 && note "asusd + asus-fnlock enabled"
+sudo systemctl reenable asus-fnlock >/dev/null 2>&1 && note "asusd + asus-fnlock enabled"
 if asusctl battery limit 80 >/dev/null 2>&1; then note "battery charge limit: 80 %"
 else note "battery charge limit: set it later in Settings > Battery & sleep"; fi
 "$HOME/.local/bin/rice-kbd" apply >/dev/null 2>&1 && note "keyboard light follows the theme (Settings > Keyboard & touchpad)" || true

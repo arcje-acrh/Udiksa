@@ -1,6 +1,7 @@
 [Unit]
-Description=Set ASUS keyboard Fn-lock off (hid_asus forces it on at bind and resume)
-After=suspend.target
+Description=Set ASUS keyboard Fn-lock off (hid_asus forces it on at boot and after every sleep)
+# runs at boot, and again after every kind of sleep: suspend, hibernate, and the mixed ones
+After=suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
 
 [Service]
 Type=oneshot
@@ -9,4 +10,4 @@ ExecStartPre=/usr/bin/sleep 2
 ExecStart=/usr/local/bin/asus-fnlock-off 0
 
 [Install]
-WantedBy=multi-user.target suspend.target
+WantedBy=multi-user.target suspend.target hibernate.target hybrid-sleep.target suspend-then-hibernate.target
