@@ -1,7 +1,8 @@
 // ScreenCorners.qml -- rounded screen corners (user 2026-10-02): a small black arc in each corner of every screen, with
-// the same radius as the windows (Hyprland decoration:rounding), so the screen reads like one big rounded tile.
+// the same radius as the windows' OUTER edge = decoration:rounding + general:border_size (the border is drawn around the
+// rounded corner, so a window's visible curve is that much rounder), so the screen reads like one big rounded tile.
 // Four tiny click-through overlay windows per screen, drawn once (nothing runs). The radius is read at start, after a
-// Hyprland reload and when Settings changes the rounding (`qs ipc call corners refresh`, from rice-settings);
+// Hyprland reload and when Settings changes the rounding or border (`qs ipc call corners refresh`, from rice-settings);
 // hidden while game mode is on (rounding 0 there).
 import QtQuick
 import QtQuick.Shapes
@@ -18,8 +19,15 @@ Scope {
     Process {
         id: reader
         running: true
-        command: ["hyprctl", "getoption", "decoration:rounding", "-j"]
-        stdout: StdioCollector { onStreamFinished: { try { root.r = JSON.parse(text).int || 0 } catch (e) {} } }
+        command: ["sh", "-c", "hyprctl getoption decoration:rounding -j; hyprctl getoption general:border_size -j"]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const v = text.trim().split(/\n(?=\{)/).map(t => JSON.parse(t).int || 0)
+                    root.r = v[0] > 0 ? v[0] + (v[1] || 0) : 0      // square windows -> square screen
+                } catch (e) {}
+            }
+        }
     }
     Connections {
         target: Hyprland
