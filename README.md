@@ -31,6 +31,10 @@
   NVIDIA laptops get extra support, offered only where it fits.
 - **Batteries included**: login screen, lock screen, boot splash, hibernation, btrfs snapshots, mirror refresh and
   cleanup scripts, a clipboard history, an emoji picker and a calculator in the launcher.
+- **Tools**: screen recording (GPU-encoded, with or without sound), a colour picker, screenshots you can draw on,
+  keep awake, game mode, a usage panel (CPU per core, memory, network, disks, busiest programs), weather in the
+  calendar, low-battery warnings and short status messages in the notch.
+- **App scratchpads**: btop, your music app and your chat app each on their own key, shown over whatever you do.
 
 ## 22 themes, one key
 
@@ -145,6 +149,13 @@ Afterwards: Wi-Fi passwords, signing in to your apps, and `sudo tailscale up` if
 | <kbd>Super</kbd>+<kbd>S</kbd> / <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd> | Show scratchpad / send window there |
 | <kbd>Super</kbd>+<kbd>P</kbd> | Screens: extend, mirror, only one |
 | <kbd>Print</kbd> / <kbd>Shift</kbd>+<kbd>Print</kbd> / <kbd>Ctrl</kbd>+<kbd>Print</kbd> | Screenshot: area / window / screen |
+| <kbd>Alt</kbd>+<kbd>Print</kbd> | Screenshot to draw on (arrows, text, blur) |
+| <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>R</kbd> (+<kbd>Shift</kbd> area, +<kbd>Ctrl</kbd> with sound) | Record the screen; again = stop |
+| <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> | Colour picker |
+| <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> / <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>\\</kbd> / <kbd>Super</kbd>+<kbd>C</kbd> | Pin window / picture-in-picture / centre |
+| <kbd>Super</kbd>+<kbd>G</kbd>, <kbd>Super</kbd>+<kbd>Tab</kbd> | Window group (tabs), next tab |
+| <kbd>Super</kbd>+<kbd>PgUp</kbd> / <kbd>PgDn</kbd> | Previous / next workspace |
+| <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Esc</kbd> / <kbd>Super</kbd>+<kbd>M</kbd> / <kbd>Super</kbd>+<kbd>D</kbd> | System monitor / music / chat scratchpad |
 
 Every binding is listed, and your own can be added, in Settings > Shortcuts.
 

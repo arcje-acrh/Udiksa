@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+# rice-record -- screen recording with gpu-screen-recorder (the GPU encodes: almost no CPU, no dropped frames).
+# Started / stopped by the keys in ~/.config/hypr/conf/binds.lua, the launcher's Tools, or the dot in the notch.
+#   rice-record screen    the screen the mouse is on
+#   rice-record region    pick an area first (slurp)
+#   rice-record sound     the screen + what you hear + the microphone
+#   rice-record stop      (any of the above also stops a running recording)
+# Saved as ~/Videos/Recordings/Recording <date>.mp4. The notch shows a blinking dot and the time while it runs
+# (Recorder.qml, told through `qs ipc call record ...`; it reads $XDG_RUNTIME_DIR/udiksa-record after a restart).
+set -u
+run="${XDG_RUNTIME_DIR:-/tmp}/udiksa-record"          # "<pid> <start epoch> <mode> <file>" while recording
+dir="$(xdg-user-dir VIDEOS 2>/dev/null || echo "$HOME/Videos")/Recordings"
+
+running() { [[ -f $run ]] && read -r pid _ < "$run" && kill -0 "$pid" 2>/dev/null; }
+
+stop() {
+    read -r pid _ _ file < "$run"
+    kill -INT "$pid" 2>/dev/null                         # SIGINT = finish the file properly
+    for _ in $(seq 50); do kill -0 "$pid" 2>/dev/null || break; sleep 0.1; done
+    rm -f "$run"
+    qs ipc call record stopped >/dev/null 2>&1
+    [[ -s $file ]] || { notify-send -a "Screen recorder" -u critical "Recording failed" "Nothing was saved."; exit 1; }
+    # the notification offers Open / Show in folder (runs in the background, so the key returns at once)
+    setsid -f bash -c '
+        a=$(notify-send -a "Screen recorder" -i video-x-generic --action=open=Open --action=folder="Show in folder" \
+            "Recording saved" "$(basename "$1")")
+        case $a in open) xdg-open "$1" ;; folder) xdg-open "$(dirname "$1")" ;; esac' _ "$file" >/dev/null 2>&1
+}
+
+if running; then stop; exit 0; fi
+rm -f "$run"
+mode=${1:-screen}
+[[ $mode == stop ]] && exit 0
+
+mon=$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')
+args=(-w "$mon")
+if [[ $mode == region ]]; then
+    geo=$(slurp -f "%wx%h+%x+%y") || exit 0             # Esc = cancelled
+    args=(-w region -region "$geo")
+fi
+[[ $mode == sound ]] && args+=(-a "default_output|default_input")
+
+mkdir -p "$dir"
+file="$dir/Recording $(date '+%Y-%m-%d %H-%M-%S').mp4"
+gpu-screen-recorder "${args[@]}" -f 60 -c mp4 -fallback-cpu-encoding yes -o "$file" >/dev/null 2>"$run.log" &
+pid=$!
+sleep 0.6
+if ! kill -0 "$pid" 2>/dev/null; then
+    notify-send -a "Screen recorder" -u critical "Recording did not start" "$(tail -n 3 "$run.log")"
+    exit 1
+fi
+echo "$pid $(date +%s) $mode $file" > "$run"
+qs ipc call record started "$mode" >/dev/null 2>&1
+exit 0

@@ -222,6 +222,13 @@ Item {
                 color: Theme.muted
                 font.family: Theme.font; font.pixelSize: 12
             }
+            Text {   // weather now (Weather.qml), when a place is set and "in the notch" is on (Settings > Date & language)
+                visible: Weather.ok && Weather.w.notch !== false
+                anchors.verticalCenter: parent.verticalCenter
+                text: Weather.icon(Weather.now.code, Weather.now.day) + " " + Weather.deg(Weather.now.temp ?? 0)
+                color: Theme.muted
+                font.family: Theme.font; font.pixelSize: 12
+            }
             Text {   // running countdown timer (Agenda.qml): time left, amber while paused
                 visible: Agenda.timerOn
                 anchors.verticalCenter: parent.verticalCenter
@@ -291,13 +298,20 @@ Item {
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Osd.icon
-                    color: Osd.off ? Theme.dim : Theme.coral
+                    color: Osd.off ? Theme.dim : (Osd.warn ? Theme.amber : Theme.coral)
                     font.family: Theme.font; font.pixelSize: 16
+                }
+                Rectangle {   // picked colour
+                    visible: Osd.swatch !== ""
+                    anchors.verticalCenter: parent.verticalCenter
+                    width: 14; height: 14; radius: 2
+                    color: Osd.swatch !== "" ? Osd.swatch : "transparent"
+                    border.width: 1; border.color: Theme.hover
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
                     text: Osd.label
-                    color: Osd.off ? Theme.muted : Theme.text
+                    color: Osd.off ? Theme.muted : (Osd.warn ? Theme.amber : Theme.text)
                     font.family: Theme.font; font.pixelSize: 13; font.bold: true
                 }
             }
@@ -393,7 +407,7 @@ Item {
             active: root.loaded !== ""
             sourceComponent: ({
                 battery: batteryPanel, power: powerPanel, volume: volumePanel, wifi: wifiPanel,
-                bluetooth: bluetoothPanel, clock: clockPanel, media: mediaPanel, notifications: notificationsPanel, system: systemPanel, tailscale: tailscalePanel, launcher: launcherPanel
+                bluetooth: bluetoothPanel, clock: clockPanel, media: mediaPanel, notifications: notificationsPanel, system: systemPanel, tailscale: tailscalePanel, launcher: launcherPanel, usage: usagePanel
             })[root.loaded] ?? null
         }
     }
@@ -405,7 +419,8 @@ Item {
     Component { id: clockPanel;     ClockPanel {} }
     Component { id: mediaPanel;     MediaPanel {} }
     Component { id: notificationsPanel; NotificationsPanel {} }
-    Component { id: systemPanel;    SystemPanel {} }
+    Component { id: systemPanel;    SystemPanel { onOpenPanel: (id) => root.open(id) } }
+    Component { id: usagePanel;     UsagePanel {} }
     Component { id: tailscalePanel; TailscalePanel {} }
     Component { id: launcherPanel;  LauncherPanel { onDone: root.close() } }
 }

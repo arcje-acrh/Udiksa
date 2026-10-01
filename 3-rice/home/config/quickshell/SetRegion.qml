@@ -1,4 +1,5 @@
-// SetRegion.qml -- Settings > Region: time + timezone (searchable), network time, language (UTF-8 locales).
+// SetRegion.qml -- Settings > Region: time + timezone (searchable), network time, language (UTF-8 locales), weather
+// (place search + units, Weather.qml; saved in Prefs).
 // timedatectl / localectl ask for the password through the shell's own prompt (polkit).
 import QtQuick
 import Quickshell
@@ -64,6 +65,48 @@ SetPage {
                 onClicked: page.run(["timedatectl", "set-timezone", modelData])
             }
         }
+    }
+
+    SetGroup { title: "Weather" }
+    SetRow {
+        title: "Weather"
+        desc: "In the calendar panel and next to the date. From Open-Meteo: free, no account; only the place you pick is sent."
+        Seg { options: ["Off", "On"]; current: Prefs.v.weather.on === false ? 0 : 1; onPicked: (i) => Prefs.set(["weather", "on"], i === 1) }
+    }
+    SetRow {
+        visible: Prefs.v.weather.on !== false
+        title: "Place"
+        desc: Prefs.v.weather.name ? Prefs.v.weather.name + "   ·   " + Number(Prefs.v.weather.lat).toFixed(2) + ", " + Number(Prefs.v.weather.lon).toFixed(2)
+                                   : "Not set yet: search your city, then click it."
+        Row {
+            spacing: 6
+            SetInput { id: wq; width: 260; placeholder: "city, e.g. Pune"; onAccepted: Weather.search(text) }
+            SetButton { text: Weather.searching ? "Searching…" : "Search"; enabled: wq.text.trim().length >= 2; onClicked: Weather.search(wq.text) }
+        }
+    }
+    Flow {
+        width: parent.width
+        spacing: 6
+        visible: Weather.found.length > 0
+        Repeater {
+            model: Weather.found
+            delegate: SetButton {
+                required property var modelData
+                text: modelData.label
+                onClicked: { Weather.choose(modelData); wq.text = "" }
+            }
+        }
+    }
+    SetRow {
+        visible: Prefs.v.weather.on !== false
+        title: "Units"
+        Seg { options: ["°C · km/h", "°F · mph"]; current: Prefs.v.weather.units === "f" ? 1 : 0; onPicked: (i) => Prefs.set(["weather", "units"], i === 1 ? "f" : "c") }
+    }
+    SetRow {
+        visible: Prefs.v.weather.on !== false
+        title: "In the notch"
+        desc: "The icon and temperature next to the date."
+        Seg { options: ["Off", "On"]; current: Prefs.v.weather.notch === false ? 0 : 1; onPicked: (i) => Prefs.set(["weather", "notch"], i === 1) }
     }
 
     SetGroup { title: "Language" }

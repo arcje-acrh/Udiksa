@@ -376,6 +376,15 @@ return {{
 
     -- solid background shown behind everything until a wallpaper is set
     background = 0x{p['bg'].lstrip('#')},
+
+    -- window groups (tabs, Super+G): border + the tab strip above the group (general.lua)
+    group_active    = "rgba({a}ee)",
+    group_inactive  = "rgba({p['raised'].lstrip('#')}cc)",
+    group_locked    = "rgba({b}ee)",
+    tab_active      = "rgba({a}ff)",
+    tab_inactive    = "rgba({p['surface'].lstrip('#')}ee)",
+    tab_text        = "rgba({on(p['accent'], p['bg'], p['text']).lstrip('#')}ff)",
+    tab_text_dim    = "rgba({p['muted'].lstrip('#')}ff)",
 }}
 """)
 
@@ -735,6 +744,34 @@ noise_reduction = 77
     subprocess.run(["pkill", "-USR1", "-x", "cava"], capture_output=True)
 
 
+def satty(p):
+    """satty (the screenshot editor, Alt+Print = ~/.local/bin/rice-shot edit): Iosevka, flat corners, the pen colours
+    = the theme's accents + its ANSI hues. Whole file written here (not in the repo); read at every start."""
+    if not shutil.which("satty"):
+        return
+    n = p["ansi"]
+    pal = [p["accent"], p["accent2"], n[1], n[2], n[3], n[4], n[5], n[6], p["text"], p["bg"]]
+    write(os.path.join(HOME, ".config/satty/config.toml"), f"""# satty -- written by rice-theme on every theme change (edit rice-theme, not this file)
+[general]
+early-exit = true
+corner-roundness = 2
+initial-tool = "arrow"
+copy-command = "wl-copy"
+annotation-size-factor = 1
+actions-on-enter = ["save-to-clipboard", "save-to-file", "exit"]
+actions-on-escape = ["exit"]
+primary-highlighter = "block"
+no-window-decoration = true
+
+[font]
+family = "Iosevka Nerd Font"
+style = "Bold"
+
+[color-palette]
+palette = [{", ".join(f'"{c}"' for c in pal)}]
+""")
+
+
 def btop(p):
     """btop (system monitor, Settings > Performance / the launcher): ~/.config/btop/themes/rice.theme from the palette,
     selected in btop.conf (only color_theme + theme_background are set, your other btop settings stay). A running btop
@@ -985,7 +1022,7 @@ def cmd_apply(img, pos=None, transition="grow"):
     if os.path.exists(kbd):
         subprocess.Popen([kbd, "theme"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     hypr(p, theme); kitty(p, theme); starship(p); fastfetch(p); gtk(p, theme); qt(p, theme)
-    grub(p, theme, img); greeter(p, img); ncspot(p); cava(p); btop(p); viewers(p); office(p)
+    grub(p, theme, img); greeter(p, img); ncspot(p); cava(p); satty(p); btop(p); viewers(p); office(p)
     reload_apps()
     write(STATE, json.dumps({"theme": theme, "wallpaper": img}) + "\n")
     print(f"{theme}: {os.path.basename(img)}")

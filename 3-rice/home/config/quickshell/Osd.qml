@@ -9,6 +9,9 @@
 //     from the keyboard LEDs in /sys/class/leds
 //   * airplane mode: noticed automatically from `rfkill event` (panel toggle, or anything else)
 //   * touchpad on/off: ~/.local/bin/touchpad-toggle (F10) calls `qs ipc call osd touchpad on|off`
+//   * short messages ("toasts", toast()): charger, audio device, keyboard layout, VPN, do not disturb, low battery
+//     (Toasts.qml), keep awake / game mode (Modes.qml), recording (Recorder.qml), a picked colour with its swatch
+//     (`qs ipc call osd colour "#rrggbb"`, ~/.local/bin/rice-pick), any script: `qs ipc call osd say <icon> <text>`
 pragma Singleton
 import QtQuick
 import Quickshell
@@ -25,15 +28,25 @@ Singleton {
     property bool off: false        // grey out the bar + icon (muted / light off)
     property bool showBar: true
     property bool shown: false
+    property bool warn: false        // amber text (low battery, ...)
+    property string swatch: ""       // a colour square next to the text (colour picker)
+    property int holdFor: Theme.feedbackTime
 
     function show(icon, level, label, off, showBar, mark) {
         root.icon = icon; root.level = Math.max(0, Math.min(1, level)); root.label = label
         root.mark = mark === undefined ? -1 : mark
         root.off = off; root.showBar = showBar
+        root.warn = false; root.swatch = ""; root.holdFor = Theme.feedbackTime
         root.shown = true
         hideTimer.restart()
     }
-    Timer { id: hideTimer; interval: Theme.feedbackTime; onTriggered: root.shown = false }
+    // a message without a bar; warn = amber; stays a little longer than key feedback (it is read, not watched)
+    function toast(icon, label, warn, swatch) {
+        root.show(icon, 1, label, false, false)
+        root.warn = warn === true; root.swatch = swatch || ""; root.holdFor = Theme.feedbackTime + 1000
+        hideTimer.restart()
+    }
+    Timer { id: hideTimer; interval: root.holdFor; onTriggered: root.shown = false }
 
     // ---------- volume + mic (PipeWire) ----------
     PwObjectTracker { objects: [Pipewire.defaultAudioSink, Pipewire.defaultAudioSource] }
@@ -168,6 +181,8 @@ while True:
         // display-mode (F9) reports the screen setup it switched to
         function display(label: string): void { root.show("󰍹", 1, label, false, false) }
         // touchpad-toggle (F10) reports "on" / "off"
+        function colour(hex: string): void { root.toast("󰏘", hex + "  copied", false, hex) }
+        function say(icon: string, text: string): void { root.toast(icon, text, false) }
         function touchpad(state: string): void {
             const on = state === "on"
             root.show(on ? "󰟸" : "󰤳", 1, on ? "Touchpad on" : "Touchpad off", !on, false)

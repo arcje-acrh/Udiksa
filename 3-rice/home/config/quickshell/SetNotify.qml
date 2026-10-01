@@ -12,6 +12,11 @@ SetPage {
         Seg { options: ["Off", "On"]; current: Notifs.dnd ? 1 : 0; onPicked: (i) => Notifs.dnd = (i === 1) }
     }
     SetRow {
+        title: "Status messages"
+        desc: "Short messages in the notch when something changes by itself: charger, audio device, keyboard layout, VPN, do not disturb."
+        Seg { options: ["Off", "On"]; current: Prefs.v.toasts === false ? 0 : 1; onPicked: (i) => Prefs.set(["toasts"], i === 1) }
+    }
+    SetRow {
         title: "History"
         desc: Notifs.list.length + " notification" + (Notifs.list.length === 1 ? "" : "s") + " in the bell list."
         SetButton { text: "Clear all"; warn: true; enabled: Notifs.list.length > 0; onClicked: Notifs.clearAll() }

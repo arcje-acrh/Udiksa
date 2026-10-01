@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# rice-pick -- colour picker (Super+Shift+C): click anywhere on the screen, the colour's hex code is copied and the
+# notch shows it with a swatch (Osd.qml). Esc = cancel.
+set -u
+c=$(hyprpicker -f hex -q -l 2>/dev/null | tr -d '[:space:]')
+[[ $c =~ ^#[0-9a-fA-F]{6}$ ]] || exit 0
+wl-copy -- "$c"
+qs ipc call osd colour "$c" >/dev/null 2>&1

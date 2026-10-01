@@ -8,6 +8,7 @@
 //                  "+ event, reminder or alarm" opens the Add tab.
 //          Upcoming everything coming up (events, reminders, alarms) (click = show that day, × = delete) + "new" (on the selected day)
 //          Timer   presets 1-60 min or any minutes; pause / resume / cancel
+//          󰖕       weather now + the next 4 days (Weather.qml; the place is set in Settings > Date & language)
 //          Add     the form: text, date (type it, click a day on the left, Today / Tomorrow), time,
 //                  Event (time empty = all day; never rings) / Reminder / Alarm, Once / Daily / Yearly;
 //                  Enter = add (then shows Upcoming), Esc = back
@@ -24,7 +25,7 @@ Item {
     readonly property date shown: new Date(now.getFullYear(), now.getMonth() + offset, 1)
     property date selected: new Date()
     readonly property bool adding: tab === "add"
-    property string tab: "day"                                   // right side: day | alarms | timer | add
+    property string tab: "day"                                   // right side: day | alarms | timer | weather | add
     // (no `busy`: the notch closes on hover-off like every panel, and always reopens on Day)
     readonly property int wantHeight: adding ? 372 : 0                // the add form needs more room
 
@@ -167,8 +168,8 @@ Item {
                 visible: !Agenda.ringing
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: 12
-                readonly property var ids: ["day", "alarms", "timer", "add"]
-                options: ["󰃭 Day", "󰃱 Upcoming", "󱎫 Timer", "󰐕 Add"]
+                readonly property var ids: ["day", "alarms", "timer", "weather", "add"]
+                options: ["󰃭 Day", "󰃱 Upcoming", "󱎫 Timer", "󰖕", "󰐕 Add"]
                 current: ids.indexOf(root.tab)
                 onPicked: (i) => ids[i] === "add" ? root.openForm() : root.tab = ids[i]
             }
@@ -198,6 +199,13 @@ Item {
                     text: root.selToday ? Qt.formatTime(root.now, "HH:mm:ss") : root.relative(root.selected)
                     color: root.selToday ? Theme.text : Theme.amber
                     font.family: Theme.font; font.pixelSize: root.selToday ? 22 : 15
+                }
+                Text {   // today's weather, one line (click = the weather tab)
+                    anchors.horizontalCenter: parent.horizontalCenter
+                    visible: root.selToday && Weather.ok && !info.compact
+                    text: Weather.icon(Weather.now.code, Weather.now.day) + "  " + Weather.deg(Weather.now.temp) + " · " + Weather.words(Weather.now.code)
+                    color: wl.containsMouse ? Theme.amber : Theme.coral; font.family: Theme.font; font.pixelSize: 13; font.bold: true
+                    MouseArea { id: wl; anchors.fill: parent; anchors.margins: -4; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.tab = "weather" }
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
@@ -257,6 +265,80 @@ Item {
                     color: am.containsMouse ? Theme.amber : Theme.muted
                     font.family: Theme.font; font.pixelSize: 12
                     MouseArea { id: am; anchors.fill: parent; anchors.margins: -4; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.openForm() }
+                }
+            }
+
+            // ---------- weather: now + the next days ----------
+            Column {
+                id: weatherTab
+                visible: !root.adding && root.tab === "weather" && !Agenda.ringing
+                x: 18; y: 54
+                width: parent.width - 36
+                spacing: 6
+                Column {   // no place yet / offline
+                    visible: !Weather.ok
+                    width: parent.width
+                    spacing: 10
+                    Item { width: 1; height: 30 }
+                    Text {
+                        width: parent.width; horizontalAlignment: Text.AlignHCenter; wrapMode: Text.Wrap
+                        text: !Weather.wanted ? "No place set for the weather yet." : (Weather.error || "Loading…")
+                        color: Theme.muted; font.family: Theme.font; font.pixelSize: 13
+                    }
+                    Text {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        text: !Weather.wanted ? "Pick your city in Settings ›" : "Try again ↻"
+                        color: wp.containsMouse ? Theme.amber : Theme.coral; font.family: Theme.font; font.pixelSize: 13; font.bold: true
+                        MouseArea {
+                            id: wp; anchors.fill: parent; anchors.margins: -4; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+                            onClicked: Weather.wanted ? Weather.refresh() : Quickshell.execDetached(["qs", "ipc", "call", "settings", "open", "region"])
+                        }
+                    }
+                }
+                Row {   // now: big icon + temperature, words + details
+                    visible: Weather.ok
+                    spacing: 14
+                    Text {
+                        anchors.verticalCenter: parent.verticalCenter
+                        text: Weather.icon(Weather.now.code, Weather.now.day)
+                        color: Theme.coral; font.family: Theme.font; font.pixelSize: 44
+                    }
+                    Column {
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 1
+                        Text { text: Weather.deg(Weather.now.temp ?? 0); color: Theme.text; font.family: Theme.font; font.pixelSize: 30; font.bold: true }
+                        Text { text: Weather.words(Weather.now.code); color: Theme.text; font.family: Theme.font; font.pixelSize: 13; font.bold: true }
+                    }
+                    Column {
+                        anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
+                        Text { text: "feels " + Weather.deg(Weather.now.feels ?? 0); color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
+                        Text { text: "󰖎 " + (Weather.now.humidity ?? "–") + "%   󰖝 " + Math.round(Weather.now.wind ?? 0) + " " + (Weather.now.windUnit || ""); color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
+                        Text { text: "󰖜 " + (Weather.sun.rise || "–") + "   󰖛 " + (Weather.sun.set || "–"); color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
+                    }
+                }
+                Item { visible: Weather.ok; width: 1; height: 4 }
+                Row {   // the next 4 days
+                    visible: Weather.ok
+                    width: parent.width
+                    Repeater {
+                        model: Weather.days.slice(1, 5)
+                        delegate: Column {
+                            required property var modelData
+                            width: weatherTab.width / 4
+                            spacing: 3
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: Qt.formatDate(new Date(modelData.date + "T12:00"), "ddd"); color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: Weather.icon(modelData.code, true); color: Theme.text; font.family: Theme.font; font.pixelSize: 20 }
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: Weather.deg(modelData.max) + " " + Weather.deg(modelData.min); color: Theme.text; font.family: Theme.font; font.pixelSize: 11; font.bold: true }
+                            Text { anchors.horizontalCenter: parent.horizontalCenter; visible: modelData.rain !== null && modelData.rain >= 20; text: "󰖗 " + modelData.rain + "%"; color: Theme.amber; font.family: Theme.font; font.pixelSize: 10 }
+                        }
+                    }
+                }
+                Text {
+                    visible: Weather.ok
+                    width: parent.width; horizontalAlignment: Text.AlignHCenter
+                    text: Weather.w.name + " · " + Qt.formatTime(new Date(Weather.updated), "HH:mm") + " · Open-Meteo"
+                    color: Theme.dim; font.family: Theme.font; font.pixelSize: 10
                 }
             }
 

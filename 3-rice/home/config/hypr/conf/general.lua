@@ -33,4 +33,36 @@ hl.config({
     scrolling = {
         fullscreen_on_one_column = true,
     },
+
+    -- window groups = tabs (Super+G makes one, Super+Tab steps through it; binds.lua). The tab strip is flat
+    -- like the notch: square-ish, Iosevka, the theme's accent for the shown tab (colours: colors.lua).
+    group = {
+        col = {
+            border_active          = colors.group_active or colors.active_border[1],
+            border_inactive        = colors.group_inactive or colors.inactive_border,
+            border_locked_active   = colors.group_locked or colors.active_border[2],
+            border_locked_inactive = colors.group_inactive or colors.inactive_border,
+        },
+        groupbar = {
+            font_family         = "Iosevka Nerd Font",
+            font_size           = 11,
+            font_weight_active  = "bold",
+            height              = 16,
+            gradients           = true,
+            rounding            = 2,
+            gradient_rounding   = 2,
+            indicator_height    = 0,
+            gaps_in             = 4,
+            gaps_out            = 2,
+            keep_upper_gap      = false,
+            text_color          = colors.tab_text or "rgba(ffffffff)",
+            text_color_inactive = colors.tab_text_dim or "rgba(aaaaaaff)",
+            col = {
+                active          = colors.tab_active or colors.active_border[1],
+                inactive        = colors.tab_inactive or colors.inactive_border,
+                locked_active   = colors.group_locked or colors.active_border[2],
+                locked_inactive = colors.tab_inactive or colors.inactive_border,
+            },
+        },
+    },
 })

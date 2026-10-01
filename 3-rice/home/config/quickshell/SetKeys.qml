@@ -12,6 +12,7 @@ SetPage {
     property string query: ""
 
     function human(a) {
+        if (a.startsWith("-- ")) return a.slice(3)
         a = a.trim().replace(/,\s*\{[^}]*\}\s*$/, "")                  // drop the options table
         let m = a.match(/^hl\.dsp\.exec_cmd\((.*)\)$/)
         if (m) return "run  " + m[1].replace(/programs\.(\w+)/g, "$1").replace(/"\s*\.\.\s*|\s*\.\.\s*"/g, "").replace(/"/g, "")
@@ -26,7 +27,10 @@ SetPage {
             for (const raw of text().split("\n")) {
                 const line = raw.trim()
                 if (/^--\s*\S/.test(line) && !/^--\s*(https?:|NOTE)/i.test(line)) { group = line.replace(/^--\s*/, "").replace(/\s*\(.*$/, "").replace(/:.*$/, ""); continue }
-                const m = line.match(/^hl\.bind\((.+?),\s*(hl\..*)\)\s*$/)
+                let m = line.match(/^hl\.bind\((.+?),\s*(hl\..*)\)\s*$/)
+                // a key that runs a Lua function: its action is the comment after `function()`
+                const fm = m ? null : line.match(/^hl\.bind\((.+?),\s*function\(\)\s*--\s*(.*)$/)
+                if (fm) m = [line, fm[1], "-- " + fm[2]]
                 if (!m) continue
                 let keys = m[1].replace(/mainMod\s*\.\.\s*"/, "SUPER").replace(/"\s*\.\.\s*key/, " + 0-9").replace(/"/g, "").replace(/\s*\.\.\s*/g, "")
                 keys = keys.replace(/\s*\+\s*/g, " + ").replace("SUPER + ", "SUPER + ").trim()

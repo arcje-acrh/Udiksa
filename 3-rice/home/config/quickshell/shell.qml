@@ -15,7 +15,7 @@ ShellRoot {
     Lock {}            // lock screen (qs ipc call lock lock), same design as the boot login
     Settings {}        // Super+I: the Settings app
     AudioAuto {}       // new headphones / Bluetooth / USB audio become the output automatically
-    Component.onCompleted: Agenda.init()   // start the reminder / alarm timer at login (Agenda.qml)
+    Component.onCompleted: { Agenda.init(); Toasts.init() }   // reminder / alarm timer (Agenda.qml), status messages + low battery (Toasts.qml)
 
     // config reloads (after saving a file here): success = a short "Shell reloaded" in the notch,
     // failure = a red notification with the error -- instead of Quickshell's own pop-up box

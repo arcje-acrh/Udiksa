@@ -1,6 +1,7 @@
 // SetApps.qml -- Settings > Apps > Default and startup (was SetSystem.qml): startup apps (yours can
 // be added / removed here, via rice-settings -> settings.lua; the hand-written ones live in autostart.lua), and
-// default apps per kind of file (every installed app that opens it is offered).
+// default apps per kind of file (every installed app that opens it is offered), and the apps of the music / chat
+// scratchpads (Super+M / Super+D, ~/.local/bin/rice-scratch; saved in ~/.config/hypr/local/scratch.json).
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -56,6 +57,54 @@ SetPage {
         }
     }
     Component.onCompleted: readDefaults()
+
+    // ---- scratchpad apps (personal layer: ~/.config/hypr/local/scratch.json) ----
+    property var scratch: ({})
+    FileView {
+        id: scratchFile
+        path: page.host ? page.host.home + "/.config/hypr/local/scratch.json" : ""
+        printErrors: false
+        onLoaded: { try { page.scratch = JSON.parse(text()) } catch (e) { page.scratch = {} } }
+    }
+    function setScratch(name, cmd) {
+        const c = JSON.parse(JSON.stringify(scratch))
+        if (cmd) c[name] = cmd; else delete c[name]
+        scratch = c
+        scratchFile.setText(JSON.stringify(c, null, 2) + "\n")
+    }
+    property bool hasMusic: false
+    Process {
+        running: true
+        command: ["sh", "-c", "command -v music >/dev/null && echo yes"]
+        stdout: StdioCollector { onStreamFinished: page.hasMusic = text.trim() === "yes" }
+    }
+    component ScratchRow: SetRow {
+        id: sr
+        property string name: ""
+        property string keys: ""
+        property string fallback: ""         // used when nothing is picked
+        property string query: ""
+        readonly property var hits: query.length < 2 ? [] : DesktopEntries.applications.values
+            .filter(a => !a.noDisplay && a.name.toLowerCase().indexOf(query.toLowerCase()) >= 0).slice(0, 6)
+        desc: keys + "   ·   " + (page.scratch[name] ? "runs  " + page.scratch[name] : fallback ? fallback : "nothing picked yet")
+        Column {
+            spacing: 6
+            Row {
+                spacing: 6
+                SetInput { id: si; width: 260; placeholder: "app name or command"; onTextChanged: sr.query = text; onAccepted: useB.clicked() }
+                SetButton { id: useB; text: "Use command"; enabled: si.text.trim() !== ""; onClicked: { page.setScratch(sr.name, si.text.trim()); si.text = "" } }
+                SetButton { text: "Reset"; visible: page.scratch[sr.name] !== undefined; onClicked: page.setScratch(sr.name, "") }
+            }
+            Repeater {
+                model: sr.hits
+                delegate: SetButton {
+                    required property var modelData
+                    width: 380; text: "Use " + modelData.name
+                    onClicked: { page.setScratch(sr.name, modelData.command.join(" ")); si.text = "" }
+                }
+            }
+        }
+    }
     Process { id: setter; onExited: page.readDefaults() }
     function setDefault(kind, id) {
         setter.command = kind.k === "browser" ? ["xdg-settings", "set", "default-web-browser", id] : ["xdg-mime", "default", id].concat(kind.all)
@@ -96,6 +145,14 @@ SetPage {
             }
         }
     }
+
+    SetGroup { title: "Scratchpads" }
+    SetRow {
+        title: "System monitor"
+        desc: "Ctrl+Shift+Esc   ·   btop, floating over everything; the same keys hide it."
+    }
+    ScratchRow { title: "Music"; name: "music"; keys: "Super+M"; fallback: page.hasMusic ? "ncspot + cava (the music extra)" : "" }
+    ScratchRow { title: "Chat"; name: "chat"; keys: "Super+D" }
 
     SetGroup { title: "Default apps" }
     Repeater {

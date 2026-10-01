@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+# rice-shot -- screenshots that need more than hyprshot's plain keys (those stay in binds.lua).
+#   rice-shot edit    the screen freezes, pick an area, it opens in the editor (satty) to draw arrows, boxes, text,
+#                     blur; Enter = copy + save to ~/Pictures/Screenshots, Esc = throw away (Alt+Print)
+# satty's look (font, the theme's colours) is in ~/.config/satty/config.toml, written by rice-theme.
+set -u
+case ${1:-} in
+    edit)
+        out="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")/Screenshots"
+        mkdir -p "$out"
+        img=$(mktemp --suffix=.png)
+        trap 'rm -f "$img"' EXIT
+        hyprshot -m region -z -s -r > "$img" 2>/dev/null
+        [[ -s $img ]] || exit 0                          # Esc while picking
+        satty --filename "$img" --output-filename "$out/Screenshot $(date '+%Y-%m-%d %H-%M-%S').png"
+        ;;
+    *) sed -n '2,5p' "$0"; exit 2 ;;
+esac

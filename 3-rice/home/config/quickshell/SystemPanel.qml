@@ -10,6 +10,7 @@ Item {
     id: root
     readonly property int wantWidth: 1180
     readonly property int wantHeight: 440
+    signal openPanel(string id)            // Monitor > "usage ›" switches the notch to the usage panel
     Component.onCompleted: { Power.watchers += 1; Power.refreshGpu(); Power.readCurves(); Power.readKbd() }
     Component.onDestruction: Power.watchers -= 1
 
@@ -158,7 +159,7 @@ Item {
         Card {
             width: (parent.width - 2 * parent.spacing) * 0.37; height: parent.height
             spacing: 5
-            PanelTitle { title: "Monitor" }
+            PanelTitle { title: "Monitor"; action: "usage ›"; onActionClicked: root.openPanel("usage") }
             Stat { k: "CPU"; v: (root.st.cpu_temp ?? "–") + " °C · " + (root.st.cpu_load ?? "–") + " % · " + ((root.st.cpu_mhz ?? 0) / 1000).toFixed(1) + " GHz" }
             Stat { k: "GPU"; v: Power.gpuMode === "Integrated" ? "off (Eco)" : Power.gpuError ? "driver missing" : (Power.gpuPower === "active" ? "awake (in use)" : "asleep · 0 W"); vc: Power.gpuError ? Theme.warn : (Power.gpuPower === "active" ? Theme.amber : Theme.text) }
             Stat { k: "Fans"; v: "CPU " + (root.st.cpu_fan ?? "–") + " · GPU " + (root.st.gpu_fan ?? "–") + " rpm" }

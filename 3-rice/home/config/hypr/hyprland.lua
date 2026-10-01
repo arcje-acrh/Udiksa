@@ -52,6 +52,15 @@ do
         if out then hl.monitor({ output = out, mode = mode }) end
     end
 end
+-- game mode stays on through reloads (theme switch, Settings) until it is turned off (conf/gamemode.lua)
+do
+    local f = io.open((os.getenv("XDG_RUNTIME_DIR") or "/tmp") .. "/udiksa-gamemode", "r")
+    if f then
+        f:close()
+        local ok, err = pcall(dofile, os.getenv("HOME") .. "/.config/hypr/conf/gamemode.lua")
+        if not ok then errors[#errors + 1] = "conf/gamemode.lua: " .. tostring(err) end
+    end
+end
 if #errors > 0 then
     error("failed to load config modules:\n" .. table.concat(errors, "\n"), 0)
 end

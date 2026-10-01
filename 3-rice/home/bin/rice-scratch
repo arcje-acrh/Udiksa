@@ -1,0 +1,53 @@
+#!/usr/bin/env bash
+# rice-scratch -- app scratchpads: each app lives on its own hidden workspace (special:<name>) that a key shows and
+# hides over whatever you are doing (keys in ~/.config/hypr/conf/binds.lua).
+#   rice-scratch sysmon    btop                                  Ctrl+Shift+Esc
+#   rice-scratch music     ncspot + cava (`music`), or your app  Super+M
+#   rice-scratch chat      your chat app                         Super+D
+# First press starts the app there; later presses show / hide it. Music and chat apps are picked in
+# Settings > Apps, saved in ~/.config/hypr/local/scratch.json ({"music": "<command>", "chat": "<command>"};
+# personal layer, not in the repo).
+set -u
+name=${1:-}
+case $name in sysmon|music|chat) ;; *) sed -n '2,8p' "$0"; exit 2 ;; esac
+ws="special:$name"
+conf="$HOME/.config/hypr/local/scratch.json"
+
+cmd=""
+[[ -f $conf ]] && cmd=$(jq -r --arg n "$name" '.[$n] // ""' "$conf" 2>/dev/null)
+if [[ -z $cmd ]]; then
+    case $name in
+        sysmon) cmd="kitty --class rice-sysmon --title btop -e btop" ;;
+        music)  command -v music >/dev/null && cmd="music" ;;   # the optional ncspot extra
+    esac
+fi
+
+show() { hyprctl dispatch "hl.dsp.workspace.toggle_special(\"$name\")" >/dev/null; }
+
+# already running there: show / hide it
+if hyprctl clients -j | jq -e --arg w "$ws" 'any(.[]; .workspace.name == $w)' >/dev/null; then
+    show
+    exit 0
+fi
+if [[ -z $cmd ]]; then
+    qs ipc call osd say "󰀦" "Pick a $name app in Settings > Apps" >/dev/null 2>&1
+    qs ipc call settings open apps >/dev/null 2>&1
+    exit 0
+fi
+
+# start it on its workspace (Hyprland puts the windows of that process there and shows it). Apps that open their
+# window from another process (launcher wrappers, Electron) are caught below: the first new window is moved there.
+before=$(hyprctl clients -j | jq -r '.[].address')
+q=${cmd//\\/\\\\}; q=${q//\"/\\\"}
+hyprctl dispatch "hl.dsp.exec_cmd(\"$q\", { workspace = \"$ws\" })" >/dev/null
+for _ in $(seq 100); do                                   # up to 20 s
+    sleep 0.2
+    c=$(hyprctl clients -j)
+    jq -e --arg w "$ws" 'any(.[]; .workspace.name == $w)' <<<"$c" >/dev/null && exit 0
+    new=$(jq -r '.[].address' <<<"$c" | grep -vxF -f <(printf '%s\n' "$before") | head -1)
+    if [[ -n $new ]]; then
+        hyprctl dispatch "hl.dsp.window.move({ workspace = \"$ws\", window = \"address:$new\" })" >/dev/null
+        show
+        exit 0
+    fi
+done

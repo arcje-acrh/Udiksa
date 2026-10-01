@@ -26,6 +26,41 @@ hl.bind(mainMod .. " + T",             hl.dsp.exec_cmd("qs ipc call themes toggl
 hl.bind(mainMod .. " + SHIFT + T",     hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/rice-theme next"))
 hl.bind(mainMod .. " + SHIFT + J",     hl.dsp.layout("togglesplit")) -- dwindle only (moved from SUPER+J, now resize)
 
+-- window extras (2026-10-02): pin = stays on every workspace (floats it first), centre a floating window,
+-- picture-in-picture = small, pinned, bottom-right; the same keys again put it back
+hl.bind(mainMod .. " + SHIFT + P", function() -- pin: on every workspace
+    local w = hl.get_active_window()
+    if not w then return end
+    if not w.pinned and not w.floating then hl.dispatch(hl.dsp.window.float({ action = "enable" })) end
+    hl.dispatch(hl.dsp.window.pin())
+end)
+hl.bind(mainMod .. " + C",             hl.dsp.window.center())
+hl.bind(mainMod .. " + ALT + backslash", function() -- picture-in-picture: small, pinned, bottom-right
+    local w = hl.get_active_window()
+    if not w then return end
+    if w.pinned then
+        hl.dispatch(hl.dsp.window.pin())
+        hl.dispatch(hl.dsp.window.float({ action = "disable" }))
+        return
+    end
+    local m = w.monitor
+    local sw, sh = m.width / m.scale, m.height / m.scale
+    local pw = math.floor(sw * 0.25)
+    local ph = math.floor(pw * w.size.y / math.max(1, w.size.x))
+    hl.dispatch(hl.dsp.window.float({ action = "enable" }))
+    hl.dispatch(hl.dsp.window.resize({ x = pw, y = ph }))
+    hl.dispatch(hl.dsp.window.move({ x = m.x + sw - pw - 20, y = m.y + sh - ph - 20 }))
+    hl.dispatch(hl.dsp.window.pin())
+end)
+
+-- window groups = tabs: SUPER + G makes / breaks a group (windows moved next to it join it), SUPER + Tab /
+-- SUPER + SHIFT + Tab step through its tabs, SUPER + ALT + G takes the window out, SUPER + CTRL + G locks it
+hl.bind(mainMod .. " + G",             hl.dsp.group.toggle())
+hl.bind(mainMod .. " + TAB",           hl.dsp.group.next())
+hl.bind(mainMod .. " + SHIFT + TAB",   hl.dsp.group.prev())
+hl.bind(mainMod .. " + ALT + G",       hl.dsp.window.move({ out_of_group = true }))
+hl.bind(mainMod .. " + CTRL + G",      hl.dsp.group.lock_active({ action = "toggle" }))
+
 -- move focus with arrow keys
 hl.bind(mainMod .. " + left",          hl.dsp.focus({ direction = "left" }))
 hl.bind(mainMod .. " + right",         hl.dsp.focus({ direction = "right" }))
@@ -51,19 +86,35 @@ for i = 1, 10 do
     hl.bind(mainMod .. " + " .. key,           hl.dsp.focus({ workspace = i }))
     hl.bind(mainMod .. " + SHIFT + " .. key,   hl.dsp.window.move({ workspace = i }))
 end
+-- next / previous workspace (an empty one next in line too): SUPER + Page Down / Up or SUPER + CTRL + arrows;
+-- with SHIFT the window goes along
+hl.bind(mainMod .. " + Page_Down",          hl.dsp.focus({ workspace = "r+1" }))
+hl.bind(mainMod .. " + Page_Up",            hl.dsp.focus({ workspace = "r-1" }))
+hl.bind(mainMod .. " + CTRL + right",       hl.dsp.focus({ workspace = "r+1" }))
+hl.bind(mainMod .. " + CTRL + left",        hl.dsp.focus({ workspace = "r-1" }))
+hl.bind(mainMod .. " + SHIFT + Page_Down",  hl.dsp.window.move({ workspace = "r+1" }))
+hl.bind(mainMod .. " + SHIFT + Page_Up",    hl.dsp.window.move({ workspace = "r-1" }))
 
 -- scratchpad
 hl.bind(mainMod .. " + S",             hl.dsp.workspace.toggle_special("magic"))
 -- move the window to the scratchpad: SUPER + SHIFT + S.
 -- Laptops' "snip" key (Windows' Win+Shift+S) sends the same keys, but with the RIGHT Shift, all within a
 -- few ms (G16 F6, measured 2026-09-29) -- so Super + Right Shift + S takes a region screenshot instead.
-hl.bind(mainMod .. " + SHIFT + S", function()
+hl.bind(mainMod .. " + SHIFT + S", function() -- window to the scratchpad (Right Shift: region screenshot)
     if hl.is_key_down("Shift_R") then
         hl.dispatch(hl.dsp.exec_cmd("hyprshot -m region -o " .. programs.screenshots))
     else
         hl.dispatch(hl.dsp.window.move({ workspace = "special:magic" }))
     end
 end)
+
+-- app scratchpads (~/.local/bin/rice-scratch): each app on its own hidden workspace, the key shows / hides it
+-- and starts the app the first time. System monitor = btop; music and chat = the apps picked in
+-- Settings > Apps (music: ncspot + cava when ncspot is installed)
+local scratch = os.getenv("HOME") .. "/.local/bin/rice-scratch"
+hl.bind("CTRL + SHIFT + Escape",       hl.dsp.exec_cmd(scratch .. " sysmon"))
+hl.bind(mainMod .. " + M",             hl.dsp.exec_cmd(scratch .. " music"))
+hl.bind(mainMod .. " + D",             hl.dsp.exec_cmd(scratch .. " chat"))
 
 -- scroll through workspaces / move+resize with the mouse
 hl.bind(mainMod .. " + mouse_down",    hl.dsp.focus({ workspace = "e+1" }))
@@ -75,6 +126,19 @@ hl.bind(mainMod .. " + mouse:273",     hl.dsp.window.resize(), { mouse = true })
 hl.bind("Print",                       hl.dsp.exec_cmd("hyprshot -m region -o " .. programs.screenshots))
 hl.bind("SHIFT + Print",               hl.dsp.exec_cmd("hyprshot -m window -o " .. programs.screenshots))
 hl.bind("CTRL + Print",                hl.dsp.exec_cmd("hyprshot -m output -o " .. programs.screenshots))
+-- screenshot to draw on: the screen freezes, pick an area, it opens in the editor (satty; Enter saves + copies)
+local shot = os.getenv("HOME") .. "/.local/bin/rice-shot"
+hl.bind("ALT + Print",                 hl.dsp.exec_cmd(shot .. " edit"))
+
+-- screen recording (~/.local/bin/rice-record): the same keys again stop it (or click the dot in the notch);
+-- saved in ~/Videos/Recordings
+local record = os.getenv("HOME") .. "/.local/bin/rice-record"
+hl.bind(mainMod .. " + ALT + R",         hl.dsp.exec_cmd(record .. " screen"))
+hl.bind(mainMod .. " + ALT + SHIFT + R", hl.dsp.exec_cmd(record .. " region"))
+hl.bind(mainMod .. " + ALT + CTRL + R",  hl.dsp.exec_cmd(record .. " sound"))
+
+-- colour picker: click anywhere, the hex code is copied and shown in the notch
+hl.bind(mainMod .. " + SHIFT + C",     hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/rice-pick"))
 
 -- volume / mic
 hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("wpctl set-volume -l 1.25 @DEFAULT_AUDIO_SINK@ 5%+"), { locked = true, repeating = true })

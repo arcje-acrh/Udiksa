@@ -135,6 +135,19 @@ SetPage {
         }
     }
 
+    SetRow {
+        visible: page.hasBat
+        title: "Low battery warning"
+        desc: "An amber message in the notch and a notification when the battery gets this low (Toasts.qml)."
+        Seg { readonly property var vals: [0, 10, 15, 20, 25, 30]; options: vals.map(x => x ? x + " %" : "Off"); current: vals.indexOf(Prefs.v.batWarn); onPicked: (i) => Prefs.set(["batWarn"], vals[i]) }
+    }
+    SetRow {
+        visible: page.hasBat
+        title: "Urgent warning"
+        desc: "An urgent notification that stays until you close it."
+        Seg { readonly property var vals: [0, 5, 7, 10, 15]; options: vals.map(x => x ? x + " %" : "Off"); current: vals.indexOf(Prefs.v.batCrit); onPicked: (i) => Prefs.set(["batCrit"], vals[i]) }
+    }
+
     SetGroup { title: "When idle" }
     TimerRow { key: "lock"; title: "Lock after"; desc: "Minutes without input. It always locks before sleeping, too." }
     TimerRow { key: "off_bat"; title: "Screen off on battery" }

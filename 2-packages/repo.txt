@@ -69,3 +69,8 @@ xdg-user-dirs
 cmatrix
 jq
 os-prober
+
+# screen recording (rice-record), colour picker (rice-pick; also hyprshot --freeze), screenshot editor (rice-shot edit) -- 2026-10-02
+gpu-screen-recorder
+hyprpicker
+satty

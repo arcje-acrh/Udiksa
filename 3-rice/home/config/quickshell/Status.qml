@@ -1,4 +1,4 @@
-// Status.qml -- right side of the notch: System (GPU mode + S/B/T), Wi-Fi, Bluetooth, Tailscale, Bluetooth, volume, battery (+ %), power, notifications bell (far right).
+// Status.qml -- right side of the notch: recording (dot + time), keep awake / game mode (while on), System (GPU mode + S/B/T; elsewhere: usage), Wi-Fi, Bluetooth, Tailscale, volume, battery (+ %), power, notifications bell (far right).
 // Every icon opens its panel in the notch: hover (after Theme.hoverOpenDelay) or click.
 // Scroll on the volume icon still changes the volume directly.
 // Data comes from Quickshell's own modules (no helper tools): Networking, Bluetooth, Pipewire, UPower.
@@ -28,6 +28,68 @@ Row {
         onClicked: root.clicked(panel)
     }
     function tint(id, base) { return root.openPanel === id ? Theme.coral : base }
+
+    // ---------- screen recording: a blinking LED + the time; click = stop (Recorder.qml) ----------
+    Item {
+        visible: Recorder.on
+        anchors.verticalCenter: parent.verticalCenter
+        width: recRow.width; height: 18
+        property real tick: Date.now()
+        Timer { interval: 1000; repeat: true; running: Recorder.on; triggeredOnStart: true; onTriggered: parent.tick = Date.now() }
+        Row {
+            id: recRow
+            anchors.verticalCenter: parent.verticalCenter
+            spacing: 6
+            Rectangle {
+                anchors.verticalCenter: parent.verticalCenter
+                width: 8; height: 8; radius: 1
+                color: Theme.coral
+                SequentialAnimation on opacity {
+                    running: Recorder.on; loops: Animation.Infinite
+                    NumberAnimation { to: 0.25; duration: 600 }
+                    NumberAnimation { to: 1; duration: 600 }
+                }
+                Rectangle { anchors.fill: parent; anchors.margins: -2; radius: 2; z: -1; color: Qt.alpha(Theme.coral, 0.25) }
+            }
+            Text {
+                anchors.verticalCenter: parent.verticalCenter
+                readonly property int s: Math.max(0, Math.floor((parent.parent.tick - Recorder.since) / 1000))
+                text: Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0")
+                color: Theme.coral; font.family: Theme.font; font.pixelSize: 12; font.bold: true
+            }
+        }
+        MouseArea {
+            anchors.fill: parent; anchors.margins: -6
+            cursorShape: Qt.PointingHandCursor
+            onClicked: Recorder.stop()
+        }
+    }
+
+    // ---------- keep awake / game mode (Modes.qml): shown only while on, click = off ----------
+    Text {
+        visible: Modes.awake
+        anchors.verticalCenter: parent.verticalCenter
+        font.family: Theme.font; font.pixelSize: root.iconSize
+        text: "󰅶"; color: Theme.amber
+        MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: Modes.setAwake(false) }
+    }
+    Text {
+        visible: Modes.game
+        anchors.verticalCenter: parent.verticalCenter
+        font.family: Theme.font; font.pixelSize: root.iconSize
+        text: "󰊴"; color: Theme.amber
+        MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: Modes.setGame(false) }
+    }
+
+    // ---------- usage (CPU, memory, disk, network) on machines without the ASUS System panel ----------
+    Text {
+        visible: Power.probed && !Power.asus && !Power.gfx
+        anchors.verticalCenter: parent.verticalCenter
+        font.family: Theme.font; font.pixelSize: root.iconSize
+        text: "󰓅"
+        color: root.tint("usage", Theme.text)
+        Target { panel: "usage" }
+    }
 
     // ---------- System (modes): icon shows the GPU mode; red = NVIDIA driver missing (ASUS laptops only) ----------
     Item {

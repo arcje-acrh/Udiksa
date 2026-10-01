@@ -34,7 +34,7 @@ Scope {
         { id: "notify",    group: "System",      file: "Notify",      name: "Notifications",      icon: "󰂚", desc: "do not disturb, history, calendar" },
         { id: "apps",      group: "System",      name: "Apps",                icon: "󰀻", desc: "default apps, startup apps, install and remove",
           tabs: [{ name: "Default and startup", file: "Apps" }, { name: "Install and remove", file: "Software" }] },
-        { id: "region",    group: "System",      file: "Region",      name: "Date & language",    icon: "󰥔", desc: "time, timezone, language" },
+        { id: "region",    group: "System",      file: "Region",      name: "Date & language",    icon: "󰥔", desc: "time, timezone, language, weather" },
         { id: "advanced",  group: "System",      name: "Advanced",            icon: "󰒓", desc: "configuration files, maintenance scripts",
           tabs: [{ name: "Config files", file: "Files" }, { name: "Scripts", file: "Scripts" }] },
         { id: "about",     group: "System",      file: "About",       name: "About",              icon: "󰋼", desc: "you and this machine" }

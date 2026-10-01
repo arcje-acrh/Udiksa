@@ -69,3 +69,9 @@ SetThemes SetThemes.qml
 SetWifi SetWifi.qml
 SetBluetooth SetBluetooth.qml
 AudioAuto AudioAuto.qml
+singleton Prefs Prefs.qml
+singleton Toasts Toasts.qml
+singleton Modes Modes.qml
+singleton Recorder Recorder.qml
+singleton Weather Weather.qml
+UsagePanel UsagePanel.qml

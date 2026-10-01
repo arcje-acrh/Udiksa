@@ -162,7 +162,7 @@ hl.layer_rule({
 })
 
 -- ---------------------------------------------------------------------------
--- music (~/.local/bin/music): ncspot + cava as ONE centred block on the scratchpad (user 2026-09-26).
+-- music (~/.local/bin/music): ncspot + cava as ONE centred block on the music scratchpad (special:music, Super+M).
 -- ncspot 968x640 on top, 12 px gap, cava 968x220 below; block height 872 -> top = centre - 436
 -- (+15 for the 30 px bar at the top of the screen).
 -- the disk image flasher (~/.local/bin/rice-flash, caligula): floating in the middle
@@ -179,7 +179,7 @@ hl.window_rule({
     float     = true,
     size      = "968 640",
     move      = "monitor_w*0.5-484 monitor_h*0.5-421",
-    workspace = "special:magic",
+    workspace = "special:music",
 })
 hl.window_rule({
     name             = "music-cava",
@@ -187,7 +187,7 @@ hl.window_rule({
     float            = true,
     size             = "968 220",
     move             = "monitor_w*0.5-484 monitor_h*0.5+231",
-    workspace        = "special:magic",
+    workspace        = "special:music",
     no_initial_focus = true,
 })
 
@@ -207,6 +207,24 @@ hl.window_rule({
     float  = true,
     center = true,
     size   = "1400 860",
+})
+
+-- system monitor scratchpad (Ctrl+Shift+Esc = ~/.local/bin/rice-scratch sysmon): btop floating in the middle
+hl.window_rule({
+    name   = "sysmon-window",
+    match  = { class = "^rice-sysmon$" },
+    float  = true,
+    center = true,
+    size   = "1400 860",
+})
+
+-- screenshot editor (Alt+Print = ~/.local/bin/rice-shot edit): floating, centred, most of the screen
+hl.window_rule({
+    name   = "screenshot-editor",
+    match  = { class = "^com\\.gabm\\.satty$" },
+    float  = true,
+    center = true,
+    size   = "monitor_w*0.8 monitor_h*0.8",
 })
 
 -- nano (text files, "Edit" in Settings) and script runs: small centred floating terminals

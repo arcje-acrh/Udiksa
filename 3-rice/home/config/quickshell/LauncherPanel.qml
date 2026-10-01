@@ -5,6 +5,7 @@
 //   Menu entries open as their own list (Enter), with a breadcrumb "Menu › …":
 //     Clipboard (history; Enter copies it back, Shift+Del removes)   Emoji (grid; Enter copies)
 //     Windows (Enter focuses)   Calculator (qalc; Enter copies)   Scripts (~/.local/share/rice/scripts)
+//     Tools (record the screen, pick a colour, draw on a screenshot, keep awake, game mode, system monitor)
 //   (power actions live in the notch's power panel, not here)
 //   ↑↓ select, Enter opens, Backspace on an empty search or Esc goes back, Esc on the main view closes.
 // App usage counts: ~/.local/state/quickshell/launcher.json. Icons are plain white: a standard icon per
@@ -29,6 +30,7 @@ Item {
         { id: "win", title: "Windows", sub: "Jump to an open window", glyph: "󰖯" },
         { id: "calc", title: "Calculator", sub: "Math, units, percentages", glyph: "󰃬" },
         { id: "scripts", title: "Scripts", sub: "Maintenance: mirrors, updates, cleanup, snapshots, checks", glyph: "󰯁" },
+        { id: "tools", title: "Tools", sub: "Record the screen, pick a colour, draw on a screenshot, keep awake, game mode", glyph: "󰦬" },
         { id: "settings", title: "Settings", sub: "Look, devices, system, monitor, keys, software, about (Super+I)", glyph: "󰒓" }
     ]
     function viewInfo(id) { return menu.find(m => m.id === id) }
@@ -138,6 +140,25 @@ Item {
     }
 
 
+    // ---------- tools: the same as their keys (binds.lua); the notch closes first, so it is not in the picture ----------
+    readonly property string bin: Quickshell.env("HOME") + "/.local/bin/"
+    readonly property var tools: [
+        { title: Recorder.on ? "Stop recording" : "Record the screen", sub: "Super+Alt+R · saved in Videos/Recordings", glyph: "󰑋", cmd: [bin + "rice-record", "screen"] },
+        { title: "Record an area", sub: "Super+Alt+Shift+R · pick the area first", glyph: "󰩭", cmd: [bin + "rice-record", "region"], wait: true },
+        { title: "Record with sound", sub: "Super+Alt+Ctrl+R · what you hear + the microphone", glyph: "󰕾", cmd: [bin + "rice-record", "sound"] },
+        { title: "Pick a colour", sub: "Super+Shift+C · copies the hex code", glyph: "󰏘", cmd: [bin + "rice-pick"], wait: true },
+        { title: "Screenshot to draw on", sub: "Alt+Print · arrows, boxes, text, blur; Enter saves + copies", glyph: "󰏫", cmd: [bin + "rice-shot", "edit"], wait: true },
+        { title: Modes.awake ? "Keep awake: on" : "Keep awake: off", sub: "No lock, screen off or sleep until you turn it off", glyph: "󰅶", mode: "awake" },
+        { title: Modes.game ? "Game mode: on" : "Game mode: off", sub: "Animations, blur, shadows, gaps off", glyph: "󰊴", mode: "game" },
+        { title: "System monitor", sub: "Ctrl+Shift+Esc · btop on its scratchpad", glyph: "󰓅", cmd: [bin + "rice-scratch", "sysmon"] }
+    ]
+    function runTool(t) {
+        if (t.mode === "awake") Modes.setAwake(!Modes.awake)
+        else if (t.mode === "game") Modes.setGame(!Modes.game)
+        else if (t.wait) Quickshell.execDetached(["sh", "-c", "sleep 0.5; exec \"$0\" \"$@\""].concat(t.cmd))
+        else Quickshell.execDetached(t.cmd)
+    }
+
     // ---------- results of the current view ----------
     readonly property var results: {
         const s = q
@@ -153,7 +174,9 @@ Item {
                 .map(m => ({ kind: "menu", title: m.title, sub: m.sub, glyph: m.glyph, target: m.id, more: true }))
             let r = []
             if (looksMath && calcResult && calcFor === s) r.push({ kind: "calc", title: "= " + calcResult, sub: s + "   ·   Enter copies the result", glyph: "󰃬" })
-            r = s ? r.concat(appRows, menuRows) : r.concat(menuRows, appRows)
+            // tools also show up straight from the main search ("record", "colour", ...)
+            const toolRows = s ? tools.filter(t => score(t.title, s) > 0).map(t => ({ kind: "tool", title: t.title, sub: t.sub, glyph: t.glyph, tool: t })) : []
+            r = s ? r.concat(appRows, toolRows, menuRows) : r.concat(menuRows, appRows)
             if (s) r.push({ kind: "run", title: "Run “" + s + "”", sub: "as a command · Ctrl+Enter: in a terminal", glyph: "󰆍", cmd: s })
             return r
         }
@@ -167,6 +190,8 @@ Item {
             .filter(x => x.sc > 0).sort((x, y) => y.sc - x.sc)
             .map(x => ({ kind: "win", title: x.t.title, sub: (x.t.lastIpcObject && x.t.lastIpcObject.class ? x.t.lastIpcObject.class : "") + (x.t.workspace ? "  ·  workspace " + x.t.workspace.id : ""), glyph: "󰖯", top: x.t }))
         if (view === "emoji") return emojis.filter(e => score(e.name, s) > 0).slice(0, 120).map(e => ({ kind: "emoji", title: e.ch, sub: e.name }))
+        if (view === "tools") return tools.filter(t => Math.max(score(t.title, s), score(t.sub, s) * 0.6) > 0)
+            .map(t => ({ kind: "tool", title: t.title, sub: t.sub, glyph: t.glyph, tool: t }))
         if (view === "scripts") return scripts.filter(sc => Math.max(score(sc.title, s), score(sc.desc, s) * 0.6) > 0)
             .map(sc => ({ kind: "script", title: sc.title, sub: sc.desc + (sc.terminal ? "" : "  ·  runs in the background"), glyph: sc.terminal ? "󰆍" : "󰑓", sc: sc }))
         return []
@@ -193,6 +218,7 @@ Item {
         else if (r.kind === "win") { const a = r.top.address; Hyprland.dispatch("hl.dsp.focus({ window = \"address:" + (a.startsWith("0x") ? a : "0x" + a) + "\" })") }
         else if (r.kind === "emoji") copy(r.title)
         else if (r.kind === "script") runScript(r.sc)
+        else if (r.kind === "tool") runTool(r.tool)
         root.done()
     }
 
