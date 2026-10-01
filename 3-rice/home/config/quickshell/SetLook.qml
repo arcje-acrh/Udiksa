@@ -3,9 +3,31 @@
 // changes are saved in ~/.config/hypr/conf/settings.lua. Theme + colours: Settings > Themes.
 import QtQuick
 import Quickshell
+import Quickshell.Io
 
 SetPage {
     id: page
+    // animations (rice-settings anim): a local copy so a change shows at once; the speed waits until you stop
+    property var anim: ({ speed: 100, windows: "popin", workspaces: "slide", feel: "spring" })
+    readonly property var hostAnim: host && host.hv ? host.hv.anim : undefined
+    onHostAnimChanged: if (hostAnim) anim = JSON.parse(JSON.stringify(hostAnim))
+    property var animQueue: []
+    function setAnim(key, value) {
+        const a = JSON.parse(JSON.stringify(anim)); a[key] = value; anim = a
+        animQueue = animQueue.filter(q => q[0] !== key).concat([[key, String(value)]])
+        animTimer.restart()
+    }
+    Timer {
+        id: animTimer; interval: 400
+        onTriggered: {
+            const args = []
+            page.animQueue.forEach(q => { args.push(q[0]); args.push(q[1]) })
+            page.animQueue = []
+            animProc.command = ["sh", "-c", "h=$1; shift; while [ $# -gt 1 ]; do \"$h\" anim \"$1\" \"$2\" >/dev/null; shift 2; done", "sh", page.host.helper].concat(args)
+            animProc.running = true
+        }
+    }
+    Process { id: animProc }
     // corner radii of the screen / notch (Prefs); the lock + login screen and GRUB follow a moment later (rice-theme)
     function setCorner(key, px) { Prefs.set(["corners", key], px); if (key === "screen") cornerLater.restart() }
     Timer { id: cornerLater; interval: 800; onTriggered: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/rice-theme", "corners"]) }
@@ -223,9 +245,49 @@ SetPage {
         desc: "More = smoother but uses more GPU."
         SetNum { value: page.v.blur_passes ?? 3; from: 1; to: 6; onChanged: (x) => page.set("blur_passes", x) }
     }
+
+    // ---- animations: on / off (Hyprland option) + speed, styles, feel (rice-settings anim -> settings.lua) ----
+    SetGroup { title: "Animations" }
     SetRow {
         title: "Animations"
         desc: "Off = windows and workspaces change instantly."
         Seg { options: ["On", "Off"]; current: page.onoff(page.v.animations); onPicked: (i) => page.set("animations", i === 0) }
+    }
+    SetRow {
+        visible: page.v.animations !== false
+        title: "Speed"
+        desc: "100 % = the rice's own timing; higher = faster."
+        SetNum { value: page.anim.speed; from: 50; to: 300; step: 10; unit: " %"; onChanged: (x) => page.setAnim("speed", x) }
+    }
+    SetRow {
+        visible: page.v.animations !== false
+        title: "Windows open and close"
+        Seg {
+            readonly property var vals: ["popin", "slide", "fade", "gnomed"]
+            options: ["Pop in", "Slide", "Fade", "Fold"]
+            current: vals.indexOf(page.anim.windows)
+            onPicked: (i) => page.setAnim("windows", vals[i])
+        }
+    }
+    SetRow {
+        visible: page.v.animations !== false
+        title: "Switching workspaces"
+        Seg {
+            readonly property var vals: ["slide", "slidevert", "fade", "slidefade"]
+            options: ["Slide", "Slide up / down", "Fade", "Slide + fade"]
+            current: vals.indexOf(page.anim.workspaces)
+            onPicked: (i) => page.setAnim("workspaces", vals[i])
+        }
+    }
+    SetRow {
+        visible: page.v.animations !== false
+        title: "Feel"
+        desc: "Springy = a small bounce at the end. Smooth = glides to a stop. Crisp = quick start, short."
+        Seg {
+            readonly property var vals: ["spring", "smooth", "crisp"]
+            options: ["Springy", "Smooth", "Crisp"]
+            current: vals.indexOf(page.anim.feel)
+            onPicked: (i) => page.setAnim("feel", vals[i])
+        }
     }
 }

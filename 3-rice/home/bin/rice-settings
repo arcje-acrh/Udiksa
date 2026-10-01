@@ -20,6 +20,9 @@ applied live with `hyprctl eval 'hl.config({...})'`.
                                       screens that stay on are applied first, so there is always one on
   rice-settings monitor rm <output>   back to automatic for that screen
       (saved in ~/.config/hypr/local/monitors.json + monitors.lua = personal layer, applied live)
+  rice-settings anim <key> <value>   animations (Settings > Windows > Animations): speed <50-300 %>,
+                                      windows popin|slide|fade|gnomed, workspaces slide|slidevert|fade|slidefade,
+                                      feel spring|smooth|crisp; written as hl.animation() lines into settings.lua
   rice-settings startup add|rm <command>     your own startup commands (run at the next login)
   rice-settings bind add <keys> <command>    your own shortcut, e.g. "SUPER + B" "zen-browser"
   rice-settings bind rm <keys>
@@ -145,6 +148,10 @@ def write_lua(d):
            "-- so these override the other conf files. Do not edit by hand: change it in Settings, or delete this\n"
            "-- file (or `rice-settings reset`) to go back to the hand-written values.\n"
            f"hl.config({body})\n")
+    a = dict(ANIM_DEFAULT)
+    a.update(d.get("_anim", {}))
+    if anim_lines(a):
+        txt += "\n-- animations: speed / styles / feel from Settings > Windows > Animations\n" + "\n".join(anim_lines(a)) + "\n"
     if d.get("_startup"):
         txt += "\n-- startup apps added in Settings\nhl.on(\"hyprland.start\", function()\n"
         txt += "".join(f"    hl.exec_cmd({lua_str(c)})\n" for c in d["_startup"]) + "end)\n"
@@ -347,6 +354,76 @@ def cmd_power(key=None, value=None):
     print(json.dumps(p))
 
 
+# Animations: the design's own timings (= conf/animations.lua; speed = tenths of a second, bigger = slower). Settings
+# only rescales them and swaps styles / curves; the result is written into settings.lua (loaded last) and applied live.
+ANIM_DEFAULT = {"speed": 100, "windows": "popin", "workspaces": "slide", "feel": "spring"}
+ANIM_BASE = [   # leaf, speed, curve kind ("move" = follows the feel), curve, style kind
+    ("global", 10, "fixed", "default", None), ("border", 5.39, "fixed", "easeOutQuint", None),
+    ("windows", 4.79, "move", None, None), ("windowsIn", 4.1, "move", None, "win"),
+    ("windowsOut", 1.6, "fixed", "quick", "win"), ("fadeIn", 1.73, "fixed", "almostLinear", None),
+    ("fadeOut", 1.46, "fixed", "almostLinear", None), ("fade", 3.03, "fixed", "quick", None),
+    ("layers", 3.81, "fixed", "easeOutQuint", None), ("layersIn", 4, "fixed", "easeOutQuint", "fade"),
+    ("layersOut", 1.5, "fixed", "linear", "fade"), ("fadeLayersIn", 1.79, "fixed", "almostLinear", None),
+    ("fadeLayersOut", 1.39, "fixed", "almostLinear", None),
+    ("workspaces", 3.2, "ws", "easeOutQuint", "ws"), ("workspacesIn", 3.2, "ws", "easeOutQuint", "ws"),
+    ("workspacesOut", 3.2, "ws", "easeOutQuint", "ws"), ("zoomFactor", 7, "fixed", "quick", None),
+]
+WIN_STYLE = {"popin": "popin 82%", "slide": "slide", "fade": "popin 100%", "gnomed": "gnomed"}
+WS_STYLE = {"slide": "slide", "slidevert": "slidevert", "fade": "fade", "slidefade": "slidefade 20%"}
+FEEL = {"spring": ("spring", "easy"), "smooth": ("bezier", "easeOutQuint"), "crisp": ("bezier", "quick")}
+
+
+def anim_saved():
+    a = dict(ANIM_DEFAULT)
+    a.update(load().get("_anim", {}))
+    return a
+
+
+def anim_lines(a):
+    """hl.animation() lines for the chosen speed / styles / feel ([] when everything is the design's)."""
+    if a == ANIM_DEFAULT:
+        return []
+    k = 100 / max(10, int(a["speed"]))
+    out = []
+    for leaf, sp, kind, curve, style in ANIM_BASE:
+        if kind == "move":
+            ck, cn = FEEL[a["feel"]]
+        elif kind == "ws":
+            ck, cn = "bezier", ("quick" if a["feel"] == "crisp" else curve)     # workspaces never bounce
+        else:
+            ck, cn = "bezier", curve
+        st = WIN_STYLE[a["windows"]] if style == "win" else WS_STYLE[a["workspaces"]] if style == "ws" else style
+        line = f'hl.animation({{ leaf = "{leaf}", enabled = true, speed = {round(sp * k, 2)}, {ck} = "{cn}"'
+        out.append(line + (f', style = "{st}"' if st else "") + " })")
+    return out
+
+
+def cmd_anim(key, value):
+    if key not in ANIM_DEFAULT:
+        sys.exit("anim: speed | windows | workspaces | feel")
+    if key == "speed":
+        v = max(50, min(300, int(float(value))))
+    else:
+        v = value
+        if v not in {"windows": WIN_STYLE, "workspaces": WS_STYLE, "feel": FEEL}[key]:
+            sys.exit(f"anim {key}: unknown value {value}")
+    d = load()
+    a = dict(ANIM_DEFAULT)
+    a.update(d.get("_anim", {}))
+    a[key] = v
+    d["_anim"] = {x: y for x, y in a.items() if ANIM_DEFAULT[x] != y}
+    if not d["_anim"]:
+        del d["_anim"]
+    save(d)
+    write_lua(d)
+    lines = anim_lines(a)
+    if lines:
+        hypr(["eval", "\n".join(lines)])
+    else:                                            # back to the design: animations.lua again
+        hypr(["reload"])
+    print(json.dumps(a))
+
+
 def cmd_get():
     saved = load()
     out = {k: current(o[2], o[3]) for k, o in OPTS.items()}
@@ -354,6 +431,7 @@ def cmd_get():
     out["startup"] = saved.get("_startup", [])
     out["binds"] = saved.get("_binds", [])
     out["power"] = power_state()
+    out["anim"] = anim_saved()
     print(json.dumps(out))
 
 
@@ -433,6 +511,8 @@ if __name__ == "__main__":
         cmd_monitor("many", a[2])
     elif a[0] == "monitor" and len(a) >= 3:
         cmd_monitor(a[1], a[2], a[3] if len(a) > 3 else None)
+    elif a[0] == "anim" and len(a) == 3:
+        cmd_anim(a[1], a[2])
     elif a[0] == "power" and len(a) in (1, 2, 3):
         cmd_power(*a[1:])
     else:

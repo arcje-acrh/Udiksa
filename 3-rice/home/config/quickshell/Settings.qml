@@ -19,7 +19,7 @@ Scope {
     // group = sidebar heading; tabs = a section made of several pages (a switch under the title)
     readonly property var sections: [
         { id: "themes",    group: "Personalise", file: "Themes",      name: "Themes",             icon: "󰸉", desc: "theme, wallpaper, theme colours" },
-        { id: "look",      group: "Personalise", file: "Look",        name: "Windows",            icon: "󰏘", desc: "tiling layout, new windows, gaps, borders, corners, shadows, blur" },
+        { id: "look",      group: "Personalise", file: "Look",        name: "Windows",            icon: "󰏘", desc: "tiling layout, new windows, gaps, borders, corners, shadows, blur, animations" },
         { id: "slash",     group: "Personalise", needs: "slash", file: "Slash", name: "Slash lighting", icon: "󰛨", desc: "the LED bar on the lid: animation, brightness, when it lights" },
         { id: "display",   group: "Devices",     file: "Display",     name: "Display",            icon: "󰍹", desc: "brightness, refresh rate, external monitor" },
         { id: "sound",     group: "Devices",     file: "Sound",       name: "Sound",              icon: "󰕾", desc: "output, microphone, app volumes, headphones" },
