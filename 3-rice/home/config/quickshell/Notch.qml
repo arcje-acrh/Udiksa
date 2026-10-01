@@ -16,7 +16,7 @@ import Quickshell.Widgets
 
 Item {
     id: root
-    readonly property int ear: 12
+    readonly property real ear: Theme.islandRadius     // the concave top corners where it meets the screen edge = the same radius as its bottom corners (Settings > Windows > Corners)
     property int restWidth: 800            // set by Bar.qml (Theme.notchFraction x screen width, at least minRestWidth)
     property int maxWidth: 100000          // set by Bar.qml: the screen width minus a margin (portrait / small screens)
     // the least the resting row needs so nothing overlaps: the clock in the middle, with room on each side for the
@@ -114,8 +114,8 @@ Item {
 
     // ONE outline: concave ears -> sides -> rounded bottom corners -> ears. Filled with the
     // background colour, stroked in coral (open path: no line along the screen edge). Follows the size.
-    readonly property int r: Theme.islandRadius
-    readonly property int e: ear
+    readonly property real r: Theme.islandRadius
+    readonly property real e: ear
     Shape {
         preferredRendererType: Shape.CurveRenderer
         ShapePath {   // fill (closed along the top edge)

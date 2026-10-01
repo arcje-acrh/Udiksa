@@ -166,7 +166,7 @@ SetPage {
     }
     CornerRow {
         key: "notch"; title: "Notch corners"; max: 15
-        desc: "The notch's bottom corners (at most 15 px, half its height)."
+        desc: "The notch's corners: the bottom ones and the curves where it meets the top edge (at most 15 px)."
     }
 
     SetGroup { title: "Shadows" }

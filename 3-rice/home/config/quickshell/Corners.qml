@@ -2,7 +2,7 @@
 //   win     the windows' visible outer curve = decoration:rounding + general:border_size (the border is drawn around
 //           the rounded corner); 0 = square windows
 //   r       rounded SCREEN corners: Prefs corners.screen px, or -1 = the same as the windows (default)
-//   notch   the notch's bottom corners (Theme.islandRadius): Prefs corners.notch px, or -1 = the same as the windows;
+//   notch   the notch's corners, bottom AND the top ones where it meets the screen edge (Theme.islandRadius): Prefs corners.notch px, or -1 = the same as the windows;
 //           at most half the slim notch (15)
 // Set in Settings > Windows > Corners.
 // Re-read at start, after a Hyprland reload, and on `qs ipc call corners refresh` (rice-settings: rounding / border).
