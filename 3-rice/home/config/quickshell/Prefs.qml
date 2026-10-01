@@ -2,6 +2,7 @@
 // (personal, not in the repo). Missing keys = the defaults below.
 //   batWarn / batCrit   low-battery warning levels in % (0 = off)              Settings > Battery & sleep
 //   weather             { on, name, lat, lon, units "c"|"f" }          Settings > Date & language
+//   corners             { screen, notch }: corner radius in px, -1 = same as the windows   Settings > Windows > Corners
 //   toasts              short messages in the notch (charger, audio device, layout, VPN, ...)  Settings > Notifications
 pragma Singleton
 import QtQuick
@@ -12,6 +13,7 @@ Singleton {
     id: root
     readonly property var defaults: ({
         batWarn: 20, batCrit: 10, toasts: true,
+        corners: { screen: -1, notch: -1 },
         weather: { on: true, name: "", lat: 0, lon: 0, units: "c" }
     })
     property var v: JSON.parse(JSON.stringify(defaults))

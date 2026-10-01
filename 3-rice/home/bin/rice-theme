@@ -574,8 +574,9 @@ IOSEVKA = "/usr/share/fonts/TTF/IosevkaNerdFont-Regular.ttf"   # same font as th
 
 
 def corner_px():
-    """Rounded screen corners in SCREEN pixels = the windows' visible curve (decoration:rounding + general:border_size)
-    x the screen's scale -- the same radius as the desktop's (quickshell Corners.qml). None = Hyprland not reachable."""
+    """Rounded screen corners in SCREEN pixels = your own radius from Settings (shell.json corners.screen), else the
+    windows' visible curve (decoration:rounding + general:border_size), x the screen's scale -- the same radius as the
+    desktop's (quickshell Corners.qml). None = Hyprland not reachable."""
     def opt(name):
         r = subprocess.run(["hyprctl", "getoption", name, "-j"], capture_output=True, text=True)
         return json.loads(r.stdout)["int"]
@@ -585,6 +586,12 @@ def corner_px():
         scale = next((m["scale"] for m in mons if m.get("focused")), mons[0]["scale"] if mons else 1)
     except (ValueError, KeyError, IndexError, OSError):
         return None
+    try:                                             # your own screen radius (Settings > Windows > Corners)
+        own = json.load(open(os.path.join(HOME, ".local/state/quickshell/shell.json"))).get("corners", {}).get("screen", -1)
+    except (OSError, ValueError, AttributeError):
+        own = -1
+    if own is not None and own >= 0:
+        return round(own * scale)
     return round((rnd + border) * scale) if rnd > 0 else 0
 
 

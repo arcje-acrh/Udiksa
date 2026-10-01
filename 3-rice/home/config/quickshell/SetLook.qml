@@ -6,6 +6,9 @@ import Quickshell
 
 SetPage {
     id: page
+    // corner radii of the screen / notch (Prefs); the lock + login screen and GRUB follow a moment later (rice-theme)
+    function setCorner(key, px) { Prefs.set(["corners", key], px); if (key === "screen") cornerLater.restart() }
+    Timer { id: cornerLater; interval: 800; onTriggered: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/rice-theme", "corners"]) }
     readonly property var v: host ? host.hv : ({})
     function set(k, val) { host.set(k, val) }
     function onoff(b) { return b ? 0 : 1 }
@@ -118,10 +121,6 @@ SetPage {
         SetNum { value: page.v.border_size ?? 2; from: 0; to: 8; unit: " px"; onChanged: (x) => page.set("border_size", x) }
     }
     SetRow {
-        title: "Rounded corners"
-        SetNum { value: page.v.rounding ?? 8; from: 0; to: 24; unit: " px"; onChanged: (x) => page.set("rounding", x) }
-    }
-    SetRow {
         title: "Active window opacity"
         SetNum { value: Math.round((page.v.active_opacity ?? 1) * 100); from: 50; to: 100; unit: " %"; onChanged: (x) => page.set("active_opacity", x / 100) }
     }
@@ -132,6 +131,42 @@ SetPage {
     SetRow {
         title: "Dim other windows"
         Seg { options: ["On", "Off"]; current: page.onoff(page.v.dim_inactive); onPicked: (i) => page.set("dim_inactive", i === 0) }
+    }
+
+    // ---- corners: windows (Hyprland), the screen and the notch (Prefs corners, -1 = same as the windows) ----
+    SetGroup { title: "Corners" }
+    SetRow {
+        title: "Windows"
+        desc: "How round windows are. Their visible curve is this plus the border (" + Math.round(Corners.winPx) + " px now)."
+        SetNum { value: page.v.rounding ?? 8; from: 0; to: 24; unit: " px"; onChanged: (x) => page.set("rounding", x) }
+    }
+    component CornerRow: SetRow {
+        id: cr
+        property string key: ""
+        property int max: 30
+        readonly property int cur: (Prefs.v.corners || {})[key] ?? -1
+        readonly property bool own: cur >= 0
+        Row {
+            spacing: 10
+            Seg {
+                options: ["Same as windows", "Own"]
+                current: cr.own ? 1 : 0
+                onPicked: (i) => page.setCorner(cr.key, i === 0 ? -1 : Math.round(Corners.winPx))
+            }
+            SetNum {
+                visible: cr.own
+                value: cr.cur; from: 0; to: cr.max; unit: " px"
+                onChanged: (x) => page.setCorner(cr.key, x)
+            }
+        }
+    }
+    CornerRow {
+        key: "screen"; title: "Screen corners"
+        desc: "The black arcs in the corners of the screen, also on the lock and login screen and the boot menu."
+    }
+    CornerRow {
+        key: "notch"; title: "Notch corners"; max: 15
+        desc: "The notch's bottom corners (at most 15 px, half its height)."
     }
 
     SetGroup { title: "Shadows" }

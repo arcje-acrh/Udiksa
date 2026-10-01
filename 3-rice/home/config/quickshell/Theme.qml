@@ -55,7 +55,7 @@ Singleton {
 
     readonly property int panelMaxHeight: 520   // tallest a panel may grow (Wi-Fi sign-in forms); sizes the bar window
     readonly property real notchFraction: 0.405  // notch width as a fraction of the screen width (user 2026-09-25: 10% narrower than 0.45)
-    readonly property int islandRadius: 14
+    readonly property real islandRadius: Corners.notch   // the notch's bottom corners: Settings > Windows > Corners (default = the windows')
 
     // ---- fonts ----
     readonly property string font:    "Iosevka Nerd Font"
