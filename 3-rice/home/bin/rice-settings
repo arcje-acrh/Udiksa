@@ -369,6 +369,8 @@ def cmd_set(key, value):
     hypr(["eval", "hl.config(" + lua_table(nest([(path, lua_val(key, v))])) + ")"])
     if key in ("rounding", "border_size"):           # the shell's rounded screen corners follow (ScreenCorners.qml)
         subprocess.run(["qs", "ipc", "call", "corners", "refresh"], capture_output=True)
+        subprocess.Popen([os.path.join(HOME, ".local/bin/rice-theme"), "corners"],      # lock / login screen + GRUB
+                         stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
     print(json.dumps({key: current(opt, typ)}))
 
 

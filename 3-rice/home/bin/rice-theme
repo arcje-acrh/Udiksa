@@ -15,6 +15,8 @@
                                            wallpaper grows from, screen pixels from the top-left)
   rice-theme next | prev                   next / previous wallpaper of the current theme (wipe)
   rice-theme reapply                       write the current theme again (e.g. after editing this script)
+  rice-theme corners                       redo the rounded screen corners of the lock / login screen and GRUB
+                                           (Settings runs it after a rounding or border change)
   rice-theme current                       the current theme + wallpaper
   rice-theme thumbs                        (re)make the previews
   rice-theme colors <picture>              show a picture's main colours + the theme colours it would give
@@ -571,6 +573,21 @@ GRUB = "/boot/grub/themes/rice"          # owned by the user (chown once), so no
 IOSEVKA = "/usr/share/fonts/TTF/IosevkaNerdFont-Regular.ttf"   # same font as the notch (Theme.font)
 
 
+def corner_px():
+    """Rounded screen corners in SCREEN pixels = the windows' visible curve (decoration:rounding + general:border_size)
+    x the screen's scale -- the same radius as the desktop's (quickshell Corners.qml). None = Hyprland not reachable."""
+    def opt(name):
+        r = subprocess.run(["hyprctl", "getoption", name, "-j"], capture_output=True, text=True)
+        return json.loads(r.stdout)["int"]
+    try:
+        rnd, border = opt("decoration:rounding"), opt("general:border_size")
+        mons = json.loads(subprocess.run(["hyprctl", "monitors", "-j"], capture_output=True, text=True).stdout)
+        scale = next((m["scale"] for m in mons if m.get("focused")), mons[0]["scale"] if mons else 1)
+    except (ValueError, KeyError, IndexError, OSError):
+        return None
+    return round((rnd + border) * scale) if rnd > 0 else 0
+
+
 def grub(p, theme, img):
     """GRUB = 'glowing terminal': the wallpaper faint behind a dark screen with scanlines, monospace entries,
     the chosen one in the accent with a > in front. Fonts (term-*.pf2) were made once with grub-mkfont."""
@@ -597,6 +614,19 @@ def grub(p, theme, img):
     png("select_c.png", f"format=rgba,geq=r={ar}:g={ag}:b={ab}:a=26")
     png("select_w.png", f"format=rgba,drawtext=fontfile={IOSEVKA}:text='>':fontsize=34:fontcolor={p['accent']}:x=10:y=(h-th)/2-2",
         "44x56")
+    # rounded screen corners like the desktop: four black arcs (antialiased) placed by the theme in the corners
+    cr = corner_px()
+    if cr is None:                                   # not in Hyprland: keep the size used last time
+        m = re.search(r"width = (\d+)\s+height = \d+\s+file = \"corner_tl\.png\"", open(os.path.join(GRUB, "theme.txt")).read()) \
+            if os.path.exists(os.path.join(GRUB, "theme.txt")) else None
+        cr = int(m.group(1)) if m else 0
+    corners = ""
+    if cr > 0:
+        arc = f"format=rgba,geq=r=0:g=0:b=0:a='255*clip(hypot({cr}-X-0.5\\,{cr}-Y-0.5)-{cr}+0.5\\,0\\,1)'"
+        for name, flip in (("tl", ""), ("tr", ",hflip"), ("bl", ",vflip"), ("br", ",hflip,vflip")):
+            png(f"corner_{name}.png", arc + flip, f"{cr}x{cr}")
+        for name, left, top in (("tl", "0", "0"), ("tr", f"100%-{cr}", "0"), ("bl", "0", f"100%-{cr}"), ("br", f"100%-{cr}", f"100%-{cr}")):
+            corners += f'\n+ image {{\n    left = {left}\n    top = {top}\n    width = {cr}\n    height = {cr}\n    file = "corner_{name}.png"\n}}\n'
     ver = subprocess.run(["pacman", "-Q", "grub"], capture_output=True, text=True).stdout.split()[-1:] or ["2"]
     ver = ver[0].split(":")[-1].split("-")[0]
     txt = f"""# rice GRUB theme -- written by rice-theme for "{theme}"; edit rice-theme, not this file.
@@ -659,7 +689,7 @@ terminal-border: "0"
     font = "RiceTerm Regular 24"
     color = "{p['dim']}"
 }}
-"""
+""" + corners
     write(os.path.join(GRUB, "theme.txt"), txt)
 
 
@@ -678,6 +708,13 @@ def greeter(p, img):
         acc = mix(acc, "#ffffff", 0.15)
     cols = {"fg": fg, "accent": acc, "dim": mix(fg, "#000000", 0.55),
             "scrim": mix(p["bg"], "#000000", 0.6) if p["mode"] == "dark" else "#0c0c0e"}
+    cr = corner_px()                                 # rounded screen corners (LoginScreen.qml), screen pixels
+    if cr is None:
+        try:
+            cr = json.load(open(os.path.join(GREETER, "theme.json"))).get("corner", 0)
+        except (OSError, ValueError):
+            cr = 0
+    cols["corner"] = cr
     write(os.path.join(GREETER, "theme.json"), json.dumps(cols, indent=2) + "\n")
     tmp = os.path.join(GREETER, "wallpaper.tmp.jpg")
     r = subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", img, "-vf",
@@ -1148,6 +1185,12 @@ if __name__ == "__main__":
         if not w or not os.path.exists(w):
             sys.exit("the theme in use was removed (or none applied yet): pick one with Super+T")
         cmd_apply(w, None, "none")
+    elif a[0] == "corners":
+        w = state().get("wallpaper")
+        if w and os.path.exists(w):
+            p = palette_for(w)
+            grub(p, os.path.basename(os.path.dirname(w)), w)
+            greeter(p, w)
     elif a[0] == "current":
         print(json.dumps(state()))
     elif a[0] == "import" and len(a) > 1:

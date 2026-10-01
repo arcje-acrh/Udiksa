@@ -9,6 +9,7 @@
 // a hairline along the bottom with the session on the left (login only) and Restart / Shut Down on the right.
 // Click the name = next user, click the session = next session. No messages: a wrong password shakes + clears.
 import QtQuick
+import QtQuick.Shapes
 import Quickshell.Services.UPower
 import Quickshell.Services.Mpris
 
@@ -318,6 +319,34 @@ Item {
                     Behavior on opacity { NumberAnimation { duration: 150 } }
                     font { family: root.font; pixelSize: 12 * root.s; letterSpacing: 1 * root.s }
                     MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.power(modelData.act) }
+                }
+            }
+        }
+    }
+
+    // rounded screen corners, the same as the desktop's (rice-theme puts the radius in SCREEN pixels into theme.json
+    // "corner"; dividing by the device pixel ratio gives this screen's units, in the greeter and the lock alike)
+    Item {
+        id: corners
+        anchors.fill: parent
+        z: 1000
+        readonly property real r: ((root.colours && root.colours.corner) || 0) / Screen.devicePixelRatio
+        visible: r > 0
+        Repeater {
+            model: [[0, 0, 0], [1, 0, 90], [1, 1, 180], [0, 1, 270]]
+            delegate: Shape {
+                required property var modelData
+                x: modelData[0] ? corners.width - corners.r : 0
+                y: modelData[1] ? corners.height - corners.r : 0
+                width: corners.r; height: corners.r
+                rotation: modelData[2]
+                preferredRendererType: Shape.CurveRenderer
+                ShapePath {
+                    fillColor: "black"; strokeColor: "transparent"
+                    startX: 0; startY: 0
+                    PathLine { x: corners.r; y: 0 }
+                    PathArc { x: 0; y: corners.r; radiusX: corners.r; radiusY: corners.r; direction: PathArc.Counterclockwise }
+                    PathLine { x: 0; y: 0 }
                 }
             }
         }

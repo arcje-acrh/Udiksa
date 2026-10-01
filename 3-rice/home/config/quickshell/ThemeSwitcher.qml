@@ -99,6 +99,8 @@ Scope {
         anchors { top: true; left: true; right: true; bottom: true }
         color: "transparent"
 
+        CornerArcs { z: 100; opacity: stage.opacity }   // rounded screen corners stay while it covers the screen
+
         Item {
             id: stage
             anchors.fill: parent

@@ -76,3 +76,5 @@ singleton Recorder Recorder.qml
 singleton Weather Weather.qml
 UsagePanel UsagePanel.qml
 ScreenCorners ScreenCorners.qml
+singleton Corners Corners.qml
+CornerArcs CornerArcs.qml
