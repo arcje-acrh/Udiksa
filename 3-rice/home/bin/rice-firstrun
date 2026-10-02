@@ -18,6 +18,7 @@ theme_img=$(python3 -c 'import json,os;print(json.load(open(os.path.expanduser("
 "$HOME/.local/bin/rice-defaults"
 # Settings > Power (~/.config/hypr/power.json): idle timers (hypridle.conf) + lid / power button / hibernate delay (logind)
 "$HOME/.local/bin/rice-settings" power apply
+"$HOME/.local/bin/rice-settings" cursor          # mouse pointer: GTK, X11 apps, login screen (Udiksa unless picked)
 rm -f "$HOME/.local/state/rice/firstrun"
 notify-send -a Rice "Setup finished" "Theme, default apps and desktop settings are in place. Super+T changes the theme." 2>/dev/null
 echo "done"

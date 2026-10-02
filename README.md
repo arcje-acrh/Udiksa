@@ -190,6 +190,8 @@ Command-line tools that come with it: `rice-theme` (themes), `rice-settings` (Se
 - Theme palettes by their authors: Catppuccin, Dracula, Everforest, Gruvbox, Gruvbox Material, Kanagawa, Monokai Pro,
   Nord, One Dark, Rosé Pine, Solarized, Nightfox (Terafox), Tokyo Night, Zenburn
 - The fastfetch layout is adapted from [JaKooLit's Hyprland-Dots](https://github.com/JaKooLit/Hyprland-Dots)
+- The mouse pointer is [Bibata](https://github.com/ful1e5/Bibata_Cursor) by Abdulkaiz Khatri (GPL-3.0): its Original
+  drawings in `3-rice/assets/bibata-original`, recoloured with each theme
 - Wallpapers by their artists: every theme folder has a `SOURCES.txt` with the link and licence of each picture
 
 ## License

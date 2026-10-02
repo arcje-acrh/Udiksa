@@ -816,6 +816,18 @@ palette = [{", ".join(f'"{c}"' for c in pal)}]
 """)
 
 
+def cursor(p):
+    """The Udiksa mouse pointer (Bibata Original, ~/.local/bin/rice-cursor): fill = accent, outline + busy circle = the
+    dark end of the theme (bg on dark themes, the text colour on light ones), Catppuccin-style. Built in the background
+    (~1.5 s), so a theme switch is not slowed down; the pointer refreshes when it is done."""
+    rc = os.path.join(HOME, ".local/bin/rice-cursor")
+    if not os.path.exists(rc) or not shutil.which("hyprcursor-util"):
+        return
+    dark = p["bg"] if p["mode"] != "light" else p["text"]
+    subprocess.Popen([rc, "build", p["accent"], dark, dark], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                     start_new_session=True)
+
+
 def btop(p):
     """btop (system monitor, Settings > Performance / the launcher): ~/.config/btop/themes/rice.theme from the palette,
     selected in btop.conf (only color_theme + theme_background are set, your other btop settings stay). A running btop
@@ -1066,7 +1078,7 @@ def cmd_apply(img, pos=None, transition="grow"):
     if os.path.exists(kbd):
         subprocess.Popen([kbd, "theme"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     hypr(p, theme); kitty(p, theme); starship(p); fastfetch(p); gtk(p, theme); qt(p, theme)
-    grub(p, theme, img); greeter(p, img); ncspot(p); cava(p); satty(p); btop(p); viewers(p); office(p)
+    grub(p, theme, img); greeter(p, img); ncspot(p); cava(p); satty(p); cursor(p); btop(p); viewers(p); office(p)
     reload_apps()
     write(STATE, json.dumps({"theme": theme, "wallpaper": img}) + "\n")
     print(f"{theme}: {os.path.basename(img)}")

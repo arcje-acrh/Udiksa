@@ -80,3 +80,6 @@ uv
 
 # external monitor brightness over the cable (Settings > Display, DDC/CI; mostly desktops) -- 2026-10-02
 ddcutil
+
+# mouse pointer: rice-cursor builds the XCursor files of the Udiksa pointer -- 2026-10-03
+xorg-xcursorgen

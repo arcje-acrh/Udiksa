@@ -1,0 +1,125 @@
+#!/usr/bin/env python3
+"""rice-cursor -- the Udiksa mouse pointer: Bibata Original (pointy) recoloured with the theme.
+
+  rice-cursor build <fill> <outline> <busy-bg>   (#rrggbb) build ~/.local/share/icons/Udiksa: a hyprcursor theme (what
+                                                 Hyprland draws, sharp at any size) + XCursor files (X11 apps, login)
+                                                 rice-theme runs this on every theme change; the pointer refreshes if
+                                                 Udiksa is the one in use (Settings > Themes > Pointer)
+  rice-cursor greeter <theme> <size>             copy that pointer to /var/lib/rice-greeter/icons/pointer (the login
+                                                 screen's, /etc/greetd/config.toml); rice-settings cursor runs it
+Source drawings: ~/Udiksa/3-rice/assets/bibata-original (GPL-3.0, see its README).
+"""
+import json, os, shutil, subprocess, sys, tempfile
+from concurrent.futures import ThreadPoolExecutor
+
+HOME = os.path.expanduser("~")
+ASSETS = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../assets/bibata-original")
+DEST = os.path.join(HOME, ".local/share/icons/Udiksa")
+XSIZES = (24, 30, 36, 48)                 # XCursor bitmaps: 1x, 1.25x, 1.5x, 2x of 24
+GREETER = "/var/lib/rice-greeter"         # owned by the user (rice-theme writes there too), readable by the greeter
+
+
+def chosen():
+    """The pointer picked in Settings (rice-settings keeps it in its state file); Udiksa when none."""
+    try:
+        c = json.load(open(os.path.join(HOME, ".local/state/rice/settings.json"))).get("_cursor", {})
+    except (OSError, ValueError):
+        c = {}
+    return c.get("theme", "Udiksa"), str(c.get("size", 24))
+
+
+def greeter(theme, size):
+    src = DEST if theme == "Udiksa" else os.path.join("/usr/share/icons", theme)
+    if not os.access(GREETER, os.W_OK) or not os.path.isdir(os.path.join(src, "cursors")):
+        return
+    dst = os.path.join(GREETER, "icons/pointer")
+    tmp = dst + ".new"
+    shutil.rmtree(tmp, ignore_errors=True)
+    shutil.copytree(os.path.join(src, "cursors"), os.path.join(tmp, "cursors"), symlinks=True)
+    open(os.path.join(tmp, "index.theme"), "w").write(f"[Icon Theme]\nName=pointer\nComment={theme}\n")
+    shutil.rmtree(dst, ignore_errors=True)
+    os.makedirs(os.path.dirname(dst), exist_ok=True)
+    os.rename(tmp, dst)
+
+
+def recolour(svg, fill, outline, bg):
+    t = open(svg).read()
+    for a, b in (("#00FF00", fill), ("#0000FF", outline), ("#FF0000", bg)):
+        t = t.replace(a, b).replace(a.lower(), b)
+    return t
+
+
+def build(fill, outline, bg):
+    cursors = json.load(open(os.path.join(ASSETS, "cursors.json")))
+    work = tempfile.mkdtemp(prefix="rice-cursor-")
+    try:
+        src, out = os.path.join(work, "src"), os.path.join(work, "out")
+        hc = os.path.join(src, "hyprcursors")
+        os.makedirs(hc)
+        open(os.path.join(src, "manifest.hl"), "w").write(
+            "name = Udiksa\ndescription = Bibata Original in the Udiksa theme colours\nversion = 1\ncursors_directory = hyprcursors\n")
+        xdir = os.path.join(out, "cursors")
+        os.makedirs(xdir)
+        jobs = []
+        for name, c in cursors.items():
+            d = os.path.join(hc, name)
+            os.makedirs(d)
+            meta = [f"hotspot_x = {c['hx']:.4f}", f"hotspot_y = {c['hy']:.4f}", "resize_algorithm = bilinear"]
+            if c["aliases"]:
+                meta.append("define_override = " + ";".join(c["aliases"]))
+            xcfg = []
+            for i, f in enumerate(c["frames"]):
+                fn = f"{i:02d}.svg"
+                open(os.path.join(d, fn), "w").write(recolour(os.path.join(ASSETS, "svg", f), fill, outline, bg))
+                meta.append(f"define_size = 0, {fn}" + (f", {c['delay']}" if len(c["frames"]) > 1 else ""))
+                for s in XSIZES:
+                    png = os.path.join(work, f"{name}-{i:02d}-{s}.png")
+                    jobs.append((os.path.join(d, fn), png, s))
+                    xcfg.append(f"{s} {round(c['hx'] * s)} {round(c['hy'] * s)} {png}" + (f" {c['delay']}" if len(c["frames"]) > 1 else ""))
+            open(os.path.join(d, "meta.hl"), "w").write("\n".join(meta) + "\n")
+            open(os.path.join(work, f"{name}.cfg"), "w").write("\n".join(xcfg) + "\n")
+
+        def render(j):
+            subprocess.run(["rsvg-convert", "-w", str(j[2]), "-h", str(j[2]), "-o", j[1], j[0]], check=True)
+        with ThreadPoolExecutor(os.cpu_count() or 4) as ex:
+            list(ex.map(render, jobs))
+        for name, c in cursors.items():
+            subprocess.run(["xcursorgen", os.path.join(work, f"{name}.cfg"), os.path.join(xdir, name)], check=True)
+            for a in c["aliases"]:
+                if not os.path.exists(os.path.join(xdir, a)):
+                    os.symlink(name, os.path.join(xdir, a))
+
+        r = subprocess.run(["hyprcursor-util", "--create", src, "--output", work], capture_output=True, text=True)
+        built = os.path.join(work, "theme_Udiksa")
+        if r.returncode or not os.path.isdir(built):
+            sys.exit("hyprcursor-util failed: " + (r.stderr or r.stdout).strip())
+        for f in os.listdir(built):                              # manifest.hl + hyprcursors/*.hlc
+            shutil.move(os.path.join(built, f), os.path.join(out, f))
+        open(os.path.join(out, "index.theme"), "w").write(
+            "[Icon Theme]\nName=Udiksa\nComment=Bibata Original in the Udiksa theme colours (rice-cursor)\n")
+        # swap in at once (a half-written theme is never seen)
+        os.makedirs(os.path.dirname(DEST), exist_ok=True)
+        old = DEST + ".old"
+        shutil.rmtree(old, ignore_errors=True)
+        if os.path.exists(DEST):
+            os.rename(DEST, old)
+        shutil.move(out, DEST)
+        shutil.rmtree(old, ignore_errors=True)
+    finally:
+        shutil.rmtree(work, ignore_errors=True)
+    # the pointer in use is Udiksa: make Hyprland load the new colours (same name -> it reloads the files), and the
+    # login screen gets them too
+    theme, size = chosen()
+    if theme == "Udiksa":
+        subprocess.run(["hyprctl", "setcursor", "Udiksa", size], capture_output=True)
+        greeter(theme, size)
+
+
+if __name__ == "__main__":
+    a = sys.argv[1:]
+    if len(a) == 4 and a[0] == "build":
+        build(*a[1:])
+    elif len(a) == 3 and a[0] == "greeter":
+        greeter(a[1], a[2])
+    else:
+        sys.exit(__doc__)

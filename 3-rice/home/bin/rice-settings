@@ -23,6 +23,10 @@ applied live with `hyprctl eval 'hl.config({...})'`.
   rice-settings anim <key> <value>   animations (Settings > Windows > Animations): speed <50-300 %>,
                                       windows popin|slide|fade|gnomed, workspaces slide|slidevert|fade|slidefade,
                                       feel spring|smooth|crisp; written as hl.animation() lines into settings.lua
+  rice-settings cursor [<theme> <size>]  mouse pointer (Settings > Themes > Pointer): Udiksa (theme colours) or a
+                                      Bibata-<Original|Modern>-<Classic|Ice|Amber>, size 16-64; no arguments = apply
+                                      the saved one (first login). Live (hyprctl setcursor), GTK (gsettings), X11 apps
+                                      (~/.icons/default), new apps (settings.lua env), login screen (rice-cursor)
   rice-settings startup add|rm <command>     your own startup commands (run at the next login)
   rice-settings bind add <keys> <command>    your own shortcut, e.g. "SUPER + B" "zen-browser"
   rice-settings bind rm <keys>
@@ -152,6 +156,11 @@ def write_lua(d):
     a.update(d.get("_anim", {}))
     if anim_lines(a):
         txt += "\n-- animations: speed / styles / feel from Settings > Windows > Animations\n" + "\n".join(anim_lines(a)) + "\n"
+    if d.get("_cursor"):
+        t, sz = d["_cursor"]["theme"], str(d["_cursor"]["size"])
+        txt += ("\n-- mouse pointer from Settings > Themes > Pointer (env.lua has the rice default)\n"
+                f"hl.env(\"XCURSOR_THEME\", {lua_str(t)})\nhl.env(\"HYPRCURSOR_THEME\", {lua_str(t)})\n"
+                f"hl.env(\"XCURSOR_SIZE\", {lua_str(sz)})\nhl.env(\"HYPRCURSOR_SIZE\", {lua_str(sz)})\n")
     if d.get("_startup"):
         txt += "\n-- startup apps added in Settings\nhl.on(\"hyprland.start\", function()\n"
         txt += "".join(f"    hl.exec_cmd({lua_str(c)})\n" for c in d["_startup"]) + "end)\n"
@@ -424,6 +433,41 @@ def cmd_anim(key, value):
     print(json.dumps(a))
 
 
+CURSORS = ["Udiksa"] + [f"Bibata-{s}-{c}" for s in ("Original", "Modern") for c in ("Classic", "Ice", "Amber")]
+CURSOR_DEFAULT = {"theme": "Udiksa", "size": 24}
+
+
+def cursor_saved():
+    c = dict(CURSOR_DEFAULT)
+    c.update(load().get("_cursor", {}))
+    return c
+
+
+def cmd_cursor(theme=None, size=None):
+    d = load()
+    if theme is not None:
+        if theme not in CURSORS:
+            sys.exit("cursor: one of " + ", ".join(CURSORS))
+        c = {"theme": theme, "size": max(16, min(64, int(float(size))))}
+        if c == CURSOR_DEFAULT:
+            d.pop("_cursor", None)
+        else:
+            d["_cursor"] = c
+        save(d)
+        write_lua(d)
+    c = cursor_saved()
+    t, sz = c["theme"], str(c["size"])
+    hypr(["setcursor", t, sz])                                       # Hyprland + apps using the cursor-shape protocol
+    for k, v in (("cursor-theme", t), ("cursor-size", sz)):          # GTK apps
+        subprocess.run(["gsettings", "set", "org.gnome.desktop.interface", k, v if k == "cursor-size" else t],
+                       capture_output=True)
+    idx = os.path.join(HOME, ".icons/default/index.theme")           # X11 apps / toolkits that read the default theme
+    os.makedirs(os.path.dirname(idx), exist_ok=True)
+    open(idx, "w").write(f"[Icon Theme]\nName=Default\nInherits={t}\n")
+    subprocess.run([os.path.join(HOME, ".local/bin/rice-cursor"), "greeter", t, sz], capture_output=True)  # login screen
+    print(json.dumps(c))
+
+
 def cmd_get():
     saved = load()
     out = {k: current(o[2], o[3]) for k, o in OPTS.items()}
@@ -432,6 +476,7 @@ def cmd_get():
     out["binds"] = saved.get("_binds", [])
     out["power"] = power_state()
     out["anim"] = anim_saved()
+    out["cursor"] = cursor_saved()
     print(json.dumps(out))
 
 
@@ -511,6 +556,8 @@ if __name__ == "__main__":
         cmd_monitor("many", a[2])
     elif a[0] == "monitor" and len(a) >= 3:
         cmd_monitor(a[1], a[2], a[3] if len(a) > 3 else None)
+    elif a[0] == "cursor" and len(a) in (1, 3):
+        cmd_cursor(*a[1:])
     elif a[0] == "anim" and len(a) == 3:
         cmd_anim(a[1], a[2])
     elif a[0] == "power" and len(a) in (1, 2, 3):

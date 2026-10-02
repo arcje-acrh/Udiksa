@@ -1,0 +1,4 @@
+Bibata Original cursor drawings (SVG) from https://github.com/ful1e5/Bibata_Cursor v2.0.7, GPL-3.0 (see LICENSE),
+by Abdulkaiz Khatri. Colours are placeholders: #00FF00 fill, #0000FF outline, #FF0000 busy-circle background.
+cursors.json = names, hotspots (0..1), aliases and animation frames, taken from its configs/normal/x.build.toml.
+~/.local/bin/rice-cursor recolours them with the theme and builds the "Udiksa" pointer (hyprcursor + XCursor).
