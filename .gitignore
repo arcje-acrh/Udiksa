@@ -22,3 +22,6 @@
 3-rice/optional/ncspot/home/config/ncspot/credentials*
 __pycache__/
 *.tmp
+
+# ---- development notes (local only: the project log + DIY guide, never committed) ----
+dev/
