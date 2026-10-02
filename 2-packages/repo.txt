@@ -83,3 +83,5 @@ ddcutil
 
 # mouse pointer: rice-cursor builds the XCursor files of the Udiksa pointer -- 2026-10-03
 xorg-xcursorgen
+# shake to find: Hyprland's plugin manager builds hypr-dynamic-cursors (pulls cmake + meson) -- 2026-10-03
+hyprpm

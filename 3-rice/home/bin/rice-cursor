@@ -1,21 +1,25 @@
 #!/usr/bin/env python3
 """rice-cursor -- the Udiksa mouse pointer: Bibata Original (pointy) recoloured with the theme.
 
-  rice-cursor build <fill> <outline> <busy-bg>   (#rrggbb) build ~/.local/share/icons/Udiksa: a hyprcursor theme (what
-                                                 Hyprland draws, sharp at any size) + XCursor files (X11 apps, login)
-                                                 rice-theme runs this on every theme change; the pointer refreshes if
-                                                 Udiksa is the one in use (Settings > Themes > Pointer)
+  rice-cursor build                              build ~/.local/share/icons/Udiksa from the theme in use
+                                                 (~/.config/quickshell/colors.json): the pointer in the accent with a very
+                                                 thin dark edge; Bibata's own fixed colours (busy spinner, resize corners, copy,
+                                                 no-drop, ...) -> theme colours. A
+                                                 hyprcursor theme (what Hyprland draws, sharp at any size) + XCursor files
+                                                 (X11 apps, login). rice-theme runs it on every theme change; the pointer
+                                                 refreshes if Udiksa is the one in use (Settings > Themes > Pointer)
   rice-cursor greeter <theme> <size>             copy that pointer to /var/lib/rice-greeter/icons/pointer (the login
                                                  screen's, /etc/greetd/config.toml); rice-settings cursor runs it
 Source drawings: ~/Udiksa/3-rice/assets/bibata-original (GPL-3.0, see its README).
 """
-import json, os, shutil, subprocess, sys, tempfile
+import json, os, re, shutil, subprocess, sys, tempfile
 from concurrent.futures import ThreadPoolExecutor
 
 HOME = os.path.expanduser("~")
 ASSETS = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../assets/bibata-original")
 DEST = os.path.join(HOME, ".local/share/icons/Udiksa")
-XSIZES = (24, 30, 36, 48)                 # XCursor bitmaps: 1x, 1.25x, 1.5x, 2x of 24
+BORDER = 0.5                               # outline = this x Bibata's own (17 of 256 -> ~0.8 px at 25 px): very thin
+XSIZES = (20, 24, 25, 28, 32, 38, 50)     # XCursor bitmaps: the Settings sizes + 1.5x / 2x of 25
 GREETER = "/var/lib/rice-greeter"         # owned by the user (rice-theme writes there too), readable by the greeter
 
 
@@ -25,7 +29,7 @@ def chosen():
         c = json.load(open(os.path.join(HOME, ".local/state/rice/settings.json"))).get("_cursor", {})
     except (OSError, ValueError):
         c = {}
-    return c.get("theme", "Udiksa"), str(c.get("size", 24))
+    return c.get("theme", "Udiksa"), str(c.get("size", 25))
 
 
 def greeter(theme, size):
@@ -42,14 +46,41 @@ def greeter(theme, size):
     os.rename(tmp, dst)
 
 
-def recolour(svg, fill, outline, bg):
-    t = open(svg).read()
-    for a, b in (("#00FF00", fill), ("#0000FF", outline), ("#FF0000", bg)):
+def palette():
+    """Colour swaps from the theme: the pointer in the accent with a VERY THIN dark edge (user 2026-10-03: a dark fill /
+    the normal thick edge looked bad, no edge at all too). Bibata's placeholders (#00FF00 fill, #0000FF outline,
+    #FF0000 busy-circle background) and every colour it hard-codes (stock blue / green / red / purple ...) become theme
+    colours; the busy spinner's segments are dark so it turns visibly on the accent circle."""
+    c = json.load(open(os.path.join(HOME, ".config/quickshell/colors.json")))
+    acc = c.get("accent", "#ff8a5c")
+    dark = c.get("text", "#202020") if c.get("mode") == "light" else c.get("bg", "#202020")
+    m = {"#00FF00": acc, "#0000FF": dark, "#FF0000": acc,
+         "#FCB813": dark, "#F05024": dark, "#7EBA41": dark, "#32A0DA": dark,     # busy spinner (4 segments)
+         "#4FADDF": acc, "#96C865": acc, "#F1613A": acc, "#FDBE2A": acc,         # resize corners
+         "#179DD8": acc, "#0A6857": acc, "#5F3BE4": acc,                         # move, pin, context menu
+         "#06B231": c.get("accent2", acc), "#F27400": c.get("accent2", acc),     # copy, ask
+         "#FE0000": c.get("warn", acc), "#606060": c.get("muted", "#808080"),   # no-drop / crosshair, link
+         "#2C2C2C": acc}                                                         # person
+    return m
+
+
+def thin(m):
+    """an outline stroke (#0000FF) at BORDER x its width"""
+    tag = m.group(0)
+    if 'stroke="#0000FF"' not in tag:
+        return tag
+    return re.sub(r'stroke-width="([0-9.]+)"', lambda w: f'stroke-width="{float(w.group(1)) * BORDER:g}"', tag)
+
+
+def recolour(svg, swaps):
+    t = re.sub(r"<[^>]+>", thin, open(svg).read())
+    for a, b in swaps.items():
         t = t.replace(a, b).replace(a.lower(), b)
     return t
 
 
-def build(fill, outline, bg):
+def build():
+    swaps = palette()
     cursors = json.load(open(os.path.join(ASSETS, "cursors.json")))
     work = tempfile.mkdtemp(prefix="rice-cursor-")
     try:
@@ -70,7 +101,7 @@ def build(fill, outline, bg):
             xcfg = []
             for i, f in enumerate(c["frames"]):
                 fn = f"{i:02d}.svg"
-                open(os.path.join(d, fn), "w").write(recolour(os.path.join(ASSETS, "svg", f), fill, outline, bg))
+                open(os.path.join(d, fn), "w").write(recolour(os.path.join(ASSETS, "svg", f), swaps))
                 meta.append(f"define_size = 0, {fn}" + (f", {c['delay']}" if len(c["frames"]) > 1 else ""))
                 for s in XSIZES:
                     png = os.path.join(work, f"{name}-{i:02d}-{s}.png")
@@ -117,8 +148,8 @@ def build(fill, outline, bg):
 
 if __name__ == "__main__":
     a = sys.argv[1:]
-    if len(a) == 4 and a[0] == "build":
-        build(*a[1:])
+    if a == ["build"]:
+        build()
     elif len(a) == 3 and a[0] == "greeter":
         greeter(a[1], a[2])
     else:

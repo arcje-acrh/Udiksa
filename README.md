@@ -36,6 +36,7 @@
   keep awake, game mode, a usage panel (CPU per core, memory, network, disks, busiest programs), weather in the
   calendar, low-battery warnings and short status messages in the notch.
 - **App scratchpads**: btop, your music app and your chat app each on their own key, shown over whatever you do.
+- **A mouse pointer in the theme's colour** (Bibata's pointy shape) that grows when you shake it to find it.
 
 ## 22 themes, one key
 
@@ -183,18 +184,47 @@ Command-line tools that come with it: `rice-theme` (themes), `rice-settings` (Se
 
 ## Credits
 
-- [Hyprland](https://hypr.land), [Quickshell](https://quickshell.org), [matugen](https://github.com/InioX/matugen),
-  [kitty](https://sw.kovidgoyal.net/kitty/), [fastfetch](https://github.com/fastfetch-cli/fastfetch),
+Udiksa stands on a lot of other people's work. Thank you all.
+
+**Built on**
+- [Arch Linux](https://archlinux.org), [Hyprland](https://hypr.land), [Quickshell](https://quickshell.org)
+  (the whole shell: notch, panels, Settings, lock screen), [greetd](https://git.sr.ht/~kennylevinsen/greetd) +
+  [cage](https://www.hjdskes.nl/projects/cage/) (login screen), [Plymouth](https://www.freedesktop.org/wiki/Software/Plymouth/) (boot splash)
+
+**Parts taken or adapted from other projects**
+- Login / lock screen layout: the "sword" theme of [qylock](https://github.com/Darkkal44/qylock) by Darkkal44 (GPL-3.0)
+- Mouse pointer: [Bibata](https://github.com/ful1e5/Bibata_Cursor) by Abdulkaiz Khatri (GPL-3.0); its Original
+  drawings are in `3-rice/assets/bibata-original`, recoloured with each theme
+- fastfetch layout: [JaKooLit's Hyprland-Dots](https://github.com/JaKooLit/Hyprland-Dots)
+- Ideas for the tools (screen recording, colour picker, status messages, keep awake / game mode, usage panel,
+  scratchpads, weather): the [Caelestia](https://github.com/caelestia-dots/shell) shell
+
+**Tools and plugins the rice uses**
+- Theming: [matugen](https://github.com/InioX/matugen) (colours from wallpapers), [awww](https://codeberg.org/LGFae/awww)
+  (wallpapers), [adw-gtk3](https://github.com/lassekongo83/adw-gtk3), [Kvantum](https://github.com/tsujan/Kvantum),
+  [Iosevka](https://github.com/be5invis/Iosevka) + [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts)
+- Shake to find: [hypr-dynamic-cursors](https://github.com/VirtCode/hypr-dynamic-cursors) by VirtCode
+- Capture: [hyprshot](https://github.com/Gustash/Hyprshot), [Satty](https://github.com/Satty-org/Satty),
+  [hyprpicker](https://github.com/hyprwm/hyprpicker), [gpu-screen-recorder](https://git.dec05eba.com/gpu-screen-recorder)
+- Terminal and apps: [kitty](https://sw.kovidgoyal.net/kitty/), [starship](https://starship.rs),
+  [ble.sh](https://github.com/akinomyoga/ble.sh), [fastfetch](https://github.com/fastfetch-cli/fastfetch),
   [btop](https://github.com/aristocratos/btop), [ncspot](https://github.com/hrkfdn/ncspot),
-  [cava](https://github.com/karlstav/cava), [starship](https://starship.rs), [hyprshot](https://github.com/Gustash/Hyprshot)
+  [cava](https://github.com/karlstav/cava), [cliphist](https://github.com/sentriz/cliphist),
+  [libqalculate](https://github.com/Qalculate/libqalculate) (launcher calculator)
+- ASUS laptops: [asusctl / supergfxctl](https://gitlab.com/asus-linux)
+
+**Data**
+- Weather: [Open-Meteo](https://open-meteo.com) (forecast + place search, no account)
+- Holidays in the calendar: Google's public holiday calendar
+
+**Palettes and pictures**
 - Theme palettes by their authors: Catppuccin, Dracula, Everforest, Gruvbox, Gruvbox Material, Kanagawa, Monokai Pro,
   Nord, One Dark, Rosé Pine, Solarized, Nightfox (Terafox), Tokyo Night, Zenburn
-- The fastfetch layout is adapted from [JaKooLit's Hyprland-Dots](https://github.com/JaKooLit/Hyprland-Dots)
-- The mouse pointer is [Bibata](https://github.com/ful1e5/Bibata_Cursor) by Abdulkaiz Khatri (GPL-3.0): its Original
-  drawings in `3-rice/assets/bibata-original`, recoloured with each theme
 - Wallpapers by their artists: every theme folder has a `SOURCES.txt` with the link and licence of each picture
 
 ## License
 
-The code and configs are [MIT](LICENSE). Wallpapers and theme palettes keep their own licences (see `SOURCES.txt`
-in each theme folder).
+The code and configs are [MIT](LICENSE), except two parts under GPL-3.0 from the projects above: the Bibata pointer
+drawings (`3-rice/assets/bibata-original`, licence included there) and the login / lock screen layout adapted from
+qylock (`3-rice/home/config/quickshell/login/LoginScreen.qml`). Wallpapers and theme palettes keep their own licences
+(see `SOURCES.txt` in each theme folder).

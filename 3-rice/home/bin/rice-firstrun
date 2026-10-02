@@ -19,6 +19,11 @@ theme_img=$(python3 -c 'import json,os;print(json.load(open(os.path.expanduser("
 # Settings > Power (~/.config/hypr/power.json): idle timers (hypridle.conf) + lid / power button / hibernate delay (logind)
 "$HOME/.local/bin/rice-settings" power apply
 "$HOME/.local/bin/rice-settings" cursor          # mouse pointer: GTK, X11 apps, login screen (Udiksa unless picked)
+# shake to find (conf/cursor.lua): build the dynamic-cursors plugin against this Hyprland (a few minutes; needs the
+# running session). Afterwards "Update system" rebuilds it when Hyprland updates.
+if command -v hyprpm >/dev/null && ! hyprpm list 2>/dev/null | grep -q dynamic-cursors; then
+    hyprpm update && yes | hyprpm add https://github.com/virtcode/hypr-dynamic-cursors && hyprpm enable dynamic-cursors && hyprpm reload
+fi
 rm -f "$HOME/.local/state/rice/firstrun"
 notify-send -a Rice "Setup finished" "Theme, default apps and desktop settings are in place. Super+T changes the theme." 2>/dev/null
 echo "done"

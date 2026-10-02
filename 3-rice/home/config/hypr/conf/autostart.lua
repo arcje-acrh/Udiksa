@@ -24,6 +24,9 @@ hl.on("hyprland.start", function()
     -- idle: lock after 10 min, screen off after 11, lock before sleep (~/.config/hypr/hypridle.conf)
     hl.exec_cmd("hypridle")
 
+    -- Hyprland plugins built by hyprpm (shake to find: conf/cursor.lua); -n = a notification if one fails to load
+    hl.exec_cmd("sh -c 'command -v hyprpm >/dev/null && hyprpm reload -n'")
+
     -- first login after a fresh install (dotfiles 3-rice/apply.sh leaves a marker): theme, gsettings, default apps
     hl.exec_cmd("sh -c '[ -e ~/.local/state/rice/firstrun ] && ~/.local/bin/rice-firstrun'")
 end)

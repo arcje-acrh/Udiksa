@@ -17,7 +17,7 @@
 -- shows Lua errors in its error bar / `hyprctl configerrors`).
 local modules = {
     "env", "monitors", "input", "binds", "autostart",
-    "general", "decoration", "animations", "misc", "rules",
+    "general", "decoration", "animations", "misc", "rules", "cursor",
 }
 
 local errors = {}

@@ -10,8 +10,8 @@ if not (":" .. path .. ":"):find(":" .. bin .. ":", 1, true) then hl.env("PATH",
 -- every theme change). Settings > Themes > Pointer picks another; local/settings.lua (loaded later) then sets these again.
 hl.env("XCURSOR_THEME", "Udiksa")
 hl.env("HYPRCURSOR_THEME", "Udiksa")
-hl.env("XCURSOR_SIZE", "24")
-hl.env("HYPRCURSOR_SIZE", "24")
+hl.env("XCURSOR_SIZE", "25")
+hl.env("HYPRCURSOR_SIZE", "25")
 
 -- prefer native Wayland for toolkits, fall back to X11
 hl.env("GDK_BACKEND", "wayland,x11,*")

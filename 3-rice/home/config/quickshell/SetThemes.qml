@@ -77,7 +77,7 @@ SetPage {
 
     // ---- mouse pointer (rice-settings cursor): Udiksa = Bibata Original in the theme colours, or a Bibata ----
     SetGroup { title: "Pointer" }
-    property var cursor: ({ theme: "Udiksa", size: 24 })
+    property var cursor: ({ theme: "Udiksa", size: 25 })
     readonly property var hostCursor: host && host.hv ? host.hv.cursor : undefined
     onHostCursorChanged: if (hostCursor) cursor = JSON.parse(JSON.stringify(hostCursor))
     function setCursor(theme, size) {
@@ -88,7 +88,7 @@ SetPage {
     Process { id: cursorProc }
     SetRow {
         title: "Mouse pointer"
-        desc: "Udiksa = Bibata's pointy shape in the theme's colours (changes with every theme). The others are Bibata's own: Original = pointy, Modern = rounded."
+        desc: "Udiksa = Bibata's pointy shape, all in the theme's colour (changes with every theme). The others are Bibata's own: Original = pointy, Modern = rounded."
     }
     Flow {
         width: parent.width
@@ -111,12 +111,37 @@ SetPage {
     SetRow {
         title: "Pointer size"
         Seg {
-            readonly property var vals: [20, 24, 28, 32, 40]
+            readonly property var vals: [20, 24, 25, 28, 32]
             options: vals.map(v => v + " px")
             current: vals.indexOf(page.cursor.size)
             onPicked: (i) => page.setCursor(page.cursor.theme, vals[i])
         }
     }
+
+    SetRow {
+        title: "Shake to find"
+        desc: (page.host && page.host.hv && page.host.hv.shake && !page.host.hv.shake.plugin)
+              ? "Needs the dynamic-cursors plugin (built with hyprpm). Install opens a terminal; takes a few minutes."
+              : "Shake the mouse and the pointer grows for a moment, so you see where it is (like macOS)."
+        Row {
+            spacing: 8
+            SetButton {
+                visible: !!(page.host && page.host.hv && page.host.hv.shake && !page.host.hv.shake.plugin)
+                text: "Install"
+                onClicked: Quickshell.execDetached(["kitty", "--class", "rice-script", "--title", "Shake to find", "-e", "bash", "-c",
+                    "hyprpm update && yes | hyprpm add https://github.com/virtcode/hypr-dynamic-cursors; hyprpm enable dynamic-cursors && hyprpm reload; echo; read -rp 'Done. Press Enter to close.'"])
+            }
+            Seg {
+                options: ["Off", "On"]
+                current: page.shakeOn ? 1 : 0
+                onPicked: (i) => { page.shakeOn = i === 1; shakeProc.command = [page.host.helper, "shake", i === 1 ? "on" : "off"]; shakeProc.running = true }
+            }
+        }
+    }
+    property bool shakeOn: true
+    readonly property var hostShake: host && host.hv ? host.hv.shake : undefined
+    onHostShakeChanged: if (hostShake) shakeOn = hostShake.on !== false
+    Process { id: shakeProc }
 
     SetGroup { title: "Theme colours" }
     SetRow {

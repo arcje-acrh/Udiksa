@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # title: Update system
-# desc: Update everything: official packages (pacman -Syu), then AUR packages (yay -Sua)
+# desc: Update everything: official packages (pacman -Syu), then AUR packages (yay -Sua), then Hyprland plugins
 # terminal: yes
 running=$(uname -r)
 
@@ -10,6 +10,11 @@ sudo pacman -Syu || { echo; echo ">>> pacman stopped with an error (see above); 
 if command -v yay >/dev/null; then
     echo; echo "==> AUR packages (yay)"
     yay -Sua || echo ">>> An AUR package failed (see above); the official packages are already up to date."
+fi
+
+if command -v hyprpm >/dev/null && hyprpm list 2>/dev/null | grep -q Repository; then
+    echo; echo "==> Hyprland plugins (hyprpm: rebuilt only when Hyprland changed)"
+    hyprpm update || echo ">>> A plugin did not build (shake to find may be off until it does)."
 fi
 
 echo
