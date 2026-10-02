@@ -74,3 +74,6 @@ os-prober
 gpu-screen-recorder
 hyprpicker
 satty
+
+# Python: uv for projects, tools and Python versions (instead of pip/pipx) -- 2026-10-02
+uv
