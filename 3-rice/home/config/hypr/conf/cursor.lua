@@ -10,9 +10,10 @@ if hl.plugin and hl.plugin.dynamic_cursors then
             enabled   = true,
             threshold = 4.0,         -- how soon a shake counts (lower = sooner)
             base      = 1.0,         -- starts at the normal size (user: "too sudden") ...
-            speed     = 2.5,         -- ... and grows smoothly while shaking on (x per second)
-            influence = 0.5,         -- a harder shake grows a little faster
-            limit     = 3.0,         -- never bigger than 3x
+            speed     = 1.5,         -- ... and grows steadily while shaking on (x per second; user: "gradual, not a
+                                     -- few sizes straight to full")
+            influence = 0.0,         -- shake strength does not speed it up (that made it jump)
+            limit     = 2.5,         -- never bigger than 2.5x
             timeout   = 800,         -- ms it stays big after the shake ends
         },
         hyprcursor = {
