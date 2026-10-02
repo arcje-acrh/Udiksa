@@ -25,7 +25,7 @@ Item {
         if (!bat) return "No battery"
         if (full) return "Fully charged"
         if (charging) return "Charging · +" + rate.toFixed(0) + " W" + (bat.timeToFull > 0 ? " · full in " + hm(bat.timeToFull) : "")
-        if (!UPower.onBattery) return "Plugged in · not charging"
+        if (!Power.unplugged) return "Plugged in · not charging"
         return "On battery · −" + rate.toFixed(0) + " W" + (bat.timeToEmpty > 0 ? " · " + hm(bat.timeToEmpty) + " left" : "")
     }
 

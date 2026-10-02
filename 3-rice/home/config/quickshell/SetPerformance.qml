@@ -28,7 +28,7 @@ SetPage {
         title: "Performance mode"
         desc: (Power.asus ? "Silent: quiet, cool, 30 W. Balanced: 45 W. Turbo: 85 W, loud fans. "
                           : "Silent saves power, Turbo is fastest (power-profiles-daemon). ")
-              + (!Power.battery ? "" : Power.onBattery ? "On battery now." : "On the charger now.")
+              + (!Power.battery ? "" : Power.unplugged ? "On battery now." : "On the charger now.")
         Seg { options: Power.modeNames.map(m => Power.modeLabels[m]); current: Power.modeNames.indexOf(Power.mode); onPicked: (i) => Power.pickMode(Power.modeNames[i]) }
     }
     SetRow {

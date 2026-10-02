@@ -23,11 +23,11 @@ Singleton {
     readonly property var bat: UPower.displayDevice
     readonly property bool hasBat: bat !== null && bat.isPresent
     readonly property int pct: hasBat ? Math.round(bat.percentage * 100) : 100
-    readonly property bool onBattery: UPower.onBattery
-    onOnBatteryChanged: {
+    readonly property bool unplugged: Power.unplugged     // (not "unplugged": QML would never update it)
+    onUnpluggedChanged: {
         if (!hasBat) return
-        say(onBattery ? "󰂃" : "󰂄", onBattery ? "On battery · " + pct + "%" : "Charging · " + pct + "%")
-        if (!onBattery) { warned = false; critWarned = false }
+        say(unplugged ? "󰂃" : "󰂄", unplugged ? "On battery · " + pct + "%" : "Charging · " + pct + "%")
+        if (!unplugged) { warned = false; critWarned = false }
     }
 
     // ---------- low battery ----------
@@ -37,7 +37,7 @@ Singleton {
     function checkBattery() {
         if (!armed || !hasBat) return
         const w = Prefs.v.batWarn || 0, c = Prefs.v.batCrit || 0
-        if (!onBattery) return
+        if (!unplugged) return
         if (warned && pct > w + 2) warned = false
         if (critWarned && pct > c + 2) critWarned = false
         if (c > 0 && pct <= c && !critWarned) {

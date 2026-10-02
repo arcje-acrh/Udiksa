@@ -82,7 +82,7 @@ Item {
           Column {
             visible: Power.hasModes
             width: parent.width; spacing: 8
-            PanelTitle { title: "Mode"; action: !Power.battery ? "" : Power.onBattery ? "on battery" : "on charger" }
+            PanelTitle { title: "Mode"; action: !Power.battery ? "" : Power.unplugged ? "on battery" : "on charger" }
             Seg {
                 options: Power.modeNames.map(n => Power.modeLabels[n])
                 current: Power.modeNames.indexOf(Power.mode)

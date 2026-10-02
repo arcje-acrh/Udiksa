@@ -140,8 +140,10 @@ true`]
     }
 
     // ---------- the mode in effect ----------
-    readonly property bool onBattery: UPower.onBattery
-    readonly property string mode: cfg.auto ? (onBattery ? cfg.batteryMode : cfg.acMode) : cfg.manualMode
+    // on battery? NOT called unplugged: QML takes a property named "on" + capital for a signal handler and its binding
+    // never updated (2026-10-02: Auto stayed at 240 Hz after the charger came out, no low-battery warnings)
+    readonly property bool unplugged: UPower.onBattery
+    readonly property string mode: cfg.auto ? (unplugged ? cfg.batteryMode : cfg.acMode) : cfg.manualMode
     readonly property var modeCfg: cfg.modes[mode]
     // read asusd's profiles first: `asusctl profile set` WAKES the NVIDIA card (asusd re-applies its
     // tuning), so a profile is only set when it really differs
@@ -172,12 +174,12 @@ true`]
         onExited: if (startAfter) { startAfter = false; root.loaded = true; root.applyAll() }
     }
     onModeChanged: if (loaded) applyMode()
-    onOnBatteryChanged: if (loaded) { applyScreen(); applySlash() }
+    onUnpluggedChanged: if (loaded) { applyScreen(); applySlash() }
 
     // pick a mode from the panel: with Auto on, it becomes the mode for the current power source
     function pickMode(m) {
         if (!cfg.auto) setCfg(["manualMode"], m)
-        else setCfg([onBattery ? "batteryMode" : "acMode"], m)
+        else setCfg([unplugged ? "batteryMode" : "acMode"], m)
     }
 
     // ---------- applying (one command after another) ----------
@@ -318,7 +320,7 @@ true`]
     // ---------- screen ----------
     // cfg.screen: "low" / "high" / "auto" (older saves: "60" / "240"); low = 60 Hz, high = the panel's top rate
     readonly property string screenSel: cfg.screen === "60" || cfg.screen === "low" ? "low" : cfg.screen === "auto" ? "auto" : "high"
-    readonly property int hz: screenSel === "low" ? hzLow : screenSel === "high" ? hzHigh : (onBattery ? hzLow : hzHigh)
+    readonly property int hz: screenSel === "low" ? hzLow : screenSel === "high" ? hzHigh : (unplugged ? hzLow : hzHigh)
     // the laptop's own panel: ~/.local/bin/rice-panel-hz keeps its resolution / scale and changes only the rate
     function applyScreen() { if (panelSwitch) run([[Quickshell.env("HOME") + "/.local/bin/rice-panel-hz", String(hz)]]) }
     onHzChanged: if (loaded) applyScreen()
@@ -430,7 +432,7 @@ echo cpu_mhz=$(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | awk '
                 if (s.gpu_temp_c !== undefined) s.gpu_temp = s.gpu_temp_c
                 s.fanList = Object.keys(s).filter(k => k.startsWith("fan_")).map(k => s[k])
                 const b = UPower.displayDevice
-                s.watts = root.onBattery && b ? Math.abs(b.changeRate) : -1
+                s.watts = root.unplugged && b ? Math.abs(b.changeRate) : -1
                 root.stat = s
             }
         }
@@ -462,7 +464,7 @@ echo cpu_mhz=$(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | awk '
     function checkOneshot() {
         if (!oneshotRestore) return
         const d = UPower.displayDevice
-        if (UPower.onBattery || (d && d.state === UPowerDeviceState.FullyCharged)) {
+        if (root.unplugged || (d && d.state === UPowerDeviceState.FullyCharged)) {
             Quickshell.execDetached(["asusctl", "battery", "limit", String(oneshotRestore)])
             oneshotRestore = 0
             oneshotFile.setText("")
@@ -476,5 +478,10 @@ echo cpu_mhz=$(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | awk '
     IpcHandler {
         target: "power"
         function screen(): void { root.applyScreen() }
+        // hypridle after waking (rice-settings write_idle): the charger may have come or gone while asleep, and the
+        // screen is not back yet when that is noticed (rice-panel-hz finds no panel), so put the rate + lid light
+        // right a moment later (seen 2026-10-02: unplugged during hibernation -> woke at 240 Hz on battery)
+        function resumed(): void { resumeLater.restart() }
     }
+    Timer { id: resumeLater; interval: 3000; onTriggered: if (root.loaded) { root.applyScreen(); root.applySlash() } }
 }

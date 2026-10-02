@@ -31,7 +31,7 @@ SetPage {
     SetRow {
         visible: page.sl.capable === true
         title: "Slash lighting"
-        desc: page.slOn && Power.onBattery && !page.sl.battery ? "The LED bar on the lid. Dark right now: the laptop is on battery (see below)." : "The LED bar on the lid."
+        desc: page.slOn && Power.unplugged && !page.sl.battery ? "The LED bar on the lid. Dark right now: the laptop is on battery (see below)." : "The LED bar on the lid."
         Seg { options: ["On", "Off"]; current: page.sl.enabled ? 0 : 1; onPicked: (i) => page.sset("enabled", i === 0) }
     }
     SetRow {

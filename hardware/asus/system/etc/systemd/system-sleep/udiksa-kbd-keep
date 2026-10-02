@@ -1,0 +1,20 @@
+#!/bin/sh
+# udiksa-kbd-keep -- the keyboard light comes back exactly as it was before sleep (Udiksa, hardware/asus).
+# After hibernation (a full power-off) the keyboard restarts lit and asusd puts back ITS saved level, which misses
+# changes made with the Fn keys: e.g. light switched off -> on again after waking. systemd runs this before ("pre")
+# and after ("post") every sleep; the level (0-3) is kept in /run and put back through asusd (so asusd agrees),
+# once at once and again 3 s later (asusd restores its own a moment after waking).
+L=/sys/class/leds/asus::kbd_backlight/brightness
+S=/run/udiksa-kbd-level
+[ -r "$L" ] || exit 0
+case $1 in
+    pre)  cat "$L" > "$S" ;;
+    post)
+        [ -f "$S" ] || exit 0
+        lvl=$(sed -n '1{s/^0$/off/;s/^1$/low/;s/^2$/med/;s/^3$/high/;p}' "$S")
+        case $lvl in off|low|med|high) ;; *) exit 0 ;; esac
+        asusctl leds set "$lvl" >/dev/null 2>&1
+        systemd-run --quiet --no-block --collect --on-active=3 asusctl leds set "$lvl" >/dev/null 2>&1
+        ;;
+esac
+exit 0
