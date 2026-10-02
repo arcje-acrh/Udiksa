@@ -35,9 +35,23 @@ PanelWindow {
         onCleared: notch.close()
     }
 
-    // decoration in the empty strip beside the notch (SideArt.qml); click-through (outside the mask)
-    SideArt { side: "left";  anchors.left: parent.left;   anchors.right: notch.left; anchors.rightMargin: notch.ear + 8 }
-    SideArt { side: "right"; anchors.left: notch.right;   anchors.right: parent.right; anchors.leftMargin: notch.ear + 8 }
+    // decoration in the empty strip beside the notch (SideArt.qml): its OWN window on the bottom layer = part of the
+    // wallpaper, under every window. So a fullscreen app covers it, and when the notch rises above fullscreen (volume,
+    // brightness, ...) the art stays behind (user 2026-10-03). Sized from the RESTING notch, so it never moves when a
+    // panel opens. Click-through.
+    PanelWindow {
+        screen: win.screen
+        WlrLayershell.layer: WlrLayer.Bottom
+        WlrLayershell.namespace: "udiksa-art"      // not shell-*: no blur layer rule
+        exclusionMode: ExclusionMode.Ignore
+        anchors { top: true; left: true; right: true }
+        implicitHeight: Theme.stripHeight + 10
+        color: "transparent"
+        mask: Region {}
+        readonly property real gap: (width - notch.restWidth) / 2 - notch.ear - 8
+        SideArt { side: "left";  x: 0; width: Math.max(0, parent.gap) }
+        SideArt { side: "right"; x: parent.width - width; width: Math.max(0, parent.gap) }
+    }
 
     Notch {
         id: notch
