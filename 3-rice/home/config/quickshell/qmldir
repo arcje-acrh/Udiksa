@@ -6,6 +6,7 @@ singleton Tailscale Tailscale.qml
 singleton Bt Bt.qml
 singleton NotchCtl NotchCtl.qml
 Bar Bar.qml
+SideArt SideArt.qml
 Notch Notch.qml
 Workspaces Workspaces.qml
 WindowTitle WindowTitle.qml

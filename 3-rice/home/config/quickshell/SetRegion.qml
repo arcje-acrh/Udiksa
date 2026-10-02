@@ -84,6 +84,25 @@ SetPage {
             SetButton { text: Weather.searching ? "Searching…" : "Search"; enabled: wq.text.trim().length >= 2; onClicked: Weather.search(wq.text) }
         }
     }
+    SetRow {
+        visible: Prefs.v.weather.on !== false
+        title: "Cities in India"
+        desc: "Click one to use it. Any other place: search above."
+    }
+    Flow {
+        visible: Prefs.v.weather.on !== false
+        width: parent.width
+        spacing: 6
+        Repeater {
+            model: Weather.india
+            delegate: SetButton {
+                required property var modelData
+                text: modelData.name
+                accent: modelData.name === Prefs.v.weather.name
+                onClicked: Weather.choose(modelData)
+            }
+        }
+    }
     Flow {
         width: parent.width
         spacing: 6

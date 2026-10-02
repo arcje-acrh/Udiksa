@@ -12,6 +12,9 @@ PanelWindow {
     screen: modelData
 
     WlrLayershell.namespace: "shell-bar"   // matched by the layer rule in hypr/conf/rules.lua
+    // above fullscreen windows (browser video, games) while the notch shows something (volume / brightness pop-up,
+    // notification, open panel); resting, it stays on the normal layer so fullscreen apps are not covered
+    WlrLayershell.layer: notch.panel !== "" || notch.loaded !== "" || notch.inlineMode ? WlrLayer.Overlay : WlrLayer.Top
     // keyboard only while a panel is open (Wi-Fi password, Esc to close); never steals it otherwise
     // keyboard while a panel is open; the focus grab below hands it to the notch at once for panels
     // opened by click / key (launcher: type immediately). Exclusive focus conflicted with the grab
@@ -31,6 +34,10 @@ PanelWindow {
         active: notch.panel !== "" && notch.clickOpened
         onCleared: notch.close()
     }
+
+    // decoration in the empty strip beside the notch (SideArt.qml); click-through (outside the mask)
+    SideArt { side: "left";  anchors.left: parent.left;   anchors.right: notch.left; anchors.rightMargin: notch.ear + 8 }
+    SideArt { side: "right"; anchors.left: notch.right;   anchors.right: parent.right; anchors.leftMargin: notch.ear + 8 }
 
     Notch {
         id: notch

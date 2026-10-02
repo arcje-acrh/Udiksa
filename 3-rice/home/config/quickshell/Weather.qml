@@ -71,10 +71,62 @@ Singleton {
         onExited: (code) => { if (code !== 0) root.error = "Offline" }
     }
     Timer { interval: 30 * 60 * 1000; repeat: true; running: root.wanted; onTriggered: root.refresh() }
+    Timer { interval: 60 * 1000; repeat: true; running: root.wanted && !root.ok; onTriggered: root.refresh() }   // offline / failed: retry every minute
     onWantedChanged: refresh()
     Component.onCompleted: refresh()
     readonly property string key: w.lat + "," + w.lon + "," + w.units
     onKeyChanged: refresh()
+
+    // ---------- places (Settings) ----------
+    // Indian cities to pick from in Settings > Date & language (any other place: use the search below it)
+    readonly property var india: [
+        { name: "Agra", lat: 27.18, lon: 78.02 },
+        { name: "Ahmedabad", lat: 23.02, lon: 72.57 },
+        { name: "Amritsar", lat: 31.63, lon: 74.87 },
+        { name: "Bangalore", lat: 12.97, lon: 77.59 },
+        { name: "Bhavnagar", lat: 21.76, lon: 72.15 },
+        { name: "Bhopal", lat: 23.26, lon: 77.41 },
+        { name: "Bhubaneswar", lat: 20.3, lon: 85.82 },
+        { name: "Chandigarh", lat: 30.73, lon: 76.78 },
+        { name: "Chennai", lat: 13.08, lon: 80.27 },
+        { name: "Coimbatore", lat: 11.02, lon: 76.96 },
+        { name: "Dehradun", lat: 30.32, lon: 78.03 },
+        { name: "Delhi", lat: 28.61, lon: 77.21 },
+        { name: "Gandhinagar", lat: 23.22, lon: 72.65 },
+        { name: "Goa (Panaji)", lat: 15.49, lon: 73.83 },
+        { name: "Guwahati", lat: 26.14, lon: 91.74 },
+        { name: "Hyderabad", lat: 17.39, lon: 78.49 },
+        { name: "Indore", lat: 22.72, lon: 75.86 },
+        { name: "Jaipur", lat: 26.91, lon: 75.79 },
+        { name: "Jamnagar", lat: 22.47, lon: 70.07 },
+        { name: "Jodhpur", lat: 26.24, lon: 73.02 },
+        { name: "Kanpur", lat: 26.45, lon: 80.35 },
+        { name: "Kochi", lat: 9.93, lon: 76.27 },
+        { name: "Kolkata", lat: 22.57, lon: 88.36 },
+        { name: "Leh", lat: 34.15, lon: 77.58 },
+        { name: "Lucknow", lat: 26.85, lon: 80.95 },
+        { name: "Ludhiana", lat: 30.9, lon: 75.86 },
+        { name: "Madurai", lat: 9.93, lon: 78.12 },
+        { name: "Mangaluru", lat: 12.91, lon: 74.86 },
+        { name: "Mumbai", lat: 19.08, lon: 72.88 },
+        { name: "Mysuru", lat: 12.3, lon: 76.64 },
+        { name: "Nagpur", lat: 21.15, lon: 79.09 },
+        { name: "Nashik", lat: 19.99, lon: 73.79 },
+        { name: "Patna", lat: 25.59, lon: 85.14 },
+        { name: "Puducherry", lat: 11.93, lon: 79.83 },
+        { name: "Pune", lat: 18.52, lon: 73.86 },
+        { name: "Raipur", lat: 21.25, lon: 81.63 },
+        { name: "Rajkot", lat: 22.3, lon: 70.8 },
+        { name: "Ranchi", lat: 23.34, lon: 85.31 },
+        { name: "Shimla", lat: 31.1, lon: 77.17 },
+        { name: "Srinagar", lat: 34.08, lon: 74.8 },
+        { name: "Surat", lat: 21.17, lon: 72.83 },
+        { name: "Thiruvananthapuram", lat: 8.52, lon: 76.94 },
+        { name: "Udaipur", lat: 24.59, lon: 73.71 },
+        { name: "Vadodara", lat: 22.31, lon: 73.18 },
+        { name: "Varanasi", lat: 25.32, lon: 83.01 },
+        { name: "Visakhapatnam", lat: 17.69, lon: 83.22 }
+    ]
 
     // ---------- place search (Settings) ----------
     property var found: []                 // [{ name, label, lat, lon }]

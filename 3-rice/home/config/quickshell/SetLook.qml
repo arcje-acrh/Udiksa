@@ -156,6 +156,25 @@ SetPage {
     }
 
     // ---- corners: windows (Hyprland), the screen and the notch (Prefs corners, -1 = same as the windows) ----
+    SetGroup { title: "Bar art" }
+    SetRow {
+        title: "Beside the notch"
+        desc: "The decoration in the empty space left and right of the notch."
+    }
+    Flow {
+        width: parent.width
+        spacing: 6
+        Repeater {
+            model: [["circuit", "Circuit"], ["constellations", "Constellations"], ["ridgelines", "Ridgelines"], ["circuit", "Circuit"], ["deco", "Art deco"], ["aurora", "Aurora"], ["stars", "Stars"], ["none", "None"]]
+            delegate: SetButton {
+                required property var modelData
+                text: modelData[1]
+                accent: Prefs.v.art === modelData[0]
+                onClicked: Prefs.set(["art"], modelData[0])
+            }
+        }
+    }
+
     SetGroup { title: "Corners" }
     SetRow {
         title: "Windows"
