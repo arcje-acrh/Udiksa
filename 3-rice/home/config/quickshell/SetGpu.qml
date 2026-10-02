@@ -67,16 +67,19 @@ for p in /proc/[0-9]*; do ls -l $p/fd 2>/dev/null | grep -q '/dev/nvidia[0-9]' &
         title: "Mode"
         desc: page.ultimateArmed ? "Ultimate needs a reboot and stays switched in Windows until you change it back. Click again to confirm."
             : Power.gpuChangeQueued ? "Now " + Power.gpuLabels[Power.gpuMode] + " · " + Power.gpuLabels[Power.gpuQueued] + " after the next reboot."
-            : "Eco: NVIDIA card off, longest battery. Standard: it sleeps and wakes only for games / apps that ask. Ultimate: the screen runs straight from NVIDIA (fastest, most power)."
+            : "Eco: NVIDIA card off, longest battery. Standard: it sleeps and wakes only for games / apps that ask."
+              + (modeSeg.modes.indexOf("AsusMuxDgpu") >= 0 ? " Ultimate: the screen runs straight from NVIDIA (fastest, most power)." : "")
         Seg {
-            readonly property var modes: ["Integrated", "Hybrid", "AsusMuxDgpu"]
-            options: ["Eco", "Standard", page.ultimateArmed ? "Confirm?" : "Ultimate"]
+            id: modeSeg
+            // only the modes supergfxctl offers on this machine (Ultimate needs a MUX switch)
+            readonly property var modes: ["Integrated", "Hybrid", "AsusMuxDgpu"].filter(x => Power.gfxModes.indexOf(x) >= 0)
+            options: modes.map(x => x === "AsusMuxDgpu" ? (page.ultimateArmed ? "Confirm?" : "Ultimate") : Power.gpuLabels[x])
             current: modes.indexOf(Power.gpuMode)
             queued: Power.gpuChangeQueued ? modes.indexOf(Power.gpuQueued) : -1
             onPicked: (i) => {
                 const target = modes[i]
                 if (target === (Power.gpuChangeQueued ? Power.gpuQueued : Power.gpuMode)) return
-                if (i === 2 && !page.ultimateArmed) { page.ultimateArmed = true; disarm.restart(); return }
+                if (target === "AsusMuxDgpu" && !page.ultimateArmed) { page.ultimateArmed = true; disarm.restart(); return }
                 page.ultimateArmed = false
                 Power.setGpuMode(target)
             }
@@ -98,27 +101,32 @@ for p in /proc/[0-9]*; do ls -l $p/fd 2>/dev/null | grep -q '/dev/nvidia[0-9]' &
         tint: page.apps.length ? Theme.amber : Theme.text
     }
     Fact { title: "NVIDIA driver"; value: page.info.drv ? page.info.drv : "not loaded" }
-    Fact { title: "Intel graphics (built in)"; value: page.info.icur ? page.info.icur + " / " + page.info.imax + " MHz" : "–" }
-    Fact { title: "GPU fan"; value: page.info.fan !== undefined && page.info.fan !== "" ? page.info.fan + " rpm" : "–" }
+    Fact { visible: !!page.info.icur; title: "Intel graphics (built in)"; value: page.info.icur ? page.info.icur + " / " + page.info.imax + " MHz" : "–" }
+    Fact { visible: Power.asus; title: "GPU fan"; value: page.info.fan !== undefined && page.info.fan !== "" ? page.info.fan + " rpm" : "–" }
 
-    SetGroup { title: "Limits per performance mode" }
+    // temperature target, Dynamic Boost and the GPU fan curve go through asusctl: ASUS only
+    SetGroup { title: "Limits per performance mode"; visible: Power.asus }
     SetRow {
+        visible: Power.asus
         title: "Edit the limits of"
         desc: Power.modeLabels[Power.mode] + " is in use now; the others take effect when you switch to them (Settings > Performance or the notch)."
         Seg { options: Power.modeNames.map(m => Power.modeLabels[m]); current: Power.modeNames.indexOf(page.editMode); onPicked: (i) => page.editMode = Power.modeNames[i] }
     }
     SetRow {
+        visible: Power.asus
         title: "Temperature target"
         desc: "The NVIDIA card slows down to stay under this. Lower = cooler and quieter."
         SetNum { value: page.em.gpuTemp; from: 75; to: 87; unit: " °C"; onChanged: (v) => Power.setModeValue(page.editMode, "gpuTemp", v) }
     }
     SetRow {
+        visible: Power.asus
         title: "Dynamic Boost"
         desc: "CPU and NVIDIA card share one power budget. The card's base is 80 W (fixed on this model); in games the firmware may move up to this many extra watts from the CPU to it. Lower = cooler and quieter, slightly fewer FPS. No effect in Eco."
         SetNum { value: page.em.gpuBoost ?? 20; from: 5; to: 20; unit: " W"; onChanged: (v) => Power.setModeValue(page.editMode, "gpuBoost", v) }
     }
     SetRow {
         id: fanRow
+        visible: Power.asus
         readonly property var fw: Power.curves[page.emProf] ? Power.curves[page.emProf].gpu : null
         readonly property var cc: Power.customCurve(page.editMode, "gpu")
         title: "GPU fan curve"

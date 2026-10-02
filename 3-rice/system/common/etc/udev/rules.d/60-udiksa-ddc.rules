@@ -1,0 +1,3 @@
+# Udiksa: the logged-in user may use the monitor channels (DDC/CI) of the GRAPHICS CARD only (PCI class 0x03*),
+# not every i2c bus -- for external monitor brightness in Settings > Display (ddcutil, no root).
+SUBSYSTEM=="i2c-dev", KERNEL=="i2c-[0-9]*", ATTRS{class}=="0x03*", TAG+="uaccess"

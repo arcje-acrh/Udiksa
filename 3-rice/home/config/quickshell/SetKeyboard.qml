@@ -106,7 +106,15 @@ SetPage {
         }
     }
 
-    SetGroup { title: "Keyboard light"; visible: page.kb.capable === true }
+    // ASUS: rice-kbd (colours, effects, saved); any other backlit keyboard: brightness only (Power.qml, brightnessctl)
+    readonly property bool plainKbd: page.kb.capable !== true && Power.kbd
+    SetGroup { title: "Keyboard light"; visible: page.kb.capable === true || page.plainKbd }
+    SetRow {
+        visible: page.plainKbd
+        title: "Brightness"
+        desc: "Same as the notch's System panel."
+        Seg { options: Power.kbdLabels; current: Power.kbdLevel; onPicked: (i) => Power.setKbd(i) }
+    }
     SetRow {
         visible: page.kb.capable === true
         title: "Brightness"
@@ -170,17 +178,21 @@ SetPage {
         }
     }
 
-    SetGroup { title: "Touchpad" }
+    // touchpad rows only with a touchpad; pointer speed is for every mouse too (a desktop sees it under "Mouse")
+    SetGroup { title: Power.touchpad ? "Touchpad" : "Mouse" }
     SetRow {
+        visible: Power.touchpad
         title: "Natural scrolling"
         desc: "Content follows your fingers."
         Seg { options: ["On", "Off"]; current: page.onoff(page.v.natural_scroll); onPicked: (i) => page.set("natural_scroll", i === 0) }
     }
     SetRow {
+        visible: Power.touchpad
         title: "Tap to click"
         Seg { options: ["On", "Off"]; current: page.onoff(page.v.tap_to_click); onPicked: (i) => page.set("tap_to_click", i === 0) }
     }
     SetRow {
+        visible: Power.touchpad
         title: "Ignore touchpad while typing"
         Seg { options: ["On", "Off"]; current: page.onoff(page.v.disable_while_typing); onPicked: (i) => page.set("disable_while_typing", i === 0) }
     }

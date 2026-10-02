@@ -1,4 +1,6 @@
-// WifiPanel.qml -- Wi-Fi in the grown notch (NetworkManager via Quickshell.Networking + nmcli).
+// WifiPanel.qml -- the network panel in the grown notch: Wi-Fi (NetworkManager via Quickshell.Networking + nmcli)
+// and the cable. A connected cable is shown in the details (it carries the traffic); a machine without Wi-Fi
+// gets only the cable status (no Wi-Fi list or switches).
 // Three views:
 //   list     all networks (scrollable, scans while open). Click = connect / disconnect.
 //            󰒓 = settings: a saved network opens its settings, a new one opens the sign-in form with
@@ -28,11 +30,17 @@ Item {
     readonly property bool busy: view !== "list"
 
     readonly property var dev: {
+        if (!Power.wifi) return null
         const ds = Networking.devices.values
         for (let i = 0; i < ds.length; i++) if (ds[i].type === DeviceType.Wifi) return ds[i]
         return null
     }
-    readonly property string ifname: dev ? dev.name : ""
+    readonly property var wired: {          // the connected cable, if any
+        const ds = Networking.devices.values
+        for (let i = 0; i < ds.length; i++) if (ds[i].type === DeviceType.Wired && ds[i].connected) return ds[i]
+        return null
+    }
+    readonly property string ifname: wired ? wired.name : dev ? dev.name : ""
     Component.onCompleted: if (dev) dev.scannerEnabled = true
     Component.onDestruction: if (dev) dev.scannerEnabled = false
 
@@ -194,7 +202,7 @@ Item {
             spacing: 4
             Item {
                 width: parent.width; height: 22
-                PanelTitle { anchors.fill: parent; title: "Wi-Fi networks"; action: "+ hidden network"; onActionClicked: root.openForm(null, false) }
+                PanelTitle { anchors.fill: parent; title: root.dev ? "Wi-Fi networks" : "Network"; action: root.dev ? "+ hidden network" : ""; onActionClicked: if (root.dev) root.openForm(null, false) }
             }
             ScrollList {
                 id: netList
@@ -219,7 +227,8 @@ Item {
                     parent: netList
                     visible: netList.count === 0
                     anchors.centerIn: parent
-                    text: Networking.wifiEnabled ? "Looking for networks…" : "Wi-Fi is off"
+                    text: !root.dev ? "No Wi-Fi on this machine. " + (root.wired ? "Connected by cable." : "Plug in a network cable.")
+                        : Networking.wifiEnabled ? "Looking for networks…" : "Wi-Fi is off"
                     color: Theme.muted; font.family: Theme.font; font.pixelSize: 12
                 }
             }
@@ -236,20 +245,26 @@ Item {
             width: (parent.width - parent.spacing) * 0.38; height: parent.height
             spacing: 8
             Toggle {
+                visible: root.dev !== null
                 width: parent.width; label: "Wi-Fi"
                 checked: Networking.wifiEnabled
                 onToggled: Networking.wifiEnabled = !Networking.wifiEnabled
             }
             Toggle {
+                visible: root.dev !== null
                 width: parent.width; label: "Airplane mode"
                 checked: root.airplane; busy: rfSet.running
                 onToggled: root.setAirplane(!root.airplane)
             }
             Card {
-                width: parent.width; height: parent.height - 2 * 40 - 2 * parent.spacing
+                width: parent.width; height: parent.height - (root.dev ? 2 * 40 + 2 * parent.spacing : 0)
                 spacing: 6
                 Repeater {
-                    model: [
+                    model: root.wired ? [
+                        ["Network", "Cable"],
+                        ["IP address", root.ip || "—"],
+                        ["Interface", root.ifname || "—"]
+                    ] : [
                         ["Network", root.current ? root.current.name : "—"],
                         ["IP address", root.ip || "—"],
                         ["Signal", root.current ? Math.round(root.current.signalStrength * 100) + "%" : "—"],

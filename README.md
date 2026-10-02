@@ -27,8 +27,9 @@
   rotation, several monitors), sound, keyboard, Wi-Fi, Bluetooth, battery and sleep, hibernation, apps, and more.
 - **Your own layer**: whatever you change in Settings lives in `~/.config/hypr/local/`, apart from the design, so
   updating the rice never overwrites your choices.
-- **Adapts to the machine**: screens, GPU, battery, Bluetooth and boot loader are detected. ASUS laptops and hybrid
-  NVIDIA laptops get extra support, offered only where it fits.
+- **Adapts to the machine**: screens, GPU, battery, Bluetooth and boot loader are detected, and the notch and
+  Settings show only what works here. ASUS laptops and hybrid NVIDIA laptops get extra support, offered only where it
+  fits. Other devices: see [Hardware support](docs/HARDWARE.md) to add your own.
 - **Batteries included**: login screen, lock screen, boot splash, hibernation, btrfs snapshots, mirror refresh and
   cleanup scripts, a clipboard history, an emoji picker and a calculator in the launcher.
 - **Tools**: screen recording (GPU-encoded, with or without sound), a colour picker, screenshots you can draw on,
@@ -123,6 +124,7 @@ cd ~/Udiksa && ./install.sh 2 3
 - **Part 3, the rice**: links the configs, installs the login screen, boot splash and GRUB theme (if you use GRUB),
   and sets up hibernation (uses your swap, or makes a swap file).
 - **Hardware**: on an ASUS laptop or a hybrid NVIDIA laptop, it offers the matching support (see `hardware/`).
+  Something on your machine not supported? [docs/HARDWARE.md](docs/HARDWARE.md) shows how to add it.
 - **Reboot.** The first login sets the theme, desktop settings and default apps.
 
 **On a blank machine**: boot the Arch USB, clone the repo there, and run `./install.sh 1` first. It installs Arch on

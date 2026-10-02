@@ -77,3 +77,6 @@ satty
 
 # Python: uv for projects, tools and Python versions (instead of pip/pipx) -- 2026-10-02
 uv
+
+# external monitor brightness over the cable (Settings > Display, DDC/CI; mostly desktops) -- 2026-10-02
+ddcutil

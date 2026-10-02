@@ -1,13 +1,16 @@
 // Power.qml -- singleton behind the System panel (SystemPanel.qml): G-Helper-style performance modes,
-// GPU mode, screen refresh, keyboard light, fan curves, and a live monitor. No root anywhere:
-//   modes   asusctl profile (Quiet / Balanced / Performance) + asusctl armoury (CPU watts, GPU temp
+// GPU mode, screen refresh, keyboard light, fan curves, and a live monitor. No root anywhere.
+// It also DETECTS THE HARDWARE (section below): the notch and Settings show only what works on this machine
+// (rule: show a control only when it can work; docs/HARDWARE.md explains how to add support for more devices).
+//   modes   ASUS: asusctl profile (Quiet / Balanced / Performance) + asusctl armoury (CPU watts, GPU temp
 //           target) + asusctl fan-curve. Silent 30/38 W is the firmware minimum (user choice).
+//           Any other machine: power-profiles-daemon (power-saver / balanced / performance), no watts or curves.
 //   GPU     supergfxctl (Integrated = Eco, Hybrid = Standard, AsusMuxDgpu = Ultimate). supergfxd does
 //           NOT use the firmware dgpu_disable switch here, so Eco never affects Windows. With
 //           "always_reboot": true in /etc/supergfxd.conf a change is saved there and applied at the next
 //           boot (its logout detection fails on systemd 261); the panel shows current + queued mode.
-//   screen  hyprctl eval hl.monitor(...) 60 / 240 Hz (monitors.lua picks the same at reload)
-//   auto    on battery: batteryMode (Silent) + 60 Hz; on the charger: acMode + 240 Hz. asusd's own
+//   screen  any laptop panel: rice-panel-hz switches between 60 Hz and the panel's own top rate
+//   auto    on battery: batteryMode (Silent) + 60 Hz; on the charger: acMode + top rate. asusd's own
 //           AC/battery profiles are kept in step so the two never fight.
 // Settings live in ~/.config/udiksa/performance.json (yours, not in the repo; defaults on first run). Everything is re-applied at start.
 pragma Singleton
@@ -15,30 +18,81 @@ import QtQuick
 import Quickshell
 import Quickshell.Io
 import Quickshell.Services.UPower
+import Quickshell.Networking
+import Quickshell.Bluetooth
 
 Singleton {
     id: root
 
-    // ---------- what this machine has (the rice runs anywhere: without asusctl / supergfxctl all of this stays idle
-    // and the notch / Settings hide these parts) ----------
-    property bool asus: false                  // asusctl: modes, watts, fans, charge limit, panel overdrive, keyboard light
-    property bool gfx: false                   // supergfxctl: GPU modes
+    // ---------- what this machine has (the rice runs anywhere: everything below is detected, and the notch /
+    // Settings show a control only when it can work here) ----------
+    property bool asus: false                  // asusctl: modes, watts, fans, charge limit, panel overdrive, keyboard colours
+    property bool gfx: false                   // supergfxctl: GPU modes (hybrid laptops)
+    property var gfxModes: []                  // the GPU modes supergfxctl offers here (AsusMuxDgpu only with a MUX switch)
     property bool slash: false                 // an ASUS Slash LED bar on the lid (~/.local/bin/rice-slash)
+    property bool ppd: false                   // power-profiles-daemon: performance modes on any other machine
+    property bool overdrive: false             // ASUS panel overdrive (firmware attribute present)
+    property bool lid: false                   // a lid switch (laptop)
+    property bool touchpad: false              // Hyprland lists a touchpad
+    property string kbdName: ""                // a keyboard backlight (/sys/class/leds/*::kbd_backlight), any brand
+    property int kbdMax: 0
+    property bool fans: false                  // fan speeds readable (hwmon)
+    property string panelName: ""              // the built-in screen (eDP / LVDS / DSI)
+    property var panelRates: []                // its refresh rates at its current resolution, low -> high
     property bool probed: false
     property bool startWanted: false
+    // live (no probe needed)
+    readonly property bool battery: UPower.displayDevice !== null && UPower.displayDevice.isPresent && fake.indexOf("nobattery") < 0
+    readonly property bool wifi: { if (fake.indexOf("nowifi") >= 0) return false; const ds = Networking.devices.values; for (let i = 0; i < ds.length; i++) if (ds[i].type === DeviceType.Wifi) return true; return false }
+    readonly property bool bt: Bluetooth.defaultAdapter !== null && fake.indexOf("nobt") < 0
+    // derived
+    readonly property bool hasModes: asus || ppd
+    readonly property bool kbd: kbdName !== "" && kbdMax > 0
+    readonly property bool panel: panelName !== ""
+    readonly property int hzLow: panelRates.indexOf(60) >= 0 ? 60 : (panelRates.length ? panelRates[0] : 60)
+    readonly property int hzHigh: panelRates.length ? panelRates[panelRates.length - 1] : 60
+    readonly property bool panelSwitch: panel && hzHigh > hzLow     // the 60 Hz / top rate / Auto switch makes sense
+    readonly property bool hasSystem: hasModes || gfx || panelSwitch || kbd    // the notch System panel has something to show
+    // test only: UDIKSA_FAKE="noasus nogfx noppd nopanel nokbd notouchpad nolid nofans nobattery nowifi nobt" makes the shell act as if
+    // that hardware were missing (used to check the "show only what works" rule; never set in normal use)
+    readonly property string fake: Quickshell.env("UDIKSA_FAKE") || ""
     Process {
         running: true
-        command: ["sh", "-c", "command -v asusctl >/dev/null && echo asus; command -v supergfxctl >/dev/null && echo gfx; [ -x \"$HOME/.local/bin/rice-slash\" ] && \"$HOME/.local/bin/rice-slash\" | grep -q '\"capable\": true' && echo slash; true"]
+        command: ["sh", "-c", `
+command -v asusctl >/dev/null && echo asus
+command -v supergfxctl >/dev/null && { echo gfx; echo "gfxmodes=$(supergfxctl -s 2>/dev/null | tr -d '[] ')"; }
+[ -x "$HOME/.local/bin/rice-slash" ] && "$HOME/.local/bin/rice-slash" | grep -q '"capable": true' && echo slash
+systemctl is-active -q power-profiles-daemon && echo ppd
+[ -e /sys/class/firmware-attributes/asus-armoury/attributes/panel_overdrive ] && echo overdrive
+ls /proc/acpi/button/lid/*/state >/dev/null 2>&1 && echo lid
+hyprctl devices -j 2>/dev/null | jq -r '.mice[].name' | grep -qiE 'touchpad|trackpad' && echo touchpad
+for l in /sys/class/leds/*::kbd_backlight; do [ -e "$l" ] && { echo "kbd=$(basename "$l") $(cat "$l/max_brightness")"; break; }; done
+cat /sys/class/hwmon/hwmon*/fan*_input >/dev/null 2>&1 && echo fans
+hyprctl monitors all -j 2>/dev/null | jq -r '.[] | select(.name | test("^(eDP|LVDS|DSI)")) | . as $m
+  | "panel=\\(.name) " + ([.availableModes[] | select(startswith("\\($m.width)x\\($m.height)@")) | split("@")[1] | rtrimstr("Hz") | tonumber | round] | unique | map(tostring) | join(","))' | head -1
+true`]
         stdout: StdioCollector {
             onStreamFinished: {
-                root.asus = text.indexOf("asus") >= 0; root.gfx = text.indexOf("gfx") >= 0; root.slash = text.indexOf("slash") >= 0; root.probed = true
+                const f = root.fake
+                const has = (k) => text.split("\n").indexOf(k) >= 0 && f.indexOf("no" + k) < 0
+                const val = (k) => { const l = text.split("\n").find(x => x.startsWith(k + "=")); return l ? l.slice(k.length + 1).trim() : "" }
+                root.asus = has("asus"); root.gfx = has("gfx"); root.slash = has("slash") && root.asus
+                root.gfxModes = root.gfx ? val("gfxmodes").split(",").filter(x => x !== "") : []
+                root.ppd = has("ppd"); root.overdrive = has("overdrive") && root.asus
+                root.lid = has("lid"); root.touchpad = has("touchpad"); root.fans = has("fans")
+                const k = val("kbd").split(" ")
+                if (k.length === 2 && f.indexOf("nokbd") < 0) { root.kbdName = k[0]; root.kbdMax = parseInt(k[1]) || 0 }
+                const p = val("panel").split(" ")
+                if (p.length === 2 && f.indexOf("nopanel") < 0) { root.panelName = p[0]; root.panelRates = p[1].split(",").map(Number).filter(x => x > 0) }
+                root.probed = true
                 if (root.startWanted) root.start()
             }
         }
     }
 
     // ---------- settings (saved) ----------
-    readonly property var modeNames: ["silent", "balanced", "turbo"]
+    // ppd without a performance profile (some machines) offers only the first two
+    readonly property var modeNames: asus || !ppd || PowerProfiles.hasPerformanceProfile ? ["silent", "balanced", "turbo"] : ["silent", "balanced"]
     readonly property var modeLabels: ({ silent: "Silent", balanced: "Balanced", turbo: "Turbo" })
     readonly property var profileOf: ({ silent: "Quiet", balanced: "Balanced", turbo: "Performance" })
     readonly property var defaults: ({
@@ -96,7 +150,8 @@ Singleton {
         startWanted = true
         if (!probed) return                    // runs again once the probe above has answered
         if (gfx) refreshGpu()
-        if (!asus) { loaded = true; return }
+        if (fake !== "") { loaded = true; return }          // test mode: only shows, never applies to the machine
+        if (!asus) { loaded = true; applyAll(); return }
         readCurves(() => { profProc.startAfter = true; profProc.running = true })
     }
     property string curProfile: ""
@@ -127,18 +182,24 @@ Singleton {
 
     // ---------- applying (one command after another) ----------
     property var queue: []
-    function run(cmds) { queue = queue.concat(cmds); if (!runner.running) next() }
+    function run(cmds) { if (fake !== "") return; queue = queue.concat(cmds); if (!runner.running) next() }
     function next() {
         if (queue.length === 0) return
         runner.command = queue[0]; queue = queue.slice(1); runner.running = true
     }
     Process { id: runner; onExited: root.next() }
 
-    function applyAll() { if (!asus) return; applyMode(); applyScreen(); applyOverdrive(); applySlash() }
+    function applyAll() { applyMode(); applyScreen(); if (overdrive) applyOverdrive(); applySlash() }
     // the Slash lid light: dark on battery unless "Also on battery" (rice-slash decides from the power source)
     function applySlash() { if (slash) run([[Quickshell.env("HOME") + "/.local/bin/rice-slash", "apply"]]) }
     function applyMode() {
-        if (!asus) return
+        if (!asus) {                         // any other machine: power-profiles-daemon (no watts, no fan curves)
+            if (ppd && fake === "") PowerProfiles.profile = mode === "silent" ? PowerProfile.PowerSaver
+                                           : mode === "turbo" && PowerProfiles.hasPerformanceProfile ? PowerProfile.Performance
+                                           : PowerProfile.Balanced
+            profile = mode
+            return
+        }
         const m = modeCfg, p = profileOf[mode]
         const cmds = []
         // only real changes (each `profile set` wakes the NVIDIA card); asusd's own charger/battery
@@ -255,21 +316,30 @@ Singleton {
     function setModeValue(m, key, v) { setCfg(["modes", m, key], v); if (m === mode) applyMode() }
 
     // ---------- screen ----------
-    readonly property int hz: cfg.screen === "60" ? 60 : cfg.screen === "240" ? 240 : (onBattery ? 60 : 240)
+    // cfg.screen: "low" / "high" / "auto" (older saves: "60" / "240"); low = 60 Hz, high = the panel's top rate
+    readonly property string screenSel: cfg.screen === "60" || cfg.screen === "low" ? "low" : cfg.screen === "auto" ? "auto" : "high"
+    readonly property int hz: screenSel === "low" ? hzLow : screenSel === "high" ? hzHigh : (onBattery ? hzLow : hzHigh)
     // the laptop's own panel: ~/.local/bin/rice-panel-hz keeps its resolution / scale and changes only the rate
-    function applyScreen() { if (asus) run([[Quickshell.env("HOME") + "/.local/bin/rice-panel-hz", String(hz)]]) }
+    function applyScreen() { if (panelSwitch) run([[Quickshell.env("HOME") + "/.local/bin/rice-panel-hz", String(hz)]]) }
     onHzChanged: if (loaded) applyScreen()
-    function applyOverdrive() { run([["asusctl", "armoury", "set", "panel_overdrive", String(cfg.overdrive)]]) }
+    function applyOverdrive() { if (overdrive) run([["asusctl", "armoury", "set", "panel_overdrive", String(cfg.overdrive)]]) }
 
     // ---------- keyboard light ----------
-    property int kbdLevel: -1              // 0..3, read when the panel opens
-    // through rice-kbd so the choice is saved in ~/.config/udiksa/keyboard.json (ships with the dotfiles)
-    function setKbd(level) { kbdLevel = level; run([[Quickshell.env("HOME") + "/.local/bin/rice-kbd", "set", "brightness", ["off", "low", "med", "high"][level]]]) }
-    function readKbd() { kbdProc.running = true }
+    // levels shown: Off / Low / Med / High, or fewer when the light has fewer steps (e.g. Off / On)
+    readonly property int kbdSteps: kbd ? Math.min(kbdMax, 3) + 1 : 0
+    readonly property var kbdLabels: kbdSteps === 2 ? ["Off", "On"] : kbdSteps === 3 ? ["Off", "Low", "High"] : ["Off", "Low", "Med", "High"]
+    property int kbdLevel: -1              // 0..kbdSteps-1, read when the panel opens
+    // ASUS: through rice-kbd so the choice is saved in ~/.config/udiksa/keyboard.json; any other: brightnessctl
+    function setKbd(level) {
+        kbdLevel = level
+        if (asus) run([[Quickshell.env("HOME") + "/.local/bin/rice-kbd", "set", "brightness", ["off", "low", "med", "high"][level]]])
+        else run([["brightnessctl", "-q", "-d", kbdName, "set", String(Math.round(level * kbdMax / (kbdSteps - 1)))]])
+    }
+    function readKbd() { if (kbd) kbdProc.running = true }
     Process {
         id: kbdProc
-        command: ["cat", "/sys/class/leds/asus::kbd_backlight/brightness"]
-        stdout: StdioCollector { onStreamFinished: { const v = parseInt(text); if (!isNaN(v)) root.kbdLevel = v } }
+        command: ["cat", "/sys/class/leds/" + root.kbdName + "/brightness"]
+        stdout: StdioCollector { onStreamFinished: { const v = parseInt(text); if (!isNaN(v)) root.kbdLevel = Math.round(v * (root.kbdSteps - 1) / root.kbdMax) } }
     }
 
     // ---------- GPU mode (supergfxctl) ----------
@@ -320,18 +390,28 @@ Singleton {
     }
     Process {
         id: sampler
-        // hwmon numbers change between boots: find them by name. The NVIDIA card is NEVER queried here
-        // (nvidia-smi / NVML kept it awake even when only asked while awake) -- its state comes from
-        // /sys .../runtime_status in refreshGpu().
+        // hwmon numbers change between boots: find them by name. A hybrid laptop's NVIDIA card is NEVER queried
+        // here (nvidia-smi / NVML kept it awake even when only asked while awake) -- its state comes from
+        // /sys .../runtime_status in refreshGpu(). nvidia-smi runs only when NVIDIA is the ONLY graphics card
+        // (a desktop: always on anyway).
         command: ["sh", "-c", `
+ASUS=$1; GFX=$2
 for h in /sys/class/hwmon/hwmon*; do n=$(cat $h/name); case $n in
-  coretemp) echo cpu_temp=$(cat $h/temp1_input);;
+  coretemp|k10temp|zenpower) echo cpu_temp=$(cat $h/temp1_input);;
   asus) echo cpu_fan=$(cat $h/fan1_input 2>/dev/null); echo gpu_fan=$(cat $h/fan2_input 2>/dev/null);;
-esac; done
+  amdgpu) [ -n "$GFX" ] || echo gpu_temp=$(cat $h/temp1_input 2>/dev/null);;
+esac
+[ -n "$ASUS" ] || for f in $h/fan*_input; do [ -e "$f" ] && echo "fan_$n$(basename $f _input | tr -dc 0-9)=$(cat $f)"; done; done
+# a GPU that is always on (desktop, no hybrid switching): its load and temperature
+if [ -z "$GFX" ]; then
+  b=$(cat /sys/class/drm/card*/device/gpu_busy_percent 2>/dev/null | head -1); [ -n "$b" ] && echo gpu_load=$b
+  g=$(for d in /sys/bus/pci/devices/*; do case $(cat $d/class) in 0x03*) cat $d/vendor;; esac; done)
+  [ "$g" = 0x10de ] && command -v nvidia-smi >/dev/null && nvidia-smi --query-gpu=utilization.gpu,temperature.gpu --format=csv,noheader,nounits 2>/dev/null | head -1 | awk -F', ' '{print "gpu_load=" $1 "\\ngpu_temp_c=" $2}'
+fi
 head -1 /proc/stat
 awk '/MemTotal/{t=$2}/MemAvailable/{a=$2}END{print "mem_used=" (t-a) "\\nmem_total=" t}' /proc/meminfo
 echo cpu_mhz=$(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | awk '{s+=$1;n++}END{printf "%d", s/n/1000}')
-`]
+`, "sh", root.asus ? "1" : "", root.gfx ? "1" : ""]
         stdout: StdioCollector {
             onStreamFinished: {
                 const s = {}
@@ -346,6 +426,9 @@ echo cpu_mhz=$(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | awk '
                     const i = l.indexOf("="); if (i > 0) s[l.slice(0, i)] = Number(l.slice(i + 1))
                 }
                 if (s.cpu_temp) s.cpu_temp = Math.round(s.cpu_temp / 1000)
+                if (s.gpu_temp) s.gpu_temp = Math.round(s.gpu_temp / 1000)
+                if (s.gpu_temp_c !== undefined) s.gpu_temp = s.gpu_temp_c
+                s.fanList = Object.keys(s).filter(k => k.startsWith("fan_")).map(k => s[k])
                 const b = UPower.displayDevice
                 s.watts = root.onBattery && b ? Math.abs(b.changeRate) : -1
                 root.stat = s

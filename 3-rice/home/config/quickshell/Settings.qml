@@ -25,11 +25,11 @@ Scope {
         { id: "sound",     group: "Devices",     file: "Sound",       name: "Sound",              icon: "󰕾", desc: "output, microphone, app volumes, headphones" },
         { id: "keyboard",  group: "Devices",     file: "Keyboard",    name: "Keyboard & touchpad", icon: "󰌌", desc: "layout, key repeat, light, touchpad" },
         { id: "keys",      group: "Devices",     file: "Keys",        name: "Shortcuts",          icon: "󰘳", desc: "every key binding, add your own" },
-        { id: "wifi",      group: "Network",     file: "Wifi",        name: "Wi-Fi",              icon: "󰖩", desc: "networks, passwords, hidden networks, airplane mode" },
-        { id: "bluetooth", group: "Network",     file: "Bluetooth",   name: "Bluetooth",          icon: "󰂯", desc: "pair, connect, forget" },
-        { id: "tailscale", group: "Network",     file: "Tailscale",   name: "Tailscale",          icon: "󰖂", desc: "your devices, exit node, DNS, routes" },
+        { id: "wifi",      group: "Network",     needs: "wifi", file: "Wifi",        name: "Wi-Fi",              icon: "󰖩", desc: "networks, passwords, hidden networks, airplane mode" },
+        { id: "bluetooth", group: "Network",     needs: "bt",   file: "Bluetooth",   name: "Bluetooth",          icon: "󰂯", desc: "pair, connect, forget" },
+        { id: "tailscale", group: "Network",     needs: "tailscale", file: "Tailscale",   name: "Tailscale",          icon: "󰖂", desc: "your devices, exit node, DNS, routes" },
         { id: "power",     group: "Power",       file: "Power",       name: "Battery & sleep",    icon: "󰂄", desc: "battery, charge limit, idle, lid, hibernate" },
-        { id: "perf",      group: "Power",       needs: "asus", file: "Performance", name: "Performance",        icon: "󰓅", desc: "Silent / Balanced / Turbo, CPU power, fans, sensors" },
+        { id: "perf",      group: "Power",       needs: "modes", file: "Performance", name: "Performance",        icon: "󰓅", desc: "Silent / Balanced / Turbo, CPU power, fans, sensors" },
         { id: "gpu",       group: "Power",       needs: "gfx",  file: "Gpu",         name: "GPU",                icon: "󰢮", desc: "GPU mode, NVIDIA card, temperature, boost, GPU fan" },
         { id: "notify",    group: "System",      file: "Notify",      name: "Notifications",      icon: "󰂚", desc: "do not disturb, history, calendar" },
         { id: "apps",      group: "System",      name: "Apps",                icon: "󰀻", desc: "default apps, startup apps, install and remove",
@@ -41,8 +41,17 @@ Scope {
     ]
     property int tab: 0
     onSectionChanged: tab = 0
-    // sections for hardware this machine lacks are left out (needs: "asus" = asusctl, "gfx" = supergfxctl, "slash" = a Slash lid bar; Power.qml)
-    readonly property var shownSections: sections.filter(s => !s.needs || (s.needs === "asus" && Power.asus) || (s.needs === "gfx" && Power.gfx) || (s.needs === "slash" && Power.slash))
+    // sections for hardware this machine lacks are left out (rule: show only what works here). needs: "modes" =
+    // asusctl or power-profiles-daemon, "gfx" = supergfxctl, "slash" = a Slash lid bar, "wifi" / "bt" = the adapter,
+    // "tailscale" = installed. Flags: Power.qml. Pages also rename to fit (no touchpad / no battery).
+    function has(n) {
+        return n === "modes" ? Power.hasModes : n === "gfx" ? Power.gfx : n === "slash" ? Power.slash
+             : n === "wifi" ? Power.wifi : n === "bt" ? Power.bt : n === "tailscale" ? Tailscale.installed : true
+    }
+    readonly property var shownSections: sections.filter(s => !s.needs || has(s.needs)).map(s =>
+          s.id === "keyboard" && !Power.touchpad ? Object.assign({}, s, { name: "Keyboard", desc: "layout, key repeat" + (Power.kbd ? ", light" : "") })
+        : s.id === "power" && !Power.battery ? Object.assign({}, s, { name: "Power & sleep", desc: "idle, sleep, power button, hibernate" })
+        : s)
     readonly property var cur: shownSections.find(s => s.id === section) || shownSections[0]
 
     function toggle() { if (open) close(); else show(section) }

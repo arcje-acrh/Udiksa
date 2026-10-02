@@ -81,9 +81,10 @@ Row {
         MouseArea { anchors.fill: parent; anchors.margins: -6; cursorShape: Qt.PointingHandCursor; onClicked: Modes.setGame(false) }
     }
 
-    // ---------- usage (CPU, memory, disk, network) on machines without the ASUS System panel ----------
+    // ---------- usage (CPU, memory, disk, network): only when the System panel has nothing to show here
+    // (otherwise Usage is reached from the System panel's Monitor) ----------
     Text {
-        visible: Power.probed && !Power.asus && !Power.gfx
+        visible: Power.probed && !Power.hasSystem
         anchors.verticalCenter: parent.verticalCenter
         font.family: Theme.font; font.pixelSize: root.iconSize
         text: "󰓅"
@@ -91,9 +92,10 @@ Row {
         Target { panel: "usage" }
     }
 
-    // ---------- System (modes): icon shows the GPU mode; red = NVIDIA driver missing (ASUS laptops only) ----------
+    // ---------- System (modes, GPU, screen, keyboard light -- whatever this machine has): icon shows the GPU mode;
+    // red = NVIDIA driver missing ----------
     Item {
-        visible: Power.asus || Power.gfx
+        visible: Power.probed && Power.hasSystem
         anchors.verticalCenter: parent.verticalCenter
         width: sysRow.width; height: 18
         Row {
@@ -109,6 +111,7 @@ Row {
                      : Power.gpuMode === "Integrated" ? Theme.muted : Theme.text)
             }
             Text {   // mode initial: S / B / T
+                visible: Power.hasModes
                 anchors.verticalCenter: parent.verticalCenter
                 text: Power.modeLabels[Power.mode] ? Power.modeLabels[Power.mode].charAt(0) : ""
                 color: root.tint("system", Theme.muted)
@@ -118,8 +121,10 @@ Row {
         Target { panel: "system" }
     }
 
-    // ---------- Wi-Fi ----------
+    // ---------- network: always shown (troubleshooting). Cable connected = LAN icon (it carries the traffic),
+    // else Wi-Fi bars, else "not connected" ----------
     readonly property var wifiDevice: {
+        if (!Power.wifi) return null
         const ds = Networking.devices.values
         for (let i = 0; i < ds.length; i++) if (ds[i].type === DeviceType.Wifi) return ds[i]
         return null
@@ -139,8 +144,9 @@ Row {
     Text {
         anchors.verticalCenter: parent.verticalCenter
         font.family: Theme.font; font.pixelSize: root.iconSize
-        text: root.wifiUp ? ["󰤟", "󰤢", "󰤥", "󰤨"][Math.max(0, Math.min(3, Math.floor(root.wifiSignal * 4 - 0.001)))]
-              : (root.wiredDevice ? "󰈀" : "󰤭")
+        text: root.wiredDevice ? "󰈀"
+              : root.wifiUp ? ["󰤟", "󰤢", "󰤥", "󰤨"][Math.max(0, Math.min(3, Math.floor(root.wifiSignal * 4 - 0.001)))]
+              : (Power.wifi ? "󰤭" : "󰈂")
         color: root.tint("wifi", (root.wifiUp || root.wiredDevice) ? Theme.text : Theme.dim)
         Target { panel: "wifi" }
     }
@@ -155,7 +161,7 @@ Row {
         return false
     }
     Text {
-        visible: root.btAdapter !== null        // no Bluetooth adapter = no icon
+        visible: Power.bt                       // no Bluetooth adapter = no icon
         anchors.verticalCenter: parent.verticalCenter
         font.family: Theme.font; font.pixelSize: root.iconSize
         text: !root.btOn ? "󰂲" : (root.btConnected ? "󰂱" : "󰂯")
@@ -195,7 +201,7 @@ Row {
 
     // ---------- Battery ----------
     readonly property var bat: UPower.displayDevice
-    readonly property bool batPresent: bat !== null && bat.isPresent
+    readonly property bool batPresent: Power.battery
     readonly property real batPct: bat ? Math.round(bat.percentage * 100) : 0   // percentage is 0..1 (verified on screen)
     readonly property bool charging: bat !== null && bat.state === UPowerDeviceState.Charging
     readonly property color batColor: root.tint("battery", Theme.text)   // always white (user request), coral while its panel is open

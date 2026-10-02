@@ -108,7 +108,7 @@ SetPage {
         }
     }
 
-    readonly property bool hasBat: bat !== null && bat.isPresent      // a desktop has none: the battery rows hide
+    readonly property bool hasBat: Power.battery      // a desktop has none: the battery rows hide (and the page is "Power & sleep")
     SetGroup { title: "Battery"; visible: page.hasBat }
     SetRow {
         visible: page.hasBat
@@ -123,7 +123,7 @@ SetPage {
     SetRow {
         visible: Power.asus && page.hasBat
         title: "Battery charge limit"
-        desc: Power.oneshotRestore > 0 ? "Charging to 100 % once, then back to " + Power.oneshotRestore + " %." : "This laptop supports 60, 80 or 100 %."
+        desc: Power.oneshotRestore > 0 ? "Charging to 100 % once, then back to " + Power.oneshotRestore + " %." : "Most ASUS laptops honour 60, 80 or 100 % (other values may charge to full)."
         Row {
             spacing: 8
             Seg { readonly property var vals: [60, 80, 100]; options: vals.map(x => x + " %"); current: vals.indexOf(page.limit); onPicked: (i) => page.setLimit(vals[i]) }
@@ -150,27 +150,24 @@ SetPage {
 
     SetGroup { title: "When idle" }
     TimerRow { key: "lock"; title: "Lock after"; desc: "Minutes without input. It always locks before sleeping, too." }
-    TimerRow { key: "off_bat"; title: "Screen off on battery" }
-    TimerRow { key: "off_ac"; title: "Screen off on the charger"; desc: "Any key or mouse move turns it back on." }
-    TimerRow { key: "sleep_bat"; title: "Sleep on battery" }
-    TimerRow { key: "sleep_ac"; title: "Sleep on the charger"; desc: "Playing video or music keeps the laptop awake." }
+    // without a battery there is no "on battery": one row each ("on the charger" = always plugged in)
+    TimerRow { key: "off_bat"; visible: page.hasBat; title: "Screen off on battery" }
+    TimerRow { key: "off_ac"; title: page.hasBat ? "Screen off on the charger" : "Screen off"; desc: "Any key or mouse move turns it back on." }
+    TimerRow { key: "sleep_bat"; visible: page.hasBat; title: "Sleep on battery" }
+    TimerRow { key: "sleep_ac"; title: page.hasBat ? "Sleep on the charger" : "Sleep"; desc: "Playing video or music keeps the computer awake." }
     TimerRow {
         key: "hib_after"; list: page.hibStops
         visible: page.canHib
         title: "Hibernate after sleeping for"
-        desc: "Sleep keeps using a little battery; after this long the laptop saves everything to disk and turns off completely. Opening it restores all your windows."
+        desc: "Sleep keeps using a little power; after this long the computer saves everything to disk and turns off completely. Waking it restores all your windows."
     }
-    SetRow {
-        visible: !page.canHib && page.p.can_hibernate !== undefined
-        title: "Hibernate"
-        desc: "Not set up on this system (needs a swap file: ~/Udiksa/3-rice/system/setup-hibernation.sh)."
-    }
+    // (hibernation not set up: no row -- show only what works; how to set it up: docs/HARDWARE.md)
 
-    SetGroup { title: "Lid and power button" }
-    ActionRow { key: "lid_bat"; title: "Closing the lid on battery" }
-    ActionRow { key: "lid_ac"; title: "Closing the lid on the charger" }
-    ActionRow { key: "lid_dock"; title: "Closing the lid with a monitor plugged in"; desc: "Nothing = keep working on the monitor." }
-    ActionRow { key: "power_key"; title: "Power button"; desc: "Holding it for a few seconds always forces the laptop off." }
+    SetGroup { title: Power.lid ? "Lid and power button" : "Power button" }
+    ActionRow { key: "lid_bat"; visible: Power.lid && page.hasBat; title: "Closing the lid on battery" }
+    ActionRow { key: "lid_ac"; visible: Power.lid; title: page.hasBat ? "Closing the lid on the charger" : "Closing the lid" }
+    ActionRow { key: "lid_dock"; visible: Power.lid; title: "Closing the lid with a monitor plugged in"; desc: "Nothing = keep working on the monitor." }
+    ActionRow { key: "power_key"; title: "Power button"; desc: "Holding it for a few seconds always forces the computer off." }
     SetRow {
         visible: page.err !== ""
         title: "Not saved"

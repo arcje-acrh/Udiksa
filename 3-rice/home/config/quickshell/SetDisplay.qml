@@ -39,24 +39,48 @@ SetPage {
     readonly property var modes: ["extend", "mirror", "external", "laptop"]
     function setMode(m) { Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/display-mode", m]); page.dmode = m }
 
-    SetGroup { title: "Laptop screen" }
+    SetGroup { title: "Laptop screen"; visible: Power.panel }       // a desktop has none: the whole group hides
     SetRow {
-        visible: page.bl !== ""
+        visible: Power.panel && page.bl !== ""
         title: "Brightness"
         desc: "Same scale as the brightness keys and the notch."
         SetNum { value: page.bright; from: 1; to: 100; unit: " %"; onChanged: (x) => Quickshell.execDetached(["brightnessctl", "-c", "backlight", "-e2", "-n2", "-q", "set", x + "%"]) }
     }
     SetRow {
-        visible: Power.asus
+        // any laptop panel with more than one rate: 60 Hz / its top rate / Auto (Auto needs a battery)
+        visible: Power.panelSwitch
         title: "Refresh rate"
-        desc: "Auto = 240 Hz on the charger, 60 Hz on battery (saves power). Now " + Power.hz + " Hz."
-        Seg { readonly property var vals: ["60", "240", "auto"]; options: ["60 Hz", "240 Hz", "Auto"]; current: vals.indexOf(Power.cfg.screen); onPicked: (i) => Power.setCfg(["screen"], vals[i]) }
+        desc: (Power.battery ? "Auto = " + Power.hzHigh + " Hz on the charger, " + Power.hzLow + " Hz on battery (saves power). " : "") + "Now " + Power.hz + " Hz."
+        Seg {
+            readonly property var vals: Power.battery ? ["low", "high", "auto"] : ["low", "high"]
+            options: [Power.hzLow + " Hz", Power.hzHigh + " Hz", "Auto"].slice(0, vals.length)
+            current: vals.indexOf(Power.screenSel); onPicked: (i) => Power.setCfg(["screen"], vals[i])
+        }
     }
     SetRow {
-        visible: Power.asus
+        visible: Power.overdrive
         title: "Panel overdrive"
         desc: "Sharper motion in games and scrolling; can add slight ghosting."
         Seg { options: ["On", "Off"]; current: Power.cfg.overdrive ? 0 : 1; onPicked: (i) => { Power.setCfg(["overdrive"], i === 0 ? 1 : 0); Power.applyOverdrive() } }
+    }
+
+    // ---- external monitor brightness over the cable (DDC/CI, ddcutil): only monitors that answer get the row ----
+    property var ddc: ({})                 // { "DP-1": { bus: 5, value: 60, max: 100 } }
+    Process {
+        running: true
+        command: ["sh", "-c", `command -v ddcutil >/dev/null || exit 0
+ddcutil detect --terse 2>/dev/null | awk '/I2C bus:/{split($3, a, "-"); b=a[2]} /DRM connector:/{c=$3; sub(/^card[0-9]+-/, "", c); print c, b}' |
+while read -r name bus; do v=$(ddcutil --bus "$bus" getvcp 10 --brief 2>/dev/null) && echo "$name $bus $v"; done`]
+        stdout: StdioCollector {
+            onStreamFinished: {
+                const d = {}
+                for (const l of text.split("\n")) {       // "DP-1 5 VCP 10 C 60 100"
+                    const f = l.trim().split(/\s+/)
+                    if (f.length >= 7 && f[2] === "VCP") d[f[0]] = { bus: f[1], value: parseInt(f[5]), max: parseInt(f[6]) || 100 }
+                }
+                page.ddc = d
+            }
+        }
     }
 
     // ---- per-screen setup (saved in the personal layer: ~/.config/hypr/local/monitors.lua via rice-settings) ----
@@ -217,6 +241,17 @@ SetPage {
                 }
             }
             SetRow {
+                // an external monitor that accepts DDC/CI (most do; some have it off in their own menu)
+                visible: !card.m.disabled && !page.internal(card.m) && page.ddc[card.m.name] !== undefined
+                title: "Brightness"
+                desc: "Set on the monitor itself, over the cable (DDC/CI)."
+                SetNum {
+                    readonly property var d: page.ddc[card.m.name] || ({ bus: "", value: 0, max: 100 })
+                    value: d.value; from: 0; to: d.max; unit: ""
+                    onChanged: (x) => Quickshell.execDetached(["ddcutil", "--noverify", "--bus", String(d.bus), "setvcp", "10", String(x)])
+                }
+            }
+            SetRow {
                 visible: !card.m.disabled
                 title: "Resolution"
                 Flow {
@@ -233,7 +268,7 @@ SetPage {
                 }
             }
             SetRow {
-                visible: !card.m.disabled && !(Power.asus && page.internal(card.m))   // ASUS built-in: the Auto switch above
+                visible: !card.m.disabled && !(Power.panelSwitch && page.internal(card.m))   // built-in panel: the Refresh rate switch above
                 title: "Refresh rate"
                 Seg {
                     readonly property var hz: page.rates(card.m, card.res)

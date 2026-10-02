@@ -39,5 +39,5 @@ case $next in
     laptop)   lua="$lap_on; $ext_off" ;;
 esac
 hyprctl eval "$lua" >/dev/null && echo "$next" > "$state"
-[ "$next" != external ] && qs ipc call power screen >/dev/null 2>&1   # laptop panel back to 60 / 240 Hz
+[ "$next" != external ] && qs ipc call power screen >/dev/null 2>&1   # laptop panel back to its 60 Hz / top-rate setting
 for i in "${!modes[@]}"; do [ "${modes[$i]}" = "$next" ] && qs ipc call osd display "${labels[$i]}"; done
