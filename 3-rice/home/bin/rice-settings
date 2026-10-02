@@ -23,7 +23,7 @@ applied live with `hyprctl eval 'hl.config({...})'`.
   rice-settings anim <key> <value>   animations (Settings > Windows > Animations): speed <50-300 %>,
                                       windows popin|slide|fade|gnomed, workspaces slide|slidevert|fade|slidefade,
                                       feel spring|smooth|crisp; written as hl.animation() lines into settings.lua
-  rice-settings cursor [<theme> <size>]  mouse pointer (Settings > Themes > Pointer): Udiksa (theme colours) or a
+  rice-settings cursor [<theme> <size>]  mouse pointer (Settings > Mouse & keyboard > Pointer): Udiksa / Udiksa-Modern (theme colours) or a
                                       Bibata-<Original|Modern>-<Classic|Ice|Amber>, size 16-64; no arguments = apply
                                       the saved one (first login). Live (hyprctl setcursor), GTK (gsettings), X11 apps
                                       (~/.icons/default), new apps (settings.lua env), login screen (rice-cursor)
@@ -160,11 +160,11 @@ def write_lua(d):
         txt += "\n-- animations: speed / styles / feel from Settings > Windows > Animations\n" + "\n".join(anim_lines(a)) + "\n"
     if d.get("_cursor"):
         t, sz = d["_cursor"]["theme"], str(d["_cursor"]["size"])
-        txt += ("\n-- mouse pointer from Settings > Themes > Pointer (env.lua has the rice default)\n"
+        txt += ("\n-- mouse pointer from Settings > Mouse & keyboard > Pointer (env.lua has the rice default)\n"
                 f"hl.env(\"XCURSOR_THEME\", {lua_str(t)})\nhl.env(\"HYPRCURSOR_THEME\", {lua_str(t)})\n"
                 f"hl.env(\"XCURSOR_SIZE\", {lua_str(sz)})\nhl.env(\"HYPRCURSOR_SIZE\", {lua_str(sz)})\n")
     if d.get("_shake") is False:
-        txt += "\n-- shake to find: off (Settings > Themes > Pointer)\n" + SHAKE_LUA.format("false") + "\n"
+        txt += "\n-- shake to find: off (Settings > Mouse & keyboard > Pointer)\n" + SHAKE_LUA.format("false") + "\n"
     if d.get("_startup"):
         txt += "\n-- startup apps added in Settings\nhl.on(\"hyprland.start\", function()\n"
         txt += "".join(f"    hl.exec_cmd({lua_str(c)})\n" for c in d["_startup"]) + "end)\n"
@@ -437,7 +437,7 @@ def cmd_anim(key, value):
     print(json.dumps(a))
 
 
-CURSORS = ["Udiksa"] + [f"Bibata-{s}-{c}" for s in ("Original", "Modern") for c in ("Classic", "Ice", "Amber")]
+CURSORS = ["Udiksa", "Udiksa-Modern"] + [f"Bibata-{s}-{c}" for s in ("Original", "Modern") for c in ("Classic", "Ice", "Amber")]
 CURSOR_DEFAULT = {"theme": "Udiksa", "size": 25}
 
 
@@ -461,6 +461,8 @@ def cmd_cursor(theme=None, size=None):
         write_lua(d)
     c = cursor_saved()
     t, sz = c["theme"], str(c["size"])
+    if t.startswith("Udiksa"):                                       # theme-coloured: (re)built in the current theme first
+        subprocess.run([os.path.join(HOME, ".local/bin/rice-cursor"), "build", t], capture_output=True)
     hypr(["setcursor", t, sz])                                       # Hyprland + apps using the cursor-shape protocol
     for k, v in (("cursor-theme", t), ("cursor-size", sz)):          # GTK apps
         subprocess.run(["gsettings", "set", "org.gnome.desktop.interface", k, v if k == "cursor-size" else t],

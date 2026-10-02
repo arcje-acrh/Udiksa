@@ -36,7 +36,7 @@
   keep awake, game mode, a usage panel (CPU per core, memory, network, disks, busiest programs), weather in the
   calendar, low-battery warnings and short status messages in the notch.
 - **App scratchpads**: btop, your music app and your chat app each on their own key, shown over whatever you do.
-- **A mouse pointer in the theme's colour** (Bibata's pointy shape) that grows when you shake it to find it.
+- **A mouse pointer in the theme's colour** (Bibata, pointy or rounded) that grows when you shake it to find it.
 
 ## 22 themes, one key
 
@@ -193,8 +193,8 @@ Udiksa stands on a lot of other people's work. Thank you all.
 
 **Parts taken or adapted from other projects**
 - Login / lock screen layout: the "sword" theme of [qylock](https://github.com/Darkkal44/qylock) by Darkkal44 (GPL-3.0)
-- Mouse pointer: [Bibata](https://github.com/ful1e5/Bibata_Cursor) by Abdulkaiz Khatri (GPL-3.0); its Original
-  drawings are in `3-rice/assets/bibata-original`, recoloured with each theme
+- Mouse pointer: [Bibata](https://github.com/ful1e5/Bibata_Cursor) by Abdulkaiz Khatri (GPL-3.0); its Original and
+  Modern drawings are in `3-rice/assets/bibata-original` and `bibata-modern`, recoloured with each theme
 - fastfetch layout: [JaKooLit's Hyprland-Dots](https://github.com/JaKooLit/Hyprland-Dots)
 - Ideas for the tools (screen recording, colour picker, status messages, keep awake / game mode, usage panel,
   scratchpads, weather): the [Caelestia](https://github.com/caelestia-dots/shell) shell
@@ -225,6 +225,6 @@ Udiksa stands on a lot of other people's work. Thank you all.
 ## License
 
 The code and configs are [MIT](LICENSE), except two parts under GPL-3.0 from the projects above: the Bibata pointer
-drawings (`3-rice/assets/bibata-original`, licence included there) and the login / lock screen layout adapted from
+drawings (`3-rice/assets/bibata-original` and `bibata-modern`, licence included there) and the login / lock screen layout adapted from
 qylock (`3-rice/home/config/quickshell/login/LoginScreen.qml`). Wallpapers and theme palettes keep their own licences
 (see `SOURCES.txt` in each theme folder).

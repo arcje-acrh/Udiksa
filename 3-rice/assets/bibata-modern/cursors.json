@@ -1,0 +1,739 @@
+{
+ "bd_double_arrow": {
+  "frames": [
+   "bd_double_arrow.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "c7088f0f3e6c8088236ef8e1e3e70000",
+   "nwse-resize",
+   "size_fdiag"
+  ],
+  "delay": 40
+ },
+ "bottom_left_corner": {
+  "frames": [
+   "bottom_left_corner.svg"
+  ],
+  "hx": 0.1015625,
+  "hy": 0.90625,
+  "aliases": [
+   "sw-resize"
+  ],
+  "delay": 40
+ },
+ "bottom_right_corner": {
+  "frames": [
+   "bottom_right_corner.svg"
+  ],
+  "hx": 0.89453125,
+  "hy": 0.90625,
+  "aliases": [
+   "se-resize"
+  ],
+  "delay": 40
+ },
+ "bottom_side": {
+  "frames": [
+   "bottom_side.svg"
+  ],
+  "hx": 0.50390625,
+  "hy": 0.9140625,
+  "aliases": [
+   "s-resize"
+  ],
+  "delay": 40
+ },
+ "bottom_tee": {
+  "frames": [
+   "bottom_tee.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.8984375,
+  "aliases": [],
+  "delay": 40
+ },
+ "center_ptr": {
+  "frames": [
+   "center_ptr.svg"
+  ],
+  "hx": 0.49609375,
+  "hy": 0.06640625,
+  "aliases": [],
+  "delay": 40
+ },
+ "circle": {
+  "frames": [
+   "circle.svg"
+  ],
+  "hx": 0.21484375,
+  "hy": 0.06640625,
+  "aliases": [
+   "forbidden"
+  ],
+  "delay": 40
+ },
+ "context-menu": {
+  "frames": [
+   "context-menu.svg"
+  ],
+  "hx": 0.22265625,
+  "hy": 0.06640625,
+  "aliases": [],
+  "delay": 40
+ },
+ "copy": {
+  "frames": [
+   "copy.svg"
+  ],
+  "hx": 0.21484375,
+  "hy": 0.06640625,
+  "aliases": [
+   "1081e37283d90000800003c07f3ef6bf",
+   "6407b0e94181790501fd1e167b474872",
+   "b66166c04f8c3109214a4fbd64a50fc8"
+  ],
+  "delay": 40
+ },
+ "cross": {
+  "frames": [
+   "cross.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "cross_reverse",
+   "diamond_cross"
+  ],
+  "delay": 40
+ },
+ "crossed_circle": {
+  "frames": [
+   "crossed_circle.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "03b6e0fcb3499374a867c041f52298f0",
+   "not-allowed"
+  ],
+  "delay": 40
+ },
+ "crosshair": {
+  "frames": [
+   "crosshair.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [],
+  "delay": 40
+ },
+ "dnd_no_drop": {
+  "frames": [
+   "dnd_no_drop.svg"
+  ],
+  "hx": 0.390625,
+  "hy": 0.25390625,
+  "aliases": [
+   "no-drop"
+  ],
+  "delay": 40
+ },
+ "dnd-ask": {
+  "frames": [
+   "dnd-ask.svg"
+  ],
+  "hx": 0.390625,
+  "hy": 0.25390625,
+  "aliases": [],
+  "delay": 40
+ },
+ "dnd-copy": {
+  "frames": [
+   "dnd-copy.svg"
+  ],
+  "hx": 0.390625,
+  "hy": 0.25390625,
+  "aliases": [],
+  "delay": 40
+ },
+ "dnd-link": {
+  "frames": [
+   "dnd-link.svg"
+  ],
+  "hx": 0.390625,
+  "hy": 0.25390625,
+  "aliases": [
+   "alias"
+  ],
+  "delay": 40
+ },
+ "dotbox": {
+  "frames": [
+   "dotbox.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "dot_box_mask",
+   "draped_box",
+   "icon",
+   "target"
+  ],
+  "delay": 40
+ },
+ "fd_double_arrow": {
+  "frames": [
+   "fd_double_arrow.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "fcf1c3c7cd4491d801f1e1c78f100000",
+   "nesw-resize",
+   "size_bdiag"
+  ],
+  "delay": 40
+ },
+ "grabbing": {
+  "frames": [
+   "grabbing.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.2578125,
+  "aliases": [
+   "closedhand",
+   "dnd-move",
+   "dnd-none",
+   "fcf21c00b30f7e3f83fe0dfd12e71cff"
+  ],
+  "delay": 40
+ },
+ "hand1": {
+  "frames": [
+   "hand1.svg"
+  ],
+  "hx": 0.5625,
+  "hy": 0.30859375,
+  "aliases": [
+   "grab",
+   "openhand"
+  ],
+  "delay": 40
+ },
+ "hand2": {
+  "frames": [
+   "hand2.svg"
+  ],
+  "hx": 0.4453125,
+  "hy": 0.0703125,
+  "aliases": [
+   "9d800788f1b08800ae810202380a0822",
+   "e29285e634086352946a0e7090d73106",
+   "pointer",
+   "pointing_hand"
+  ],
+  "delay": 40
+ },
+ "left_ptr": {
+  "frames": [
+   "left_ptr.svg"
+  ],
+  "hx": 0.21484375,
+  "hy": 0.06640625,
+  "aliases": [
+   "arrow",
+   "default",
+   "top_left_arrow"
+  ],
+  "delay": 40
+ },
+ "left_ptr_watch": {
+  "frames": [
+   "left_ptr_watch/left_ptr_watch-01.svg",
+   "left_ptr_watch/left_ptr_watch-02.svg",
+   "left_ptr_watch/left_ptr_watch-03.svg",
+   "left_ptr_watch/left_ptr_watch-04.svg",
+   "left_ptr_watch/left_ptr_watch-05.svg",
+   "left_ptr_watch/left_ptr_watch-06.svg",
+   "left_ptr_watch/left_ptr_watch-07.svg",
+   "left_ptr_watch/left_ptr_watch-08.svg",
+   "left_ptr_watch/left_ptr_watch-09.svg",
+   "left_ptr_watch/left_ptr_watch-10.svg",
+   "left_ptr_watch/left_ptr_watch-11.svg",
+   "left_ptr_watch/left_ptr_watch-12.svg",
+   "left_ptr_watch/left_ptr_watch-13.svg",
+   "left_ptr_watch/left_ptr_watch-14.svg",
+   "left_ptr_watch/left_ptr_watch-15.svg",
+   "left_ptr_watch/left_ptr_watch-16.svg",
+   "left_ptr_watch/left_ptr_watch-17.svg",
+   "left_ptr_watch/left_ptr_watch-18.svg",
+   "left_ptr_watch/left_ptr_watch-19.svg",
+   "left_ptr_watch/left_ptr_watch-20.svg",
+   "left_ptr_watch/left_ptr_watch-21.svg",
+   "left_ptr_watch/left_ptr_watch-22.svg",
+   "left_ptr_watch/left_ptr_watch-23.svg",
+   "left_ptr_watch/left_ptr_watch-24.svg",
+   "left_ptr_watch/left_ptr_watch-25.svg",
+   "left_ptr_watch/left_ptr_watch-26.svg",
+   "left_ptr_watch/left_ptr_watch-27.svg",
+   "left_ptr_watch/left_ptr_watch-28.svg",
+   "left_ptr_watch/left_ptr_watch-29.svg",
+   "left_ptr_watch/left_ptr_watch-30.svg",
+   "left_ptr_watch/left_ptr_watch-31.svg",
+   "left_ptr_watch/left_ptr_watch-32.svg",
+   "left_ptr_watch/left_ptr_watch-33.svg",
+   "left_ptr_watch/left_ptr_watch-34.svg",
+   "left_ptr_watch/left_ptr_watch-35.svg",
+   "left_ptr_watch/left_ptr_watch-36.svg",
+   "left_ptr_watch/left_ptr_watch-37.svg",
+   "left_ptr_watch/left_ptr_watch-38.svg",
+   "left_ptr_watch/left_ptr_watch-39.svg",
+   "left_ptr_watch/left_ptr_watch-40.svg",
+   "left_ptr_watch/left_ptr_watch-41.svg",
+   "left_ptr_watch/left_ptr_watch-42.svg",
+   "left_ptr_watch/left_ptr_watch-43.svg",
+   "left_ptr_watch/left_ptr_watch-44.svg",
+   "left_ptr_watch/left_ptr_watch-45.svg",
+   "left_ptr_watch/left_ptr_watch-46.svg",
+   "left_ptr_watch/left_ptr_watch-47.svg",
+   "left_ptr_watch/left_ptr_watch-48.svg",
+   "left_ptr_watch/left_ptr_watch-49.svg",
+   "left_ptr_watch/left_ptr_watch-50.svg",
+   "left_ptr_watch/left_ptr_watch-51.svg",
+   "left_ptr_watch/left_ptr_watch-52.svg",
+   "left_ptr_watch/left_ptr_watch-53.svg",
+   "left_ptr_watch/left_ptr_watch-54.svg"
+  ],
+  "hx": 0.21484375,
+  "hy": 0.06640625,
+  "aliases": [
+   "00000000000000020006000e7e9ffc3f",
+   "08e8e1c95fe2fc01f976f1e063a24ccd",
+   "3ecb610c1bf2410f44200f48c40d3599",
+   "progress"
+  ],
+  "delay": 40
+ },
+ "left_side": {
+  "frames": [
+   "left_side.svg"
+  ],
+  "hx": 0.08203125,
+  "hy": 0.5,
+  "aliases": [
+   "w-resize"
+  ],
+  "delay": 40
+ },
+ "left_tee": {
+  "frames": [
+   "left_tee.svg"
+  ],
+  "hx": 0.8984375,
+  "hy": 0.5,
+  "aliases": [],
+  "delay": 40
+ },
+ "link": {
+  "frames": [
+   "link.svg"
+  ],
+  "hx": 0.21484375,
+  "hy": 0.06640625,
+  "aliases": [
+   "3085a0e285430894940527032f8b26df",
+   "640fb0e74195791501fd1ed57b41487f",
+   "a2a266d0498c3104214a47bd64ab0fc8"
+  ],
+  "delay": 40
+ },
+ "ll_angle": {
+  "frames": [
+   "ll_angle.svg"
+  ],
+  "hx": 0.1171875,
+  "hy": 0.87109375,
+  "aliases": [],
+  "delay": 40
+ },
+ "lr_angle": {
+  "frames": [
+   "lr_angle.svg"
+  ],
+  "hx": 0.875,
+  "hy": 0.8984375,
+  "aliases": [],
+  "delay": 40
+ },
+ "move": {
+  "frames": [
+   "move.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "4498f0e0c1937ffe01fd06f973665830",
+   "9081237383d90e509aa00f00170e968f",
+   "all-scroll",
+   "fleur",
+   "size_all"
+  ],
+  "delay": 40
+ },
+ "pencil": {
+  "frames": [
+   "pencil.svg"
+  ],
+  "hx": 0.1796875,
+  "hy": 0.82421875,
+  "aliases": [
+   "draft"
+  ],
+  "delay": 40
+ },
+ "plus": {
+  "frames": [
+   "plus.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "cell"
+  ],
+  "delay": 40
+ },
+ "pointer-move": {
+  "frames": [
+   "pointer-move.svg"
+  ],
+  "hx": 0.21484375,
+  "hy": 0.06640625,
+  "aliases": [],
+  "delay": 40
+ },
+ "question_arrow": {
+  "frames": [
+   "question_arrow.svg"
+  ],
+  "hx": 0.1640625,
+  "hy": 0.3359375,
+  "aliases": [
+   "5c6cd98b3f3ebcb1f9c7f1c204630408",
+   "d9ce0ab605698f320427677b458ad60b",
+   "help",
+   "left_ptr_help",
+   "whats_this"
+  ],
+  "delay": 40
+ },
+ "right_ptr": {
+  "frames": [
+   "right_ptr.svg"
+  ],
+  "hx": 0.796875,
+  "hy": 0.06640625,
+  "aliases": [
+   "draft_large",
+   "draft_small"
+  ],
+  "delay": 40
+ },
+ "right_side": {
+  "frames": [
+   "right_side.svg"
+  ],
+  "hx": 0.91015625,
+  "hy": 0.5,
+  "aliases": [
+   "e-resize"
+  ],
+  "delay": 40
+ },
+ "right_tee": {
+  "frames": [
+   "right_tee.svg"
+  ],
+  "hx": 0.11328125,
+  "hy": 0.5,
+  "aliases": [],
+  "delay": 40
+ },
+ "sb_down_arrow": {
+  "frames": [
+   "sb_down_arrow.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.8671875,
+  "aliases": [
+   "down-arrow"
+  ],
+  "delay": 40
+ },
+ "sb_h_double_arrow": {
+  "frames": [
+   "sb_h_double_arrow.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "028006030e0e7ebffc7f7070c0600140",
+   "14fef782d02440884392942c1120523",
+   "col-resize",
+   "ew-resize",
+   "h_double_arrow",
+   "size-hor",
+   "size_hor",
+   "split_h"
+  ],
+  "delay": 40
+ },
+ "sb_left_arrow": {
+  "frames": [
+   "sb_left_arrow.svg"
+  ],
+  "hx": 0.12890625,
+  "hy": 0.5,
+  "aliases": [
+   "left-arrow"
+  ],
+  "delay": 40
+ },
+ "sb_right_arrow": {
+  "frames": [
+   "sb_right_arrow.svg"
+  ],
+  "hx": 0.87109375,
+  "hy": 0.5,
+  "aliases": [
+   "right-arrow"
+  ],
+  "delay": 40
+ },
+ "sb_up_arrow": {
+  "frames": [
+   "sb_up_arrow.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.12890625,
+  "aliases": [
+   "up-arrow"
+  ],
+  "delay": 40
+ },
+ "sb_v_double_arrow": {
+  "frames": [
+   "sb_v_double_arrow.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "00008160000006810000408080010102",
+   "2870a09082c103050810ffdffffe0204",
+   "double_arrow",
+   "ns-resize",
+   "row-resize",
+   "size-ver",
+   "size_ver",
+   "split_v",
+   "v_double_arrow"
+  ],
+  "delay": 40
+ },
+ "tcross": {
+  "frames": [
+   "tcross.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "color-picker"
+  ],
+  "delay": 40
+ },
+ "top_left_corner": {
+  "frames": [
+   "top_left_corner.svg"
+  ],
+  "hx": 0.11328125,
+  "hy": 0.09375,
+  "aliases": [
+   "nw-resize"
+  ],
+  "delay": 40
+ },
+ "top_right_corner": {
+  "frames": [
+   "top_right_corner.svg"
+  ],
+  "hx": 0.89453125,
+  "hy": 0.09375,
+  "aliases": [
+   "ne-resize"
+  ],
+  "delay": 40
+ },
+ "top_side": {
+  "frames": [
+   "top_side.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.08984375,
+  "aliases": [
+   "n-resize"
+  ],
+  "delay": 40
+ },
+ "top_tee": {
+  "frames": [
+   "top_tee.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.10546875,
+  "aliases": [],
+  "delay": 40
+ },
+ "ul_angle": {
+  "frames": [
+   "ul_angle.svg"
+  ],
+  "hx": 0.12890625,
+  "hy": 0.12890625,
+  "aliases": [],
+  "delay": 40
+ },
+ "ur_angle": {
+  "frames": [
+   "ur_angle.svg"
+  ],
+  "hx": 0.87890625,
+  "hy": 0.12890625,
+  "aliases": [],
+  "delay": 40
+ },
+ "vertical-text": {
+  "frames": [
+   "vertical-text.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [],
+  "delay": 40
+ },
+ "wait": {
+  "frames": [
+   "wait/wait-01.svg",
+   "wait/wait-02.svg",
+   "wait/wait-03.svg",
+   "wait/wait-04.svg",
+   "wait/wait-05.svg",
+   "wait/wait-06.svg",
+   "wait/wait-07.svg",
+   "wait/wait-08.svg",
+   "wait/wait-09.svg",
+   "wait/wait-10.svg",
+   "wait/wait-11.svg",
+   "wait/wait-12.svg",
+   "wait/wait-13.svg",
+   "wait/wait-14.svg",
+   "wait/wait-15.svg",
+   "wait/wait-16.svg",
+   "wait/wait-17.svg",
+   "wait/wait-18.svg",
+   "wait/wait-19.svg",
+   "wait/wait-20.svg",
+   "wait/wait-21.svg",
+   "wait/wait-22.svg",
+   "wait/wait-23.svg",
+   "wait/wait-24.svg",
+   "wait/wait-25.svg",
+   "wait/wait-26.svg",
+   "wait/wait-27.svg",
+   "wait/wait-28.svg",
+   "wait/wait-29.svg",
+   "wait/wait-30.svg",
+   "wait/wait-31.svg",
+   "wait/wait-32.svg",
+   "wait/wait-33.svg",
+   "wait/wait-34.svg",
+   "wait/wait-35.svg",
+   "wait/wait-36.svg",
+   "wait/wait-37.svg",
+   "wait/wait-38.svg",
+   "wait/wait-39.svg",
+   "wait/wait-40.svg",
+   "wait/wait-41.svg",
+   "wait/wait-42.svg",
+   "wait/wait-43.svg",
+   "wait/wait-44.svg",
+   "wait/wait-45.svg",
+   "wait/wait-46.svg",
+   "wait/wait-47.svg",
+   "wait/wait-48.svg",
+   "wait/wait-49.svg",
+   "wait/wait-50.svg",
+   "wait/wait-51.svg",
+   "wait/wait-52.svg",
+   "wait/wait-53.svg",
+   "wait/wait-54.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "watch"
+  ],
+  "delay": 40
+ },
+ "wayland-cursor": {
+  "frames": [
+   "wayland-cursor.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [],
+  "delay": 40
+ },
+ "X_cursor": {
+  "frames": [
+   "X_cursor.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "pirate",
+   "x-cursor"
+  ],
+  "delay": 40
+ },
+ "xterm": {
+  "frames": [
+   "xterm.svg"
+  ],
+  "hx": 0.5,
+  "hy": 0.5,
+  "aliases": [
+   "ibeam",
+   "text"
+  ],
+  "delay": 40
+ },
+ "zoom-in": {
+  "frames": [
+   "zoom-in.svg"
+  ],
+  "hx": 0.453125,
+  "hy": 0.453125,
+  "aliases": [],
+  "delay": 40
+ },
+ "zoom-out": {
+  "frames": [
+   "zoom-out.svg"
+  ],
+  "hx": 0.453125,
+  "hy": 0.453125,
+  "aliases": [],
+  "delay": 40
+ }
+}

@@ -1,4 +1,5 @@
-// SetKeyboard.qml -- Settings > Keyboard & touchpad (split from Devices, 2026-09-28): layout (from a list or typed),
+// SetKeyboard.qml -- Settings > Mouse & keyboard (was Keyboard & touchpad; split from Devices, 2026-09-28): mouse pointer
+// (moved here from Themes 2026-10-03: style, size, shake to find), layout (from a list or typed),
 // key repeat, keyboard light (ASUS: brightness, effect, colour / follow theme, speed, direction, when lit -- via
 // ~/.local/bin/rice-kbd, saved in ~/.config/udiksa/keyboard.json), touchpad. Hyprland options go through rice-settings (settings.lua); the light via Power.qml.
 import QtQuick
@@ -23,6 +24,74 @@ SetPage {
     ]
     function setLayout(l, va) { page.set("kb_layout", l); page.set("kb_variant", va) }
     Component.onCompleted: Power.readKbd()
+
+    // ---- mouse pointer (rice-settings cursor): Udiksa = Bibata Original in the theme colours, or a Bibata ----
+    SetGroup { title: "Pointer" }
+    property var cursor: ({ theme: "Udiksa", size: 25 })
+    readonly property var hostCursor: host && host.hv ? host.hv.cursor : undefined
+    onHostCursorChanged: if (hostCursor) cursor = JSON.parse(JSON.stringify(hostCursor))
+    function setCursor(theme, size) {
+        cursor = { theme: theme, size: size }
+        cursorProc.command = [page.host.helper, "cursor", theme, String(size)]
+        cursorProc.running = true
+    }
+    Process { id: cursorProc }
+    SetRow {
+        title: "Mouse pointer"
+        desc: "Udiksa = in the theme's colour, changing with every theme. The others are Bibata's own colours. Original = pointy, Modern = rounded."
+    }
+    Flow {
+        width: parent.width
+        spacing: 6
+        Repeater {
+            model: [
+                { id: "Udiksa", name: "Udiksa Original" }, { id: "Udiksa-Modern", name: "Udiksa Modern" },
+                { id: "Bibata-Original-Classic", name: "Original Classic" }, { id: "Bibata-Original-Ice", name: "Original Ice" },
+                { id: "Bibata-Original-Amber", name: "Original Amber" }, { id: "Bibata-Modern-Classic", name: "Modern Classic" },
+                { id: "Bibata-Modern-Ice", name: "Modern Ice" }, { id: "Bibata-Modern-Amber", name: "Modern Amber" }
+            ]
+            delegate: SetButton {
+                required property var modelData
+                text: modelData.name
+                accent: page.cursor.theme === modelData.id
+                onClicked: page.setCursor(modelData.id, page.cursor.size)
+            }
+        }
+    }
+    SetRow {
+        title: "Pointer size"
+        Seg {
+            readonly property var vals: [20, 24, 25, 28, 32]
+            options: vals.map(v => v + " px")
+            current: vals.indexOf(page.cursor.size)
+            onPicked: (i) => page.setCursor(page.cursor.theme, vals[i])
+        }
+    }
+
+    SetRow {
+        title: "Shake to find"
+        desc: (page.host && page.host.hv && page.host.hv.shake && !page.host.hv.shake.plugin)
+              ? "Needs the dynamic-cursors plugin (built with hyprpm). Install opens a terminal; takes a few minutes."
+              : "Shake the mouse and the pointer grows for a moment, so you see where it is (like macOS)."
+        Row {
+            spacing: 8
+            SetButton {
+                visible: !!(page.host && page.host.hv && page.host.hv.shake && !page.host.hv.shake.plugin)
+                text: "Install"
+                onClicked: Quickshell.execDetached(["kitty", "--class", "rice-script", "--title", "Shake to find", "-e", "bash", "-c",
+                    "hyprpm update && yes | hyprpm add https://github.com/virtcode/hypr-dynamic-cursors; hyprpm enable dynamic-cursors && hyprpm reload; echo; read -rp 'Done. Press Enter to close.'"])
+            }
+            Seg {
+                options: ["Off", "On"]
+                current: page.shakeOn ? 1 : 0
+                onPicked: (i) => { page.shakeOn = i === 1; shakeProc.command = [page.host.helper, "shake", i === 1 ? "on" : "off"]; shakeProc.running = true }
+            }
+        }
+    }
+    property bool shakeOn: true
+    readonly property var hostShake: host && host.hv ? host.hv.shake : undefined
+    onHostShakeChanged: if (hostShake) shakeOn = hostShake.on !== false
+    Process { id: shakeProc }
 
     SetGroup { title: "Keyboard"; action: "reset keyboard + touchpad to my config files"; onActionClicked: { Quickshell.execDetached([host.helper, "reset", "input"]); resetLater.restart() } }
     Timer { id: resetLater; interval: 900; onTriggered: host.load() }

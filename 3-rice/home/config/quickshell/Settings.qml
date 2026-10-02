@@ -23,7 +23,7 @@ Scope {
         { id: "slash",     group: "Personalise", needs: "slash", file: "Slash", name: "Slash lighting", icon: "󰛨", desc: "the LED bar on the lid: animation, brightness, when it lights" },
         { id: "display",   group: "Devices",     file: "Display",     name: "Display",            icon: "󰍹", desc: "brightness, refresh rate, external monitor" },
         { id: "sound",     group: "Devices",     file: "Sound",       name: "Sound",              icon: "󰕾", desc: "output, microphone, app volumes, headphones" },
-        { id: "keyboard",  group: "Devices",     file: "Keyboard",    name: "Keyboard & touchpad", icon: "󰌌", desc: "layout, key repeat, light, touchpad" },
+        { id: "keyboard",  group: "Devices",     file: "Keyboard",    name: "Mouse & keyboard", icon: "󰍽", desc: "pointer, shake to find, layout, key repeat, light, touchpad" },
         { id: "keys",      group: "Devices",     file: "Keys",        name: "Shortcuts",          icon: "󰘳", desc: "every key binding, add your own" },
         { id: "wifi",      group: "Network",     needs: "wifi", file: "Wifi",        name: "Wi-Fi",              icon: "󰖩", desc: "networks, passwords, hidden networks, airplane mode" },
         { id: "bluetooth", group: "Network",     needs: "bt",   file: "Bluetooth",   name: "Bluetooth",          icon: "󰂯", desc: "pair, connect, forget" },

@@ -7,7 +7,7 @@ local bin, path = os.getenv("HOME") .. "/.local/bin", os.getenv("PATH") or "/usr
 if not (":" .. path .. ":"):find(":" .. bin .. ":", 1, true) then hl.env("PATH", bin .. ":" .. path) end
 
 -- mouse pointer: "Udiksa" = Bibata Original in the theme's colours (~/.local/bin/rice-cursor, rebuilt by rice-theme on
--- every theme change). Settings > Themes > Pointer picks another; local/settings.lua (loaded later) then sets these again.
+-- every theme change). Settings > Mouse & keyboard > Pointer picks another; local/settings.lua (loaded later) then sets these again.
 hl.env("XCURSOR_THEME", "Udiksa")
 hl.env("HYPRCURSOR_THEME", "Udiksa")
 hl.env("XCURSOR_SIZE", "25")
