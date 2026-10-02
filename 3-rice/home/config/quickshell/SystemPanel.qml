@@ -6,12 +6,14 @@
 //   right   live monitor (temps, fans, load, clock, RAM, GPU, power) + fan curve editor (CPU / GPU, ASUS only)
 // Every section shows only when it works on this machine (flags in Power.qml): any laptop gets the screen switch,
 // keyboard-light brightness and power-profiles-daemon modes; ASUS adds watts, fan curves, overdrive and colours.
+// Without ASUS the layout is: the controls this machine has (+ fan / GPU readings) on the left, and the full
+// Usage view (UsagePanel, embedded) on the right instead of the small Monitor card.
 import QtQuick
 
 Item {
     id: root
-    readonly property int wantWidth: Power.asus ? 1180 : 820
-    readonly property int wantHeight: Power.asus ? 440 : (Power.gfx || Power.panelSwitch || Power.kbd ? 340 : 230)
+    readonly property int wantWidth: Power.asus ? 1180 : 1340
+    readonly property int wantHeight: Power.asus ? 440 : Math.max(360, ctl.contentHeight + 2 * ctl.pad + 32)
     signal openPanel(string id)            // Monitor > "usage ›" switches the notch to the usage panel
     Component.onCompleted: { Power.watchers += 1; Power.refreshGpu(); Power.readCurves(); Power.readKbd() }
     Component.onDestruction: Power.watchers -= 1
@@ -74,8 +76,9 @@ Item {
 
         // ================= left: modes =================
         Card {
-            width: Power.asus ? (parent.width - 2 * parent.spacing) * 0.36 : (parent.width - parent.spacing) * 0.5; height: parent.height
-            spacing: 8
+            id: ctl
+            width: Power.asus ? (parent.width - 2 * parent.spacing) * 0.36 : 300; height: parent.height
+            spacing: Power.asus ? 8 : 14         // without the ASUS cards: each section clearly apart
           Column {
             visible: Power.hasModes
             width: parent.width; spacing: 8
@@ -161,6 +164,24 @@ Item {
             PanelTitle { title: "Keyboard light" }
             Seg { options: Power.kbdLabels; current: Power.kbdLevel; onPicked: (i) => Power.setKbd(i) }
           }
+          // without ASUS: readings the Usage view does not have (fan speeds; a desktop GPU's load / temperature)
+          Column {
+            readonly property bool gpuRow: !Power.gfx && root.st.gpu_load !== undefined
+            readonly property bool fanRow: Power.fans && (root.st.fanList || []).length > 0
+            visible: !Power.asus && (gpuRow || fanRow)
+            width: parent.width; spacing: 6
+            PanelTitle { title: "Sensors" }
+            Stat { visible: parent.fanRow; k: "Fans"; v: (root.st.fanList || []).join(" · ") + " rpm" }
+            Stat { visible: parent.gpuRow; k: "GPU"; v: (root.st.gpu_load ?? "–") + " %" + (root.st.gpu_temp !== undefined ? " · " + root.st.gpu_temp + " °C" : "") }
+          }
+        }
+
+        // ================= without ASUS: the full Usage view =================
+        Loader {
+            active: !Power.asus
+            visible: active
+            width: parent.width - ctl.width - parent.spacing; height: parent.height
+            sourceComponent: UsagePanel { embedded: true }
         }
 
         // ================= middle: power limits of the current mode =================
@@ -179,18 +200,16 @@ Item {
             }
         }
 
-        // ================= right: monitor + fans =================
+        // ================= right: monitor + fans (ASUS) =================
         Card {
-            width: Power.asus ? (parent.width - 2 * parent.spacing) * 0.37 : (parent.width - parent.spacing) * 0.5; height: parent.height
+            visible: Power.asus
+            width: (parent.width - 2 * parent.spacing) * 0.37; height: parent.height
             spacing: 5
             PanelTitle { title: "Monitor"; action: "usage ›"; onActionClicked: root.openPanel("usage") }
             Stat { k: "CPU"; v: (root.st.cpu_temp ?? "–") + " °C · " + (root.st.cpu_load ?? "–") + " % · " + ((root.st.cpu_mhz ?? 0) / 1000).toFixed(1) + " GHz" }
             Stat { visible: Power.gfx; k: "GPU"; v: Power.gpuMode === "Integrated" ? "off (Eco)" : Power.gpuError ? "driver missing" : (Power.gpuPower === "active" ? "awake (in use)" : "asleep · 0 W"); vc: Power.gpuError ? Theme.warn : (Power.gpuPower === "active" ? Theme.amber : Theme.text) }
-            // a GPU that is always on (desktop / AMD): load + temperature (hybrid NVIDIA uses the row above)
-            Stat { visible: !Power.gfx && root.st.gpu_load !== undefined; k: "GPU"; v: (root.st.gpu_load ?? "–") + " %" + (root.st.gpu_temp !== undefined ? " · " + root.st.gpu_temp + " °C" : "") }
-            Stat { visible: Power.asus; k: "Fans"; v: "CPU " + (root.st.cpu_fan ?? "–") + " · GPU " + (root.st.gpu_fan ?? "–") + " rpm" }
-            // any other machine: the fan speeds it reports (no control: every brand needs its own tool, docs/HARDWARE.md)
-            Stat { visible: !Power.asus && Power.fans && (root.st.fanList || []).length > 0; k: "Fans"; v: (root.st.fanList || []).join(" · ") + " rpm" }
+            Stat { k: "Fans"; v: "CPU " + (root.st.cpu_fan ?? "–") + " · GPU " + (root.st.gpu_fan ?? "–") + " rpm" }
+
             Stat { k: "Memory"; v: root.st.mem_total ? ((root.st.mem_used / 1048576).toFixed(1) + " / " + (root.st.mem_total / 1048576).toFixed(0) + " GB") : "–" }
             Stat { visible: Power.battery; k: "Power draw"; v: root.st.watts >= 0 ? root.st.watts.toFixed(1) + " W (battery)" : "on charger" }
           Column {

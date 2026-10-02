@@ -198,6 +198,7 @@ Item {
 
         Card {
             id: listCard
+            visible: root.dev !== null          // no Wi-Fi: only the connection card, full width
             width: (parent.width - parent.spacing) * 0.62; height: parent.height
             spacing: 4
             Item {
@@ -242,7 +243,7 @@ Item {
         }
 
         Column {
-            width: (parent.width - parent.spacing) * 0.38; height: parent.height
+            width: root.dev ? (parent.width - parent.spacing) * 0.38 : parent.width; height: parent.height
             spacing: 8
             Toggle {
                 visible: root.dev !== null
@@ -259,8 +260,15 @@ Item {
             Card {
                 width: parent.width; height: parent.height - (root.dev ? 2 * 40 + 2 * parent.spacing : 0)
                 spacing: 6
+                PanelTitle { visible: !root.dev; title: "Network"; action: root.wired ? "cable" : "not connected" }
+                Text {
+                    visible: !root.dev && !root.wired
+                    width: parent.width; wrapMode: Text.Wrap; bottomPadding: 4
+                    text: "No Wi-Fi on this machine. Plug in a network cable; it connects by itself."
+                    color: Theme.amber; font.family: Theme.font; font.pixelSize: 12
+                }
                 Repeater {
-                    model: root.wired ? [
+                    model: !root.dev && !root.wired ? [] : root.wired ? [
                         ["Network", "Cable"],
                         ["IP address", root.ip || "—"],
                         ["Interface", root.ifname || "—"]

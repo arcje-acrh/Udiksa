@@ -1,5 +1,6 @@
-// UsagePanel.qml -- what the machine is doing, in the grown notch (the 󰓅 icon on machines without the ASUS System
-// panel; on those, System > Monitor > "usage"). Everything is read only while this panel is open.
+// UsagePanel.qml -- what the machine is doing, in the grown notch. Shown three ways: inside the System panel on
+// machines without ASUS (embedded: right of the controls), on its own from the ASUS System panel's Monitor > "usage",
+// and via the 󰓅 icon when the System panel has nothing to show. Everything is read only while it is visible.
 //   left    CPU (load, clock, temperature, one LED column per core), memory, swap, graphics
 //   middle  network: download / upload now + the last minute as LED bars
 //   right   disks, the 5 busiest programs (top), "System monitor" = btop on its scratchpad (Ctrl+Shift+Esc)
@@ -13,6 +14,7 @@ Item {
     id: root
     readonly property int wantWidth: 1080
     readonly property int wantHeight: 360
+    property bool embedded: false          // inside another panel: no outer margins (that panel has them)
 
     // ---------- sampling: every second (load, memory, network, graphics), every 3 s (disks, top programs) ----------
     property var s: ({})
@@ -133,7 +135,7 @@ top -bn2 -d0.7 -o %CPU -w 200 | awk '/^top -/{n++} n==2 && /^ *[0-9]+ /{c=$12; f
 
     Row {
         anchors.fill: parent
-        anchors.margins: 16; anchors.leftMargin: 22; anchors.rightMargin: 22
+        anchors.margins: root.embedded ? 0 : 16; anchors.leftMargin: root.embedded ? 0 : 22; anchors.rightMargin: root.embedded ? 0 : 22
         spacing: 14
 
         // ================= left: load =================

@@ -6,6 +6,7 @@ Rectangle {
     default property alias content: col.data
     property int pad: 12
     property alias spacing: col.spacing
+    readonly property alias contentHeight: col.implicitHeight      // lets a panel grow to fit its tallest card
     color: Theme.surface
     radius: 12
     Column {
