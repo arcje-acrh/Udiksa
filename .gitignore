@@ -25,3 +25,7 @@ __pycache__/
 
 # ---- development notes (local only: the project log + DIY guide, never committed) ----
 dev/
+
+# ---- graphify (local knowledge graph of the repo; rebuilt, never committed) ----
+graphify-out/
+.graphifyignore
