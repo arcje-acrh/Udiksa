@@ -40,6 +40,7 @@ PanelWindow {
     // brightness, ...) the art stays behind (user 2026-10-03). Sized from the RESTING notch, so it never moves when a
     // panel opens. Click-through.
     PanelWindow {
+        id: artWin
         screen: win.screen
         WlrLayershell.layer: WlrLayer.Bottom
         WlrLayershell.namespace: "udiksa-art"      // not shell-*: no blur layer rule
@@ -49,8 +50,9 @@ PanelWindow {
         color: "transparent"
         mask: Region {}
         readonly property real gap: (width - notch.restWidth) / 2 - notch.ear - 8
-        SideArt { side: "left";  x: 0; width: Math.max(0, parent.gap) }
-        SideArt { side: "right"; x: parent.width - width; width: Math.max(0, parent.gap) }
+        // (artWin, not parent: inside a window `parent` is its content item, which has no `gap` -> width 0, nothing shown)
+        SideArt { side: "left";  x: 0; width: Math.max(0, artWin.gap) }
+        SideArt { side: "right"; x: artWin.width - width; width: Math.max(0, artWin.gap) }
     }
 
     Notch {
