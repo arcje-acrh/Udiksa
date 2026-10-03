@@ -15,7 +15,7 @@ sudo pacman -S --needed --noconfirm $(grep -vE '^\s*(#|$)' "$HERE/packages.txt")
 say "ASUS: files"
 mkdir -p "$HOME/.local/bin"
 t="$HOME/.local/bin/rice-kbd"; [[ -L $t && ! -e $t ]] && rm "$t"
-stow -d "$HERE/home" -t "$HOME/.local/bin" --restow bin
+stow -d "$HERE" -t "$HOME" --restow dots              # dots/ mirrors ~ (dots/.local/bin -> ~/.local/bin)
 note "rice-kbd, rice-slash -> ~/.local/bin"
 while IFS= read -r -d '' f; do
     sudo install -D -m "$(stat -c %a "$f")" "$f" "${f#"$HERE/system"}"

@@ -1,3 +1,0 @@
-# Settings > Power may set the lid / power-button actions without a password (only this one script, which
-# accepts nothing but fixed words and numbers). Installed by ~/Udiksa/rice/apply.sh.
-%wheel ALL=(root) NOPASSWD: /usr/local/bin/udiksa-power

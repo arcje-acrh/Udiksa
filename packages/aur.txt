@@ -1,5 +1,0 @@
-# AUR apps (installed with yay).
-matugen-bin
-quickshell-git
-# mouse pointers to choose from in Settings > Themes > Pointer (the Udiksa one is built from rice/assets) -- 2026-10-03
-bibata-cursor-theme-bin

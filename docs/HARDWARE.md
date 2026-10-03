@@ -25,11 +25,11 @@ This page shows what each part needs, what is covered today, and how to add supp
 | GPU load / temperature | desktop GPUs (AMD, or NVIDIA as the only card) | sysfs, `nvidia-smi` | hidden |
 | External monitor brightness | monitors with DDC/CI | `ddcutil` | row hidden |
 | Wi-Fi, Bluetooth, Tailscale | when the adapter / app is there | NetworkManager, BlueZ, Tailscale | page hidden (the notch always keeps a network icon: Wi-Fi, LAN or "not connected") |
-| Hibernate | when a swap file is set up (`rice/system/setup-hibernation.sh`) | systemd | button and row hidden |
+| Hibernate | when a swap file is set up (`system/setup-hibernation.sh`) | systemd | button and row hidden |
 
 ## How detection works
 
-Everything is detected in one place: [`rice/home/config/quickshell/Power.qml`](../rice/home/config/quickshell/Power.qml),
+Everything is detected in one place: [`dots/.config/quickshell/Power.qml`](../dots/.config/quickshell/Power.qml),
 section *what this machine has*. A short shell probe sets flags such as `asus`, `gfx`, `ppd`, `kbdName`, `panelRates`,
 `touchpad`, `lid`, `fans`; `battery`, `wifi` and `bt` are live. Every panel and Settings page reads these flags
 (`visible: Power.kbd`, `needs: "wifi"` in `Settings.qml`, …).
@@ -62,12 +62,12 @@ A device family gets its own folder, like `hardware/asus` and `hardware/nvidia`:
 hardware/<name>/
 ├── about          one paragraph: what it adds (shown by the installer)
 ├── detect         exit 0 when this machine needs it (e.g. grep the vendor in /sys/class/dmi/id/sys_vendor)
-├── install.sh     installs packages.txt, links home/bin into ~/.local/bin, copies system/ to /, enables services
+├── install.sh     installs packages.txt, links dots/ into ~, copies system/ to /, enables services
 ├── packages.txt   one package per line; "aur:name" for the AUR
-├── home/bin/      your tools (on PATH as ~/.local/bin/…)
+├── dots/          files for your home, laid out like it (dots/.local/bin/ = tools on PATH)
 └── system/        files copied to / (services, udev rules)
 ```
-`~/Udiksa/install.sh` runs every `detect` after part 3 and offers the module when it fits. Copy `hardware/nvidia`
+`~/Udiksa/install.sh` runs every `detect` after the rice part and offers the module when it fits. Copy `hardware/nvidia`
 (the smallest) as a start.
 
 ### 3. Connect it to the shell
