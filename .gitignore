@@ -8,7 +8,6 @@ dots/.config/gtk-3.0/gtk.css
 dots/.config/gtk-4.0/gtk.css
 dots/.config/gtk-3.0/settings.ini
 dots/.config/gtk-4.0/settings.ini
-dots/.config/fastfetch/logo.png
 dots/.config/fastfetch/config.jsonc
 optional/ncspot/dots/.config/ncspot/config.toml
 dots/.config/mpv/script-opts/

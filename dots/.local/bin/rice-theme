@@ -33,7 +33,7 @@
     ~/.config/kitty/colors.conf              terminal + 16 ANSI colours (SIGUSR1 = live)
     ~/.config/kitty/clock.conf               the Clock's terminal: colour 4 = accent (live too)
     ~/.local/state/rice/starship.toml        prompt (~/.config/starship.toml + [palettes.rice]; .bashrc points to it)
-    ~/.config/fastfetch/logo.png + config.jsonc  the Arch logo (accent2 -> accent) + text colours, from logo.svg / config.base.jsonc
+    ~/.config/fastfetch/config.jsonc         text colours as kitty slots, from config.base.jsonc (logo.txt: slots 23-30)
     ~/.config/gtk-4.0/gtk.css, gtk-3.0/gtk.css + settings.ini, gsettings color-scheme / gtk-theme
                                              (adw-gtk3[-dark]) / accent-color: GTK + libadwaita apps
     ~/.config/qt6ct/qt6ct.conf + colors/rice.conf, ~/.config/Kvantum/Rice/ (generated from KvFlat /
@@ -41,6 +41,7 @@
     wallpaper: awww img (animated)           State: ~/.local/state/rice/theme.json
   Running GTK/Qt apps pick up the new colours when they are restarted (dark/light switches live).
 """
+import socket
 import colorsys, hashlib, json, os, re, shutil, subprocess, sys, tomllib
 
 HOME = os.path.expanduser("~")
@@ -392,6 +393,14 @@ return {{
 """)
 
 
+# kitty colour slots 16.. hold these theme colours (see kitty()); slot(k) = the number to print instead of p[k]
+SLOTS = ("accent", "accent2", "muted", "text", "promptWarn", "promptDanger", "promptMuted")
+
+
+def slot(k):
+    return 16 + SLOTS.index(k)
+
+
 def kitty(p, theme):
     n = p["ansi"]
     lines = [f"# kitty colour scheme -- WRITTEN BY rice-theme (theme: {theme}); overwritten on theme change.",
@@ -410,6 +419,15 @@ def kitty(p, theme):
     # apps that paint cells in ANSI black (cmatrix, some TUIs) would draw an opaque layer over the see-through
     # terminal: that colour gets the same see-through background (background_opacity) as the default one
     lines += ["", f"transparent_background_colors {n[0]}"]
+    # the theme's own colours in the 256-colour slots after the 16 ANSI ones: the prompt and fastfetch print these
+    # slot numbers (not hex), so text already on screen recolours live too when kitty re-reads this file (SIGUSR1)
+    lines += ["", "# theme colours by slot: 16 accent, 17 accent2, 18 muted, 19 text, 20-22 prompt warn / danger / muted, 23-30 logo"]
+    for i, k in enumerate(SLOTS):
+        lines.append(f"color{i + 16}  {p[k]}")
+    # 23-30: the fastfetch logo's gradient, accent2 (top) -> accent (bottom); logo.txt colours $1..$8 = these slots
+    lines.append("# 23-30 fastfetch logo gradient (accent2 -> accent)")
+    for i in range(8):
+        lines.append(f"color{23 + i}  {mix(p['accent2'], p['accent'], i / 7)}")
     write(os.path.join(HOME, ".config/kitty/colors.conf"), "\n".join(lines) + "\n")
     # the Clock (rice-clock.desktop: kitty -c clock.conf, tty-clock -C 4) draws its digits in colour 4 = the accent;
     # kitty re-reads this file on SIGUSR1 too, so the clock recolours live on a theme switch
@@ -424,8 +442,9 @@ def starship(p):
     if not os.path.exists(f):
         return
     s = open(f).read()
-    vals = {"text": p["text"], "accent": p["accent"], "path": p["accent2"], "warn": p["promptWarn"],
-            "danger": p["promptDanger"], "muted": p["promptMuted"]}
+    # kitty slot numbers, not hex: prompts already on screen recolour live with the terminal (see kitty())
+    vals = {"text": slot("text"), "accent": slot("accent"), "path": slot("accent2"), "warn": slot("promptWarn"),
+            "danger": slot("promptDanger"), "muted": slot("promptMuted")}
     m = re.search(r"(?m)^\[palettes\.rice\]\s*$", s)      # the real table header (a comment mentions it too)
     if not m:
         return
@@ -437,20 +456,13 @@ def starship(p):
 
 
 def fastfetch(p):
-    """The Arch logo: logo.svg is the template (never rewritten); the tinted copy (top = accent2,
-    bottom = accent) is rendered straight into logo.png."""
-    svg = os.path.join(HOME, ".config/fastfetch/logo.svg")
-    if not os.path.exists(svg):
-        return
-    s = open(svg).read()
-    s = re.sub(r'(<stop offset="0" stop-color=")#[0-9a-fA-F]{6}', rf'\g<1>{p["accent2"]}', s)
-    s = re.sub(r'(<stop offset="1" stop-color=")#[0-9a-fA-F]{6}', rf'\g<1>{p["accent"]}', s)
-    subprocess.run(["rsvg-convert", "-w", "512", "-h", "512", "-o", os.path.join(HOME, ".config/fastfetch/logo.png")],
-                   input=s.encode())
+    """The logo (logo.txt) and text print kitty's slot colours (see kitty()), so they follow the theme live;
+    only the colour names in config.base.jsonc are swapped for those slots here."""
     # the text: config.jsonc = config.base.jsonc with its colour names swapped for the theme's colours
     base = os.path.join(HOME, ".config/fastfetch/config.base.jsonc")
     if os.path.exists(base):
-        names = {"yellow": p["accent2"], "cyan": p["accent"], "bright_black": p["muted"]}
+        # kitty slot colours (see kitty()) as raw SGR codes: fastfetch text already on screen recolours live
+        names = {"yellow": f"38;5;{slot('accent2')}", "cyan": f"38;5;{slot('accent')}", "bright_black": f"38;5;{slot('muted')}"}
         c = re.sub(r'"(yellow|cyan|bright_black)"(?=\s*[,}\n])', lambda m: f'"{names[m.group(1)]}"', open(base).read())
         write(os.path.join(HOME, ".config/fastfetch/config.jsonc"), c)
 
@@ -742,7 +754,7 @@ def greeter(p, img):
 
 def ncspot(p):
     """ncspot (Spotify TUI): ~/.config/ncspot/config.toml = config.base.toml (edit that one) + a [theme] table.
-    Background = the terminal's (kitty is themed already). ncspot reads it at start (or type :reload inside)."""
+    Background = the terminal's (kitty is themed already). a running ncspot gets it live (control socket)."""
     f = os.path.join(HOME, ".config/ncspot/config.toml")
     base = os.path.join(HOME, ".config/ncspot/config.base.toml")   # your settings; config.toml = base + theme
     if not os.path.isdir(os.path.dirname(f)):
@@ -766,6 +778,14 @@ def ncspot(p):
     body = (body + "\n\n" if body else "") + "# theme: written by rice-theme on every theme change (edit rice-theme, not this table)\n[theme]\n"
     body += "".join(f'{k} = "{v}"\n' for k, v in theme.items())
     write(f, body)
+    # a running ncspot reloads its config (and so these colours) on a "reload" sent to its control socket
+    sock = os.path.join(os.environ.get("XDG_RUNTIME_DIR", f"/run/user/{os.getuid()}"), "ncspot/ncspot.sock")
+    try:
+        with socket.socket(socket.AF_UNIX) as c:
+            c.settimeout(0.5); c.connect(sock); c.sendall(b"reload\n")
+            c.recv(1)                            # its status reply: closing before it drops the command
+    except OSError:
+        pass                                     # not running (or a stale socket)
 
 
 def cava(p):
@@ -1081,8 +1101,10 @@ def cmd_apply(img, pos=None, transition="grow"):
     if os.path.exists(kbd):
         subprocess.Popen([kbd, "theme"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     hypr(p, theme); kitty(p, theme); starship(p); fastfetch(p); gtk(p, theme); qt(p, theme)
-    grub(p, theme, img); greeter(p, img); ncspot(p); cava(p); satty(p); cursor(p); btop(p); viewers(p); office(p)
+    ncspot(p); cava(p); satty(p); cursor(p); btop(p); viewers(p); office(p)
     reload_apps()
+    # boot + login screens last: GRUB alone takes ~3 s, and the open apps should not wait for it to recolour
+    grub(p, theme, img); greeter(p, img)
     write(STATE, json.dumps({"theme": theme, "wallpaper": img}) + "\n")
     print(f"{theme}: {os.path.basename(img)}")
 
