@@ -3,20 +3,27 @@
 # Udiksa
 
 **A calm, retro-hardware desktop for Arch Linux: Hyprland, a hand-made Quickshell shell that lives in a notch,
-and 22 themes that recolour everything from the boot menu to the mouse pointer.**
+and themes that recolour everything, from the boot menu to the mouse pointer and the windows already open.**
 
 [![Arch Linux](https://img.shields.io/badge/Arch%20Linux-1793D1?style=for-the-badge&logo=archlinux&logoColor=white)](https://archlinux.org)
 [![Hyprland](https://img.shields.io/badge/Hyprland-0.56-58E1FF?style=for-the-badge&logo=hyprland&logoColor=white)](https://hypr.land)
 [![Quickshell](https://img.shields.io/badge/Quickshell-QML-a9b665?style=for-the-badge)](https://quickshell.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-d8a657?style=for-the-badge)](LICENSE)
 
-<img src="docs/screenshots/desktop.webp" alt="Udiksa desktop: fastfetch and btop, Gruvbox Material theme" width="100%">
+<img src="docs/screenshots/desktop.webp" alt="Udiksa desktop: btop, fastfetch and cava, Gruvbox Material theme" width="100%">
 
-[Highlights](#highlights) · [Themes](#22-themes-one-key) · [Notch](#the-notch) · [Settings](#settings) · [Install](#install) · [Keys](#keys) · [Limitations](#limitations) · [Credits](#credits)
+[Video](#video) · [Highlights](#highlights) · [Themes](#themes) · [Notch](#the-notch) · [Settings](#settings) · [Install](#install) · [Keys](#keys) · [Limitations](#limitations) · [Credits](#credits)
 
 </div>
 
 ---
+
+## Video
+
+<!-- VIDEO PLACEHOLDER: on github.com, edit this file, delete the "coming soon" line below and drag
+     udiksa-showcase.mp4 into its place. GitHub uploads it and puts a link there that shows as a player. -->
+
+*A short tour (notch, tiling, live theme switching, Settings) is coming soon.*
 
 ## Details
 
@@ -30,7 +37,7 @@ and 22 themes that recolour everything from the boot menu to the mouse pointer.*
 | **Font** | Iosevka Nerd Font |
 | **Mouse pointer** | Bibata, recoloured with the theme; grows when you shake it |
 | **GTK / Qt** | adw-gtk3 / Kvantum, recoloured with the theme |
-| **Colours** | 22 hand-tuned themes, each tinted by its wallpaper (matugen) |
+| **Themes** | a folder of wallpapers + one colour file each, tinted by every wallpaper (matugen); add your own |
 | **Wallpapers** | awww, animated transitions |
 | **Boot** | themed GRUB menu, Plymouth splash, hibernation |
 
@@ -40,9 +47,9 @@ and 22 themes that recolour everything from the boot menu to the mouse pointer.*
   icons. Hover or click any part and it grows into a panel: launcher, system, sound, Wi-Fi, Bluetooth, calendar and
   weather, media, battery, notifications. Volume, brightness and other changes show inside it, and so do
   notifications. No pop-up windows anywhere.
-- **22 themes, one key.** <kbd>Super</kbd>+<kbd>T</kbd> opens the theme switcher. Everything follows at once: window
-  borders, the shell, the terminal, GTK and Qt apps, btop, fastfetch, ncspot, cava, the screenshot editor, the mouse
-  pointer, the login screen and the GRUB menu. Drop pictures into a new folder and it becomes a theme.
+- **Live themes.** <kbd>Super</kbd>+<kbd>T</kbd> opens the theme switcher. Everything follows at once, windows that
+  are already open included: the shell, window borders, the terminal and its prompt, btop, fastfetch, cava, cmatrix,
+  the clock, ncspot, GTK and Qt apps, the screenshot editor, the mouse pointer, the login screen and the GRUB menu.
 - **A real Settings app** (<kbd>Super</kbd>+<kbd>I</kbd>), in the same style: tiling layout, gaps, corners and
   animations; displays (resolution, scale, rotation, several monitors); sound per app; mouse, keyboard and touchpad;
   Wi-Fi, Bluetooth, Tailscale; battery, sleep and hibernation; default and startup apps; shortcuts. Every change
@@ -50,7 +57,7 @@ and 22 themes that recolour everything from the boot menu to the mouse pointer.*
 - **Retro-hardware controls.** LED bars instead of sliders, keys that press in, hairline switches, Iosevka
   everywhere. Rounded screen corners match the windows.
 - **Tools built in.** Screen recording (GPU-encoded, with or without sound), a colour picker, screenshots you can
-  draw on, keep awake, game mode, a usage panel (CPU per core, memory, network, disks, busiest programs), app
+  draw on, keep awake, game mode, a terminal clock (`clock`), a usage panel (CPU per core, memory, network, disks, busiest programs), app
   scratchpads (system monitor, music, chat), clipboard history, emoji, a calculator, low-battery warnings.
 - **Yours stays yours.** Everything you change in Settings lives in a personal layer (`~/.config/hypr/local/`),
   apart from the design, so updating the rice never overwrites your choices.
@@ -58,17 +65,33 @@ and 22 themes that recolour everything from the boot menu to the mouse pointer.*
   works on your hardware. ASUS laptops and hybrid NVIDIA laptops get extra controls (performance modes, fan curves,
   GPU modes, keyboard light, charge limit), offered only where they fit.
 
-## 22 themes, one key
+## Themes
 
-<img src="docs/screenshots/themes.webp" alt="Switching between themes" width="100%">
+<img src="docs/screenshots/themes.webp" alt="Gruvbox Material to Everforest Light: btop, cmatrix and fastfetch recolour while open" width="100%">
 
-Each theme is a folder of wallpapers with a colour file. Every wallpaper tints the palette a little, so no two feel the
-same. Add your own: make a folder in `~/Pictures/Wallpapers`, drop pictures in, and the colours are made from them.
+Pick a theme and a wallpaper in the switcher (<kbd>Super</kbd>+<kbd>T</kbd>, arrow keys and Enter, or the mouse).
+Every wallpaper tints its theme's colours a little, so no two feel the same, and open apps change colour in place:
+nothing needs restarting.
 
-<img src="docs/screenshots/switcher.webp" alt="The theme switcher (Super+T)" width="100%">
+<img src="docs/screenshots/switcher.webp" alt="The theme switcher (Super+T), Tokyo Night" width="100%">
+
+### Add or remove a theme
+
+A theme is just a folder in `~/Pictures/Wallpapers/`.
+
+- **Add one:** make a folder, put pictures in it (`.jpg`, `.png`, `.webp`). It shows up in the switcher; the first
+  time you pick it, its colours are made from its pictures and saved as `colors.toml` in that folder.
+- **From GitHub:** `rice-theme import <link>` fetches a theme repository that has a `colors.toml` and pictures.
+- **More wallpapers:** drop more pictures into a theme's folder.
+- **Change its colours:** edit `colors.toml` in the folder (every line says what it colours; `accent` is the main
+  one), then run `rice-theme reapply`. `rice-theme colors <picture>` shows the colours a picture would give.
+  Delete `colors.toml` to have them made from the pictures again.
+- **Remove one:** delete its folder.
+
+`~/Pictures/Wallpapers/README.txt` explains every colour in detail, with a worked example.
 
 <details>
-<summary><b>All themes</b></summary>
+<summary><b>Themes that come with it</b></summary>
 
 <br>
 
@@ -82,16 +105,16 @@ Rosé Pine Dawn · Solarized Dark · Terafox · Tokyo Night · Vantablack · Whi
 
 ## The notch
 
-| Launcher (<kbd>Super</kbd>+<kbd>R</kbd>) | System |
+| Launcher (<kbd>Super</kbd>+<kbd>R</kbd>) · Graphite | System · Catppuccin Mocha |
 |:---:|:---:|
 | <img src="docs/screenshots/notch-launcher.webp" alt="Launcher: apps, clipboard, emoji, calculator, scripts"> | <img src="docs/screenshots/notch-system.webp" alt="System panel: performance mode, GPU, screen, fans"> |
 | Apps, clipboard, emoji, calculator, windows, maintenance scripts | Performance mode, GPU, refresh rate, keyboard light, fans |
 
-| Calendar | Sound |
+| Calendar and weather · Everforest Light | Sound · Rosé Pine |
 |:---:|:---:|
 | <img src="docs/screenshots/notch-clock.webp" alt="Calendar with events, timer and alarms"> | <img src="docs/screenshots/notch-volume.webp" alt="Sound panel: output, microphone, devices"> |
 
-| Media | Battery |
+| Media · Gruvbox Dark | Battery · Nord |
 |:---:|:---:|
 | <img src="docs/screenshots/notch-media.webp" alt="Media controls for any player"> | <img src="docs/screenshots/notch-battery.webp" alt="Battery: charge, time left, charge limit"> |
 
@@ -99,11 +122,11 @@ Rosé Pine Dawn · Solarized Dark · Terafox · Tokyo Night · Vantablack · Whi
 
 A full settings app in the same style as the rest: every change applies live.
 
-| Windows and tiling | Display |
+| Windows and tiling · Gruvbox Material | Display · Terafox |
 |:---:|:---:|
 | <img src="docs/screenshots/settings-look.webp" alt="Settings: tiling layout, gaps, borders, shadows"> | <img src="docs/screenshots/settings-display.webp" alt="Settings: resolution, scale, rotation, monitors"> |
 
-| Battery and sleep | Themes and colours |
+| Battery and sleep · Tokyo Night | Themes and colours · Everforest Dark |
 |:---:|:---:|
 | <img src="docs/screenshots/settings-power.webp" alt="Settings: idle timers, lid, hibernation"> | <img src="docs/screenshots/settings-themes.webp" alt="Settings: edit a theme's colours"> |
 
@@ -112,11 +135,11 @@ A full settings app in the same style as the rest: every change applies live.
 
 <br>
 
-| Mouse and keyboard | Apps |
+| Mouse and keyboard · Catppuccin Latte | Apps · One Dark |
 |:---:|:---:|
 | <img src="docs/screenshots/settings-keyboard.webp" alt="Settings: layout, repeat, keyboard light, touchpad"> | <img src="docs/screenshots/settings-apps.webp" alt="Settings: default and startup apps"> |
 
-| Performance (ASUS) | GPU (hybrid NVIDIA) |
+| Performance (ASUS) · Monokai Pro | GPU (hybrid NVIDIA) · Solarized Dark |
 |:---:|:---:|
 | <img src="docs/screenshots/settings-perf.webp" alt="Settings: performance modes, power limits, fan curve"> | <img src="docs/screenshots/settings-gpu.webp" alt="Settings: GPU mode, temperature target, GPU fan"> |
 
@@ -124,7 +147,7 @@ A full settings app in the same style as the rest: every change applies live.
 
 ## Music
 
-ncspot (Spotify in the terminal) with a cava visualiser, floating on the scratchpad, themed like everything else.
+ncspot (Spotify in the terminal) with a cava visualiser, floating on the scratchpad, themed like everything else (here: Dracula).
 
 <img src="docs/screenshots/music.webp" alt="ncspot and cava on the scratchpad" width="100%">
 
