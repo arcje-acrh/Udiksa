@@ -2,7 +2,8 @@
 
 # Udiksa
 
-**A calm, retro-hardware Arch Linux rice: Hyprland, a hand-made Quickshell shell, and 22 themes that recolour everything.**
+**A calm, retro-hardware desktop for Arch Linux: Hyprland, a hand-made Quickshell shell that lives in a notch,
+and 22 themes that recolour everything from the boot menu to the mouse pointer.**
 
 [![Arch Linux](https://img.shields.io/badge/Arch%20Linux-1793D1?style=for-the-badge&logo=archlinux&logoColor=white)](https://archlinux.org)
 [![Hyprland](https://img.shields.io/badge/Hyprland-0.56-58E1FF?style=for-the-badge&logo=hyprland&logoColor=white)](https://hypr.land)
@@ -11,32 +12,51 @@
 
 <img src="docs/screenshots/desktop.webp" alt="Udiksa desktop: fastfetch and btop, Gruvbox Material theme" width="100%">
 
-[Features](#features) · [Themes](#22-themes-one-key) · [Shell](#the-notch) · [Settings](#settings) · [Install](#install) · [Keys](#keys) · [Credits](#credits)
+[Highlights](#highlights) · [Themes](#22-themes-one-key) · [Notch](#the-notch) · [Settings](#settings) · [Install](#install) · [Keys](#keys) · [Limitations](#limitations) · [Credits](#credits)
 
 </div>
 
 ---
 
-## Features
+## Details
 
-- **The notch**: a slim bar at the top of the screen that opens into panels: launcher, system, sound, calendar, media,
-  battery, Wi-Fi, Bluetooth, notifications. Volume, brightness and keyboard-light changes show inside it.
-- **22 themes, one key**: <kbd>Super</kbd>+<kbd>T</kbd> switches theme and wallpaper. Everything follows: window
-  borders, the shell, the terminal, GTK and Qt apps, btop, fastfetch, ncspot, cava, the login screen, even GRUB.
-- **A real Settings app** (<kbd>Super</kbd>+<kbd>I</kbd>): tiling layout, gaps, shadows, displays (resolution, scale,
-  rotation, several monitors), sound, keyboard, Wi-Fi, Bluetooth, battery and sleep, hibernation, apps, and more.
-- **Your own layer**: whatever you change in Settings lives in `~/.config/hypr/local/`, apart from the design, so
-  updating the rice never overwrites your choices.
-- **Adapts to the machine**: screens, GPU, battery, Bluetooth and boot loader are detected, and the notch and
-  Settings show only what works here. ASUS laptops and hybrid NVIDIA laptops get extra support, offered only where it
-  fits. Other devices: see [Hardware support](docs/HARDWARE.md) to add your own.
-- **Batteries included**: login screen, lock screen, boot splash, hibernation, btrfs snapshots, mirror refresh and
-  cleanup scripts, a clipboard history, an emoji picker and a calculator in the launcher.
-- **Tools**: screen recording (GPU-encoded, with or without sound), a colour picker, screenshots you can draw on,
-  keep awake, game mode, a usage panel (CPU per core, memory, network, disks, busiest programs), weather in the
-  calendar, low-battery warnings and short status messages in the notch.
-- **App scratchpads**: btop, your music app and your chat app each on their own key, shown over whatever you do.
-- **A mouse pointer in the theme's colour** (Bibata, pointy or rounded) that grows when you shake it to find it.
+| | |
+|---|---|
+| **OS** | Arch Linux and Arch-based distributions |
+| **Window manager** | [Hyprland](https://hypr.land) 0.56 (Lua config) |
+| **Shell, bar, launcher, notifications** | one [Quickshell](https://quickshell.org) shell: the notch |
+| **Lock and login screen** | Quickshell, the same design for both (greetd + cage at boot) |
+| **Terminal** | kitty, bash, starship, ble.sh |
+| **Font** | Iosevka Nerd Font |
+| **Mouse pointer** | Bibata, recoloured with the theme; grows when you shake it |
+| **GTK / Qt** | adw-gtk3 / Kvantum, recoloured with the theme |
+| **Colours** | 22 hand-tuned themes, each tinted by its wallpaper (matugen) |
+| **Wallpapers** | awww, animated transitions |
+| **Boot** | themed GRUB menu, Plymouth splash, hibernation |
+
+## Highlights
+
+- **The notch.** One slim island at the top of the screen holds everything: workspaces, now playing, clock, status
+  icons. Hover or click any part and it grows into a panel: launcher, system, sound, Wi-Fi, Bluetooth, calendar and
+  weather, media, battery, notifications. Volume, brightness and other changes show inside it, and so do
+  notifications. No pop-up windows anywhere.
+- **22 themes, one key.** <kbd>Super</kbd>+<kbd>T</kbd> opens the theme switcher. Everything follows at once: window
+  borders, the shell, the terminal, GTK and Qt apps, btop, fastfetch, ncspot, cava, the screenshot editor, the mouse
+  pointer, the login screen and the GRUB menu. Drop pictures into a new folder and it becomes a theme.
+- **A real Settings app** (<kbd>Super</kbd>+<kbd>I</kbd>), in the same style: tiling layout, gaps, corners and
+  animations; displays (resolution, scale, rotation, several monitors); sound per app; mouse, keyboard and touchpad;
+  Wi-Fi, Bluetooth, Tailscale; battery, sleep and hibernation; default and startup apps; shortcuts. Every change
+  applies live.
+- **Retro-hardware controls.** LED bars instead of sliders, keys that press in, hairline switches, Iosevka
+  everywhere. Rounded screen corners match the windows.
+- **Tools built in.** Screen recording (GPU-encoded, with or without sound), a colour picker, screenshots you can
+  draw on, keep awake, game mode, a usage panel (CPU per core, memory, network, disks, busiest programs), app
+  scratchpads (system monitor, music, chat), clipboard history, emoji, a calculator, low-battery warnings.
+- **Yours stays yours.** Everything you change in Settings lives in a personal layer (`~/.config/hypr/local/`),
+  apart from the design, so updating the rice never overwrites your choices.
+- **Fits the machine.** Screens, GPU, battery, Bluetooth and boot loader are detected, and the shell only shows what
+  works on your hardware. ASUS laptops and hybrid NVIDIA laptops get extra controls (performance modes, fan curves,
+  GPU modes, keyboard light, charge limit), offered only where they fit.
 
 ## 22 themes, one key
 
@@ -92,7 +112,7 @@ A full settings app in the same style as the rest: every change applies live.
 
 <br>
 
-| Keyboard and touchpad | Apps |
+| Mouse and keyboard | Apps |
 |:---:|:---:|
 | <img src="docs/screenshots/settings-keyboard.webp" alt="Settings: layout, repeat, keyboard light, touchpad"> | <img src="docs/screenshots/settings-apps.webp" alt="Settings: default and startup apps"> |
 
@@ -113,7 +133,10 @@ ncspot (Spotify in the terminal) with a cava visualiser, floating on the scratch
 > [!WARNING]
 > Udiksa changes your desktop, login screen and boot splash. Try it in a VM first, or on a fresh install.
 
-**On any installed Arch** (archinstall or your own setup), logged in as your user and online:
+Udiksa works on **Arch Linux and Arch-based distributions** (it installs with pacman and the AUR).
+
+**On an installed system** (archinstall, an Arch-based distribution, or your own setup), logged in as your user and
+online:
 
 ```sh
 sudo pacman -S --needed git
@@ -161,6 +184,42 @@ Afterwards: Wi-Fi passwords, signing in to your apps, and `sudo tailscale up` if
 | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Esc</kbd> / <kbd>Super</kbd>+<kbd>M</kbd> / <kbd>Super</kbd>+<kbd>D</kbd> | System monitor / music / chat scratchpad |
 
 Every binding is listed, and your own can be added, in Settings > Shortcuts.
+
+## Tested on
+
+An ASUS ROG Zephyrus G16 (2025): Intel Core Ultra 9 285H with Arc graphics plus a hybrid NVIDIA GPU, a
+2560×1600 240 Hz screen at 125 % scale, Arch Linux with kernel 7.2, Hyprland 0.56.2 and Quickshell from git.
+
+## Limitations
+
+Each one comes with what to do about it, or how to make it fit your system.
+
+- **Arch and Arch-based only, for now.** The installer uses pacman and the AUR. The configs themselves are not tied
+  to Arch: on another distribution, install the packages from `2-packages/*.txt` with your package manager, then run
+  `./3-rice/apply.sh home` to link the configs.
+- **Needs Hyprland 0.56 or newer.** The config is written in Hyprland's Lua format, which older versions cannot read.
+  Keep Hyprland up to date (launcher > Scripts > Update system).
+- **Quickshell from git.** The shell uses features newer than the last Quickshell release, so the installer takes
+  `quickshell-git` from the AUR.
+- **Hibernation is set up fully automatically only with GRUB.** With another boot loader (systemd-boot, rEFInd, ...)
+  the installer prints the `resume=` settings for you to add to its boot entry. It needs swap about the size of your
+  RAM; the installer offers your existing swap or makes a swap file.
+- **Snapshots need btrfs.** On other file systems that step is skipped; everything else works.
+- **Holidays in the calendar are India's.** To use your country's, put its Google holiday calendar address in
+  `icsUrl` in `3-rice/home/config/quickshell/Agenda.qml` (for example `en.usa%23holiday` instead of
+  `en.indian%23holiday`).
+- **Weather starts empty.** No city is set; pick yours in Settings > Date & language (any place in the world).
+- **Shake to find is a Hyprland plugin**, built for your Hyprland version at the first login. After a Hyprland update,
+  Update system rebuilds it; if a build ever fails, the pointer simply stops growing and you get a notification.
+  You can switch it off in Settings > Mouse & keyboard.
+- **The pointer changes in apps opened afterwards.** Apps that were already open keep the old pointer until you
+  restart them.
+- **Extra hardware controls exist for ASUS and hybrid NVIDIA laptops only.** Other laptops get the standard
+  performance modes (power-profiles-daemon); fan curves, power limits and keyboard-light colours need a vendor tool.
+  [docs/HARDWARE.md](docs/HARDWARE.md) shows how to add support for your device.
+- **Opinionated by design.** The key binds, the font and the look are the rice's own. Change binds and add your own in
+  Settings > Shortcuts, and everything else in Settings; your changes stay in your personal layer.
+- **English only.** Settings and the shell are written in English.
 
 ## How it's built
 
