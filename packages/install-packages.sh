@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# 2-packages/install-packages.sh -- PART 2: every app of the rice.
+# packages/install-packages.sh -- PART 2: every app of the rice.
 # Run as your normal user (sudo is used where needed), on an installed Arch (part 1), with internet.
 #   repo.txt        official-repo apps              aur.txt   AUR apps (yay)
-#   hw-nvidia.txt   only with an NVIDIA GPU         (optional apps: asked, see 3-rice/optional/)
+#   hw-nvidia.txt   only with an NVIDIA GPU         (optional apps: asked, see rice/optional/)
 #   hw-intel.txt    only with an Intel GPU
 # Safe to run again: already installed packages are skipped (--needed).
 set -euo pipefail
@@ -29,9 +29,9 @@ has_nvidia    && { say "NVIDIA GPU found";  repo+=( $(list hw-nvidia.txt) ); }
 has_intel_gpu && { say "Intel GPU found";   repo+=( $(list hw-intel.txt) ); }
 aur=( $(list aur.txt) )
 
-# optional apps (3-rice/optional/<app>): asked one by one; yes = the app + (in part 3) its rice files
+# optional apps (rice/optional/<app>): asked one by one; yes = the app + (in part 3) its rice files
 say "Optional apps"
-for o in "$(cd "$(dirname "$0")/.." && pwd)"/3-rice/optional/*/; do
+for o in "$(cd "$(dirname "$0")/.." && pwd)"/rice/optional/*/; do
     read -rp "    $(cat "$o/about")? [Y/n] " a
     [[ ${a,,} == n* ]] && continue
     while read -r p; do [[ $p == aur:* ]] && aur+=( "${p#aur:}" ) || repo+=( "$p" ); done < <(grep -vE '^\s*(#|$)' "$o/packages.txt")
@@ -54,4 +54,4 @@ fi
 say "Installing ${#aur[@]} AUR packages"
 yay -S --needed --noconfirm --answerdiff None --answerclean None --removemake "${aur[@]}"
 
-say "Part 2 done. Next: 3-rice/apply.sh"
+say "Part 2 done. Next: rice/apply.sh"

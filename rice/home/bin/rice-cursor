@@ -12,7 +12,7 @@
                                                  refreshes if it is the one in use (Settings > Mouse & keyboard > Pointer)
   rice-cursor greeter <theme> <size>             copy that pointer to /var/lib/rice-greeter/icons/pointer (the login
                                                  screen's, /etc/greetd/config.toml); rice-settings cursor runs it
-Source drawings: ~/Udiksa/3-rice/assets/bibata-original and bibata-modern (GPL-3.0, see their README).
+Source drawings: ~/Udiksa/rice/assets/bibata-original and bibata-modern (GPL-3.0, see their README).
 """
 import json, os, re, shutil, subprocess, sys, tempfile
 from concurrent.futures import ThreadPoolExecutor

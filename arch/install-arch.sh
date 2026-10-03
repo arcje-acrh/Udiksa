@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 1-arch/install-arch.sh -- PART 1: install Arch Linux itself. Run as root from the Arch USB (UEFI mode, online).
+# arch/install-arch.sh -- PART 1: install Arch Linux itself. Run as root from the Arch USB (UEFI mode, online).
 # Builds the same layout as the reference machine, on ONE disk you choose (Windows disks are never offered):
 #   1 GiB EFI (FAT32, /boot/efi) · 2 GiB /boot (ext4) · rest btrfs with subvolumes @ /, @home, @log, @pkg, @snapshots,
 #   @swap (/swap: a swap file the size of RAM, for hibernation) · zram swap in RAM first (no swap partition) · GRUB · NetworkManager · your user in the wheel group (sudo) · root locked

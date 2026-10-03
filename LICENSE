@@ -22,7 +22,7 @@ SOFTWARE.
 
 --------------------------------------------------------------------------------
 Not covered by this licence:
-  * Wallpapers (3-rice/home/wallpapers/<theme>/): each picture keeps its own
+  * Wallpapers (rice/home/wallpapers/<theme>/): each picture keeps its own
     licence; SOURCES.txt in every theme folder names the source and licence.
   * Colour palettes of the named themes (Catppuccin, Dracula, Nord, ...): used
     under their own licences, listed in the same SOURCES.txt files.

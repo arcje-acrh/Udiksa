@@ -15,9 +15,9 @@ cd "$(dirname "$(readlink -f "$0")")"
 [[ $# -eq 0 ]] && { sed -n '2,12p' "$0" | sed 's/^# \{0,1\}//'; exit 0; }
 for part in "$@"; do
     case $part in
-        1) ./1-arch/install-arch.sh ;;
-        2) ./2-packages/install-packages.sh ;;
-        3) ./3-rice/apply.sh
+        1) ./arch/install-arch.sh ;;
+        2) ./packages/install-packages.sh ;;
+        3) ./rice/apply.sh
            for hw in hardware/*/; do
                "$hw/detect" 2>/dev/null || continue
                printf '\n\033[1;32m==>\033[0m Found: %s\n' "$(head -1 "$hw/about")"

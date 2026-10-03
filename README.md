@@ -195,8 +195,8 @@ An ASUS ROG Zephyrus G16 (2025): Intel Core Ultra 9 285H with Arc graphics plus 
 Each one comes with what to do about it, or how to make it fit your system.
 
 - **Arch and Arch-based only, for now.** The installer uses pacman and the AUR. The configs themselves are not tied
-  to Arch: on another distribution, install the packages from `2-packages/*.txt` with your package manager, then run
-  `./3-rice/apply.sh home` to link the configs.
+  to Arch: on another distribution, install the packages from `packages/*.txt` with your package manager, then run
+  `./rice/apply.sh home` to link the configs.
 - **Needs Hyprland 0.56 or newer.** The config is written in Hyprland's Lua format, which older versions cannot read.
   Keep Hyprland up to date (launcher > Scripts > Update system).
 - **Quickshell from git.** The shell uses features newer than the last Quickshell release, so the installer takes
@@ -206,7 +206,7 @@ Each one comes with what to do about it, or how to make it fit your system.
   RAM; the installer offers your existing swap or makes a swap file.
 - **Snapshots need btrfs.** On other file systems that step is skipped; everything else works.
 - **Holidays in the calendar are India's.** To use your country's, put its Google holiday calendar address in
-  `icsUrl` in `3-rice/home/config/quickshell/Agenda.qml` (for example `en.usa%23holiday` instead of
+  `icsUrl` in `rice/home/config/quickshell/Agenda.qml` (for example `en.usa%23holiday` instead of
   `en.indian%23holiday`).
 - **Weather starts empty.** No city is set; pick yours in Settings > Date & language (any place in the world).
 - **Shake to find is a Hyprland plugin**, built for your Hyprland version at the first login. After a Hyprland update,
@@ -226,11 +226,11 @@ Each one comes with what to do about it, or how to make it fit your system.
 | Folder | What |
 |---|---|
 | `install.sh` | runs the parts: `1` Arch (optional), `2` apps, `3` the rice |
-| `1-arch/` | the optional base installer for a blank disk |
-| `2-packages/` | core app lists (`repo.txt`, `aur.txt`), GPU driver lists, the installer |
-| `3-rice/home/` | the design, linked into your home with GNU Stow: `config/` → `~/.config`, `bin/` → `~/.local/bin`, `wallpapers/` → `~/Pictures/Wallpapers`, … |
-| `3-rice/optional/` | optional apps with their theming, linked only when installed |
-| `3-rice/system/` | login screen, boot splash, hibernation and snapshot setup |
+| `arch/` | the optional base installer for a blank disk |
+| `packages/` | core app lists (`repo.txt`, `aur.txt`), GPU driver lists, the installer |
+| `rice/home/` | the design, linked into your home with GNU Stow: `config/` → `~/.config`, `bin/` → `~/.local/bin`, `wallpapers/` → `~/Pictures/Wallpapers`, … |
+| `rice/optional/` | optional apps with their theming, linked only when installed |
+| `rice/system/` | login screen, boot splash, hibernation and snapshot setup |
 | `hardware/` | ASUS laptops (`asus/`) and hybrid NVIDIA laptops (`nvidia/`): detected, then offered |
 
 **The rule: design ships, personal choices stay.** The repo holds the look, the shell, the themes, the key binds and
@@ -253,7 +253,7 @@ Udiksa stands on a lot of other people's work. Thank you all.
 **Parts taken or adapted from other projects**
 - Login / lock screen layout: the "sword" theme of [qylock](https://github.com/Darkkal44/qylock) by Darkkal44 (GPL-3.0)
 - Mouse pointer: [Bibata](https://github.com/ful1e5/Bibata_Cursor) by Abdulkaiz Khatri (GPL-3.0); its Original and
-  Modern drawings are in `3-rice/assets/bibata-original` and `bibata-modern`, recoloured with each theme
+  Modern drawings are in `rice/assets/bibata-original` and `bibata-modern`, recoloured with each theme
 - fastfetch layout: [JaKooLit's Hyprland-Dots](https://github.com/JaKooLit/Hyprland-Dots)
 - Ideas for the tools (screen recording, colour picker, status messages, keep awake / game mode, usage panel,
   scratchpads, weather): the [Caelestia](https://github.com/caelestia-dots/shell) shell
@@ -284,6 +284,6 @@ Udiksa stands on a lot of other people's work. Thank you all.
 ## License
 
 The code and configs are [MIT](LICENSE), except two parts under GPL-3.0 from the projects above: the Bibata pointer
-drawings (`3-rice/assets/bibata-original` and `bibata-modern`, licence included there) and the login / lock screen layout adapted from
-qylock (`3-rice/home/config/quickshell/login/LoginScreen.qml`). Wallpapers and theme palettes keep their own licences
+drawings (`rice/assets/bibata-original` and `bibata-modern`, licence included there) and the login / lock screen layout adapted from
+qylock (`rice/home/config/quickshell/login/LoginScreen.qml`). Wallpapers and theme palettes keep their own licences
 (see `SOURCES.txt` in each theme folder).

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # rice-firstrun -- the setup steps that need a running desktop session (Hyprland + D-Bus). Started once by
-# autostart.lua when ~/.local/state/rice/firstrun exists (3-rice/apply.sh creates it), then removes that file.
+# autostart.lua when ~/.local/state/rice/firstrun exists (rice/apply.sh creates it), then removes that file.
 # Can also be run by hand at any time.
 set -uo pipefail
 log="$HOME/.cache/rice-firstrun.log"; exec >>"$log" 2>&1; echo "== $(date)"

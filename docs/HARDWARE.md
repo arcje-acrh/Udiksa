@@ -25,11 +25,11 @@ This page shows what each part needs, what is covered today, and how to add supp
 | GPU load / temperature | desktop GPUs (AMD, or NVIDIA as the only card) | sysfs, `nvidia-smi` | hidden |
 | External monitor brightness | monitors with DDC/CI | `ddcutil` | row hidden |
 | Wi-Fi, Bluetooth, Tailscale | when the adapter / app is there | NetworkManager, BlueZ, Tailscale | page hidden (the notch always keeps a network icon: Wi-Fi, LAN or "not connected") |
-| Hibernate | when a swap file is set up (`3-rice/system/setup-hibernation.sh`) | systemd | button and row hidden |
+| Hibernate | when a swap file is set up (`rice/system/setup-hibernation.sh`) | systemd | button and row hidden |
 
 ## How detection works
 
-Everything is detected in one place: [`3-rice/home/config/quickshell/Power.qml`](../3-rice/home/config/quickshell/Power.qml),
+Everything is detected in one place: [`rice/home/config/quickshell/Power.qml`](../rice/home/config/quickshell/Power.qml),
 section *what this machine has*. A short shell probe sets flags such as `asus`, `gfx`, `ppd`, `kbdName`, `panelRates`,
 `touchpad`, `lid`, `fans`; `battery`, `wifi` and `bt` are live. Every panel and Settings page reads these flags
 (`visible: Power.kbd`, `needs: "wifi"` in `Settings.qml`, …).

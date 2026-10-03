@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 3-rice/apply.sh -- PART 3: put the whole rice in place (after part 2 installed the apps).
+# rice/apply.sh -- PART 3: put the whole rice in place (after part 2 installed the apps).
 #   home    link the dotfiles into ~ with GNU Stow (files you already have there are moved to ~/.dotfiles-backup/<date>)
 #   system  the rice's own system files (login screen, boot splash, quiet session), GRUB theme (if GRUB), services,
 #           hibernation (checked / asked); your own system files are only edited line by line, never replaced
@@ -9,8 +9,8 @@
 # Run as your normal user; sudo is used for the system stage. Safe to run again.
 set -euo pipefail
 REPO=$(cd "$(dirname "$(readlink -f "$0")")/.." && pwd)
-HOME_PKGS="$REPO/3-rice/home"
-SYS="$REPO/3-rice/system"
+HOME_PKGS="$REPO/rice/home"
+SYS="$REPO/rice/system"
 DRY=0; STAGES=()
 for a in "$@"; do case $a in --dry-run) DRY=1 ;; home|system|user) STAGES+=("$a") ;; *) echo "unknown: $a"; exit 1 ;; esac; done
 [[ ${#STAGES[@]} -eq 0 ]] && STAGES=(home system user)
@@ -24,7 +24,7 @@ S()    { run sudo "$@"; }
 has_stage() { [[ " ${STAGES[*]} " == *" $1 "* ]]; }
 
 # ============================================================== home ==========================================
-# which folder of 3-rice/home is linked where (relative to ~); "dot-x" in a folder becomes ".x" (stow --dotfiles)
+# which folder of rice/home is linked where (relative to ~); "dot-x" in a folder becomes ".x" (stow --dotfiles)
 declare -A TARGET=(
     [config]=.config                       # hypr, quickshell, kitty, mpv, gtk-3.0, ... -> ~/.config/<name>
     [shell]=.                              # dot-bashrc, dot-blerc, ...                  -> ~/.bashrc, ~/.blerc, ...
@@ -33,7 +33,7 @@ declare -A TARGET=(
     [scripts]=.local/share/rice/scripts    # launcher / Settings maintenance scripts
     [wallpapers]=Pictures/Wallpapers       # one folder per theme
 )
-# link every folder of a stow dir (3-rice/home, or a device's home/) that has a TARGET
+# link every folder of a stow dir (rice/home, or a device's home/) that has a TARGET
 link_dir() {
     local sd=$1 pkg dest f rel t
     for pkg in "${!TARGET[@]}"; do
@@ -66,9 +66,9 @@ stage_home() {
         else mv "$w" "$HOME_PKGS/wallpapers/"; note "wallpapers: added theme $(basename "$w") to the repo"; fi
     done
     link_dir "$HOME_PKGS"
-    # optional apps (3-rice/optional/<app>, asked in part 2): their rice files only where the app is installed
+    # optional apps (rice/optional/<app>, asked in part 2): their rice files only where the app is installed
     local o pkg
-    for o in "$REPO"/3-rice/optional/*/; do
+    for o in "$REPO"/rice/optional/*/; do
         pkg=$(grep -vE '^\s*(#|$)' "$o/packages.txt" | head -1); pkg=${pkg#aur:}
         pacman -Qq "$pkg" &>/dev/null || continue
         [[ -d $o/home ]] && { note "optional app $(basename "$o"):"; link_dir "${o%/}/home"; }
@@ -158,10 +158,10 @@ stage_system() {
     done
 
     say "Hibernation"
-    if ((DRY)); then note "[dry] would check / ask (3-rice/system/setup-hibernation.sh)"; else S "$SYS/setup-hibernation.sh" --no-rebuild; fi
+    if ((DRY)); then note "[dry] would check / ask (rice/system/setup-hibernation.sh)"; else S "$SYS/setup-hibernation.sh" --no-rebuild; fi
 
     say "Snapshots (btrfs only: automatic for part 1 installs, asked otherwise)"
-    if ((DRY)); then note "[dry] would check / ask (3-rice/system/setup-snapshots.sh)"; else S "$SYS/setup-snapshots.sh"; fi
+    if ((DRY)); then note "[dry] would check / ask (rice/system/setup-snapshots.sh)"; else S "$SYS/setup-snapshots.sh"; fi
 
     say "Boot image + boot menu"
     [[ -f /etc/mkinitcpio.conf ]] && S mkinitcpio -P

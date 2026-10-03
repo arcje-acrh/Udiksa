@@ -1,5 +1,5 @@
 # Official-repo apps of the rice (explicitly installed on the reference machine, 2026-09-27).
-# One package per line; '#' comments allowed. Base system: 1-arch. Hardware: hw-*.txt.
+# One package per line; '#' comments allowed. Base system: arch. Hardware: hw-*.txt.
 7zip
 adw-gtk-theme
 awww

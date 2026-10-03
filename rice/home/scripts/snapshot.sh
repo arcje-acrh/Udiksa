@@ -4,7 +4,7 @@
 # terminal: yes
 if ! command -v snapper >/dev/null || ! sudo snapper -c root list >/dev/null 2>&1; then
     echo "Snapshots are not set up here (they need a btrfs system). Set them up with:"
-    echo "  sudo ~/Udiksa/3-rice/system/setup-snapshots.sh"; exit 0
+    echo "  sudo ~/Udiksa/rice/system/setup-snapshots.sh"; exit 0
 fi
 read -rp "Short note for this snapshot (Enter = 'manual'): " note
 sudo snapper -c root create --description "${note:-manual}" --cleanup-algorithm number
