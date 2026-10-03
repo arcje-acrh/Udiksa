@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=Clock
+GenericName=Terminal clock
+Comment=A big clock in the terminal, in the theme accent; recolours live on a theme switch (tty-clock)
+Exec=sh -c 'exec kitty -c "$HOME/.config/kitty/clock.conf" --class rice-clock --title Clock -e tty-clock -s -c -b -B -C 4'
+Icon=preferences-system-time
+Terminal=false
+Categories=Utility;Clock;
+Keywords=clock;time;tty-clock;

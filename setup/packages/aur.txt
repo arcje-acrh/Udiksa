@@ -3,3 +3,5 @@ matugen-bin
 quickshell-git
 # mouse pointers to choose from in Settings > Mouse & keyboard > Pointer (the Udiksa ones are built from dots/.local/share/rice/cursors) -- 2026-10-03
 bibata-cursor-theme-bin
+# terminal clock: launcher > Clock (dots/.local/share/applications/rice-clock.desktop) -- 2026-10-03
+tty-clock

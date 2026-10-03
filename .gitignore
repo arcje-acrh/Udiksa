@@ -2,6 +2,7 @@
 # written by rice-theme on every theme switch (setup/rice.sh runs rice-theme, which recreates them)
 dots/.config/hypr/conf/colors.lua
 dots/.config/kitty/colors.conf
+dots/.config/kitty/clock.conf
 dots/.config/quickshell/colors.json
 dots/.config/gtk-3.0/gtk.css
 dots/.config/gtk-4.0/gtk.css

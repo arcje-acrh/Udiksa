@@ -31,6 +31,7 @@
     ~/.config/quickshell/colors.json         the notch + switcher (live)
     ~/.config/hypr/conf/colors.lua           window borders (hyprctl reload)
     ~/.config/kitty/colors.conf              terminal + 16 ANSI colours (SIGUSR1 = live)
+    ~/.config/kitty/clock.conf               the Clock's terminal: colour 4 = accent (live too)
     ~/.local/state/rice/starship.toml        prompt (~/.config/starship.toml + [palettes.rice]; .bashrc points to it)
     ~/.config/fastfetch/logo.png + config.jsonc  the Arch logo (accent2 -> accent) + text colours, from logo.svg / config.base.jsonc
     ~/.config/gtk-4.0/gtk.css, gtk-3.0/gtk.css + settings.ini, gsettings color-scheme / gtk-theme
@@ -410,6 +411,10 @@ def kitty(p, theme):
     # terminal: that colour gets the same see-through background (background_opacity) as the default one
     lines += ["", f"transparent_background_colors {n[0]}"]
     write(os.path.join(HOME, ".config/kitty/colors.conf"), "\n".join(lines) + "\n")
+    # the Clock (rice-clock.desktop: kitty -c clock.conf, tty-clock -C 4) draws its digits in colour 4 = the accent;
+    # kitty re-reads this file on SIGUSR1 too, so the clock recolours live on a theme switch
+    write(os.path.join(HOME, ".config/kitty/clock.conf"),
+          f"# WRITTEN BY rice-theme: the Clock's kitty = the normal one, digits in the accent\ninclude kitty.conf\ncolor4 {p['accent']}\n")
 
 
 def starship(p):

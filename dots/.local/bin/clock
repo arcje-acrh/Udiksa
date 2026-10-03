@@ -1,0 +1,3 @@
+#!/bin/bash
+# clock: opens the Clock window (dots/.local/share/applications/rice-clock.desktop): tty-clock in the theme accent, live on theme switch
+exec gtk-launch rice-clock
