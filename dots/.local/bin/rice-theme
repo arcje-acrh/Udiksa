@@ -1113,9 +1113,9 @@ def cmd_apply(img, pos=None, transition="grow"):
     hypr(p, theme); kitty(p, theme); starship(p); fastfetch(p); gtk(p, theme); qt(p, theme)
     ncspot(p); cava(p); satty(p); cursor(p); btop(p); viewers(p); office(p)
     reload_apps()
+    write(STATE, json.dumps({"theme": theme, "wallpaper": img}) + "\n")   # the switcher reads this: before the slow part
     # boot + login screens last: GRUB alone takes ~3 s, and the open apps should not wait for it to recolour
     grub(p, theme, img); greeter(p, img)
-    write(STATE, json.dumps({"theme": theme, "wallpaper": img}) + "\n")
     print(f"{theme}: {os.path.basename(img)}")
 
 

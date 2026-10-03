@@ -70,6 +70,7 @@ Singleton {
         function onRawEvent(event) {
             if (event.name !== "activelayout") return
             const name = event.data.slice(event.data.lastIndexOf(",") + 1)
+            if (name === "error") return          // virtual keyboards (wtype, on-screen keyboards) have no layout name
             if (name && root.lastLayout !== "" && name !== root.lastLayout) root.say("󰌌", name)
             if (name) root.lastLayout = name
         }
