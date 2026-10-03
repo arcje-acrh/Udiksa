@@ -41,8 +41,7 @@
     wallpaper: awww img (animated)           State: ~/.local/state/rice/theme.json
   Running GTK/Qt apps pick up the new colours when they are restarted (dark/light switches live).
 """
-import socket
-import colorsys, hashlib, json, os, re, shutil, subprocess, sys, tomllib
+import colorsys, hashlib, json, os, re, shutil, signal, socket, subprocess, sys, tomllib
 
 HOME = os.path.expanduser("~")
 WALLS = os.path.join(HOME, "Pictures/Wallpapers")
@@ -890,7 +889,18 @@ def btop(p):
             new += ('' if new.endswith("\n") or not new else "\n") + f"{key} = {val}\n"
     if new != old:
         write(conf, new)
-    subprocess.run(["pkill", "-USR2", "-x", "btop"], capture_output=True)
+    # btops started through ~/.local/bin/btop restart in place (SIGTERM -> the wrapper starts it again): the only way
+    # to recolour the battery meter. Any other btop gets the live reload (SIGUSR2), battery meter excepted.
+    for pid in subprocess.run(["pgrep", "-x", "btop"], capture_output=True, text=True).stdout.split():
+        try:
+            wrapper = os.path.join(HOME, ".local/bin/btop")
+            if wrapper in open(f"/proc/{pid}/cmdline").read():
+                continue                              # the wrapper script itself is called btop too
+            ppid = open(f"/proc/{pid}/stat").read().rsplit(")", 1)[1].split()[1]
+            wrapped = wrapper in open(f"/proc/{ppid}/cmdline").read()
+            os.kill(int(pid), signal.SIGTERM if wrapped else signal.SIGUSR2)
+        except (OSError, IndexError):
+            pass
 
 def viewers(p):
     """File viewers in the theme: zathura (PDF / ePub / comics), imv (pictures), mpv's on-screen bar.

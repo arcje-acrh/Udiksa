@@ -1,0 +1,8 @@
+#!/bin/bash
+# btop -- the real /usr/bin/btop, restarted in place on a theme switch. btop reloads its theme live (SIGUSR2), except
+# its battery meter, which keeps the colours it started with (upstream: `static Draw::Meter bat_meter`). So rice-theme
+# ends a btop started from here with SIGTERM (exit 143) and it comes straight back in the new colours; q / Ctrl+C quit.
+while :; do
+    /usr/bin/btop "$@"; rc=$?
+    ((rc == 143)) || exit $rc
+done

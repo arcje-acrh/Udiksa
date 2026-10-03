@@ -2,15 +2,17 @@
 # cmatrix -- the real /usr/bin/cmatrix, on the terminal's own see-through background.
 # cmatrix paints every cell in ANSI black (ESC[40m), which shows as a darker box over the translucent kitty. Here it
 # runs with a terminal description identical to kitty's except that "black background" means "default background"
-# (ESC[49m). Made once in ~/.local/share/terminfo. Outside kitty, cmatrix runs unchanged.
+# (ESC[49m), and "green" (its rain colour) means kitty's slot 16 = the theme accent (rice-theme writes it), so the rain
+# is in the accent and recolours live on a theme switch. Made once in ~/.local/share/terminfo. Outside kitty, unchanged.
 real=/usr/bin/cmatrix
 [[ -x $real ]] || { echo "cmatrix is not installed (sudo pacman -S cmatrix)"; exit 1; }
 [[ $TERM == xterm-kitty ]] || exec "$real" "$@"
 ti="$HOME/.local/share/terminfo"
-if ! TERMINFO="$ti" infocmp xterm-kitty-nobg >/dev/null 2>&1; then
+if ! TERMINFO="$ti" infocmp xterm-kitty-rice >/dev/null 2>&1; then
     mkdir -p "$ti"
-    printf '%s\n' 'xterm-kitty-nobg|kitty: black background = default background (for cmatrix),' \
+    printf '%s\n' 'xterm-kitty-rice|kitty: black background = default background, green = slot 16 (for cmatrix),' \
         '	setab=\E[%?%p1%{0}%=%t49%e%p1%{8}%<%t4%p1%d%e%p1%{16}%<%t10%p1%{8}%-%d%e48;5;%p1%d%;m,' \
+        '	setaf=\E[%?%p1%{2}%=%t38;5;16%e%p1%{8}%<%t3%p1%d%e%p1%{16}%<%t9%p1%{8}%-%d%e38;5;%p1%d%;m,' \
         '	use=xterm-kitty,' | tic -x -o "$ti" - 2>/dev/null || exec "$real" "$@"
 fi
-TERMINFO="$ti" TERM=xterm-kitty-nobg exec "$real" "$@"
+TERMINFO="$ti" TERM=xterm-kitty-rice exec "$real" "$@"

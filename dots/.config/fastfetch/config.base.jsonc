@@ -23,6 +23,9 @@
 
     "display": {
         "color": { "separator": "bright_black", "title": "cyan" },
+        // usage percentages (memory, disk, ...): low / mid / high = accent / accent2 / the theme's danger colour,
+        // as kitty slots 16 / 17 / 21 (rice-theme writes them), so they follow a theme switch live too
+        "percent": { "color": { "green": "38;5;16", "yellow": "38;5;17", "red": "38;5;21" } },
         // fixed key column so every value lines up (headers and tree keys differ in length)
         "key": { "width": 10 },
         "separator": " 󰑃  "
