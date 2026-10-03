@@ -24,8 +24,9 @@ hl.on("hyprland.start", function()
     -- idle: lock after 10 min, screen off after 11, lock before sleep (~/.config/hypr/hypridle.conf)
     hl.exec_cmd("hypridle")
 
-    -- Hyprland plugins built by hyprpm (shake to find: conf/cursor.lua); -n = a notification if one fails to load
-    hl.exec_cmd("sh -c 'command -v hyprpm >/dev/null && hyprpm reload -n'")
+    -- Hyprland plugins built by hyprpm (shake to find: conf/cursor.lua). Loaded silently (hyprpm's own -n puts up
+    -- Hyprland's corner box, not a notification); only a failure is reported, as a normal notification in the notch
+    hl.exec_cmd([[sh -c 'command -v hyprpm >/dev/null || exit 0; hyprpm reload >/dev/null 2>&1 || notify-send -a Hyprland "Plugin did not load" "Shake to find is off. Run Update system (launcher > Scripts) to rebuild it."']])
 
     -- first login after a fresh install (dotfiles 3-rice/apply.sh leaves a marker): theme, gsettings, default apps
     hl.exec_cmd("sh -c '[ -e ~/.local/state/rice/firstrun ] && ~/.local/bin/rice-firstrun'")
