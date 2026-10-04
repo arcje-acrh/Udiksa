@@ -461,7 +461,7 @@ Item {
             active: root.loaded !== ""
             sourceComponent: ({
                 battery: batteryPanel, power: powerPanel, volume: volumePanel, wifi: wifiPanel,
-                bluetooth: bluetoothPanel, clock: clockPanel, media: mediaPanel, notifications: notificationsPanel, system: systemPanel, tailscale: tailscalePanel, launcher: launcherPanel, usage: usagePanel
+                bluetooth: bluetoothPanel, clock: clockPanel, clockA: clockA, clockB: clockB, clockC: clockC, media: mediaPanel, notifications: notificationsPanel, system: systemPanel, tailscale: tailscalePanel, launcher: launcherPanel, usage: usagePanel
             })[root.loaded] ?? null
         }
     }
@@ -470,7 +470,10 @@ Item {
     Component { id: volumePanel;    VolumePanel {} }
     Component { id: wifiPanel;      WifiPanel {} }
     Component { id: bluetoothPanel; BluetoothPanel {} }
-    Component { id: clockPanel;     ClockPanel { onDone: root.close() } }
+    Component { id: clockPanel;     ClockPanel {} }
+    Component { id: clockA;         ClockDemo { variant: "A"; onDone: root.close() } }
+    Component { id: clockB;         ClockDemo { variant: "B"; onDone: root.close() } }
+    Component { id: clockC;         ClockDemo { variant: "C"; onDone: root.close() } }
     Component { id: mediaPanel;     MediaPanel {} }
     Component { id: notificationsPanel; NotificationsPanel {} }
     Component { id: systemPanel;    SystemPanel { onOpenPanel: (id) => root.open(id) } }

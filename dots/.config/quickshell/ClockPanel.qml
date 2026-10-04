@@ -26,15 +26,6 @@ Item {
     property date selected: new Date()
     readonly property bool adding: tab === "add"
     property string tab: "day"                                   // right side: day | alarms | timer | weather | add
-    readonly property bool overview: tab === "day" || tab === "alarms" || tab === "add"   // the page of the rail's first key
-    property string menu: ""                                      // open submenu of the toolbar: "" | rec | shot
-    signal done()
-    // Record / Screenshot: the notch closes first so it is not in the picture, then the same scripts the keys use
-    function capture(kind, mode) {
-        const bin = Quickshell.env("HOME") + "/.local/bin/" + (kind === "rec" ? "rice-record" : "rice-shot")
-        root.done()
-        Quickshell.execDetached(["sh", "-c", "sleep 0.5; exec \"$0\" \"$@\"", bin, mode])
-    }
     // (no `busy`: the notch closes on hover-off like every panel, and always reopens on Day)
     readonly property int wantHeight: adding ? 372 : 0                // the add form needs more room
     readonly property int wantWidth: 980                              // wider than the resting notch: five tabs (Day, Next, Timer, Weather, Add)
@@ -79,28 +70,9 @@ Item {
         anchors.margins: 16; anchors.leftMargin: 22; anchors.rightMargin: 22
         spacing: 14
 
-        // ---------- the rail: pages, icons only (the name shows on hover) ----------
-        Column {
-            id: rail
-            width: 34; height: parent.height
-            spacing: 6
-            readonly property var tabs: ["day", "controls", "timer", "weather"]
-            Repeater {
-                model: [["󰃭", "Overview"], ["󰒓", "Controls"], ["󱎫", "Timer"], ["󰖕", "Weather"]]
-                delegate: IconKey {
-                    required property int index
-                    required property var modelData
-                    glyph: modelData[0]; tip: modelData[1]
-                    on: index === 0 ? root.overview : root.tab === rail.tabs[index]
-                    onClicked: { root.menu = ""; root.tab = rail.tabs[index] }
-                }
-            }
-        }
-
         Card {
             id: cal
-            visible: root.tab !== "controls"
-            width: (parent.width - rail.width - 2 * parent.spacing) * 0.58; height: parent.height
+            width: (parent.width - parent.spacing) * 0.58; height: parent.height
             spacing: 4
             Item {
                 width: parent.width; height: 24
@@ -187,79 +159,20 @@ Item {
 
         Rectangle {
             id: dayCard
-            width: root.tab === "controls" ? parent.width - rail.width - parent.spacing : (parent.width - rail.width - 2 * parent.spacing) * 0.42; height: parent.height
+            width: (parent.width - parent.spacing) * 0.42; height: parent.height
             radius: 12; color: Theme.surface
             clip: true                                   // a very full day never spills out
 
-            // ---------- overview: Day / Next / New, three small icon keys ----------
-            Row {
+            // ---------- tabs ----------
+            Seg {
                 id: tabs
-                visible: !Agenda.ringing && root.overview
+                visible: !Agenda.ringing
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: 12
-                spacing: 3
-                readonly property var ids: ["day", "alarms", "add"]
-                readonly property var glyphs: ["󰃭", "󰃱", "󰐕"]
-                readonly property var names: ["Day", "Next", "New"]
-                Repeater {
-                    model: 3
-                    delegate: IconKey {
-                        required property int index
-                        glyph: tabs.glyphs[index]; tip: tabs.names[index]
-                        on: root.tab === tabs.ids[index]
-                        onClicked: tabs.ids[index] === "add" ? root.openForm() : root.tab = tabs.ids[index]
-                    }
-                }
-            }
-
-            // ---------- controls page: the four buttons as big tiles ----------
-            Row {
-                id: ctl
-                visible: root.tab === "controls" && !Agenda.ringing
-                anchors.horizontalCenter: parent.horizontalCenter
-                y: 30
-                spacing: 12
-                IconKey { width: 120; height: 76; glyphSize: 28; glyph: "󰅶"; label: "Keep awake"; on: Modes.awake; led: true
-                          onClicked: { root.menu = ""; Modes.setAwake(!Modes.awake) } }
-                IconKey { width: 120; height: 76; glyphSize: 28; glyph: "󰊴"; label: "Game mode"; on: Modes.game; led: true
-                          onClicked: { root.menu = ""; Modes.setGame(!Modes.game) } }
-                IconKey { id: recKey; width: 120; height: 76; glyphSize: 28; glyph: Recorder.on ? "󰓛" : "󰑋"; label: Recorder.on ? "Stop" : "Record"; hot: Recorder.on; menu: !Recorder.on
-                          onClicked: Recorder.on ? Recorder.stop() : (root.menu = root.menu === "rec" ? "" : "rec") }
-                IconKey { id: shotKey; width: 120; height: 76; glyphSize: 28; glyph: "󰹑"; label: "Screenshot"; menu: true
-                          onClicked: root.menu = root.menu === "shot" ? "" : "shot" }
-            }
-            // submenu of Record / Screenshot: small, icon + short name
-            Rectangle {
-                id: sub
-                visible: root.menu !== "" && root.tab === "controls" && !Agenda.ringing
-                z: 30
-                readonly property var items: root.menu === "rec"
-                    ? [["󰍹", "Screen", "screen"], ["󰩭", "Area", "region"], ["󰕾", "Screen + sound", "sound"]]
-                    : [["󰩭", "Area", "area"], ["󰖲", "Window", "window"], ["󰍹", "Screen", "screen"], ["󰏫", "Draw on it", "edit"]]
-                readonly property Item anchorKey: root.menu === "rec" ? recKey : shotKey
-                x: Math.min(parent.width - width - 8, ctl.x + anchorKey.x)
-                y: ctl.y + anchorKey.height + 6
-                width: 150; height: col.implicitHeight + 8; radius: 3
-                color: Theme.surface; border.width: 1; border.color: Theme.hover
-                Column {
-                    id: col
-                    x: 4; y: 4; width: parent.width - 8
-                    Repeater {
-                        model: sub.items
-                        delegate: Rectangle {
-                            required property var modelData
-                            width: col.width; height: 24; radius: 2
-                            color: mi.containsMouse ? Theme.hover : "transparent"
-                            Row {
-                                anchors.verticalCenter: parent.verticalCenter; x: 8; spacing: 8
-                                Text { text: modelData[0]; color: Theme.coral; font.family: Theme.font; font.pixelSize: 14 }
-                                Text { text: modelData[1]; color: Theme.text; font.family: Theme.font; font.pixelSize: 11 }
-                            }
-                            MouseArea { id: mi; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                                onClicked: { root.capture(root.menu, modelData[2]); root.menu = "" } }
-                        }
-                    }
-                }
+                readonly property var ids: ["day", "alarms", "timer", "weather", "add"]
+                options: ["󰃭 Day", "󰃱 Next", "󱎫 Timer", "󰖕 Weather", "󰐕 Add"]
+                current: ids.indexOf(root.tab)
+                onPicked: (i) => ids[i] === "add" ? root.openForm() : root.tab = ids[i]
             }
 
             // ---------- the selected day (centred) ----------
@@ -275,30 +188,30 @@ Item {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: root.selected.getDate()
                     color: root.selToday ? Theme.coral : Theme.text
-                    font.family: Theme.font; font.pixelSize: info.compact ? 26 : 40; font.bold: true
+                    font.family: Theme.font; font.pixelSize: info.compact ? 30 : 52; font.bold: true
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     text: Qt.formatDate(root.selected, root.selected.getFullYear() === root.now.getFullYear() ? "dddd, MMMM" : "dddd, MMMM yyyy")
-                    color: Theme.text; font.family: Theme.font; font.pixelSize: 13; font.bold: true
+                    color: Theme.text; font.family: Theme.font; font.pixelSize: 15; font.bold: true
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
-                    text: root.selToday ? "󰥔 " + Qt.formatTime(root.now, "HH:mm:ss") : root.relative(root.selected)
+                    text: root.selToday ? Qt.formatTime(root.now, "HH:mm:ss") : root.relative(root.selected)
                     color: root.selToday ? Theme.text : Theme.amber
-                    font.family: Theme.font; font.pixelSize: root.selToday ? 16 : 13
+                    font.family: Theme.font; font.pixelSize: root.selToday ? 22 : 15
                 }
                 Text {   // today's weather, one line (click = the weather tab)
                     anchors.horizontalCenter: parent.horizontalCenter
                     visible: root.selToday && Weather.ok && !info.compact
-                    text: Weather.icon(Weather.now.code, Weather.now.day) + " " + Weather.deg(Weather.now.temp)
+                    text: Weather.icon(Weather.now.code, Weather.now.day) + "  " + Weather.deg(Weather.now.temp) + " · " + Weather.words(Weather.now.code)
                     color: wl.containsMouse ? Theme.amber : Theme.coral; font.family: Theme.font; font.pixelSize: 13; font.bold: true
                     MouseArea { id: wl; anchors.fill: parent; anchors.margins: -4; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.tab = "weather" }
                 }
                 Text {
                     anchors.horizontalCenter: parent.horizontalCenter
                     visible: !info.compact || root.selHolidays.length + root.selItems.length < 3
-                    text: "󰃭 w" + root.isoWeek(root.selected) + " · d" + root.dayOfYear(root.selected) + " · " + Qt.formatDate(root.selected, "yyyy")
+                    text: "week " + root.isoWeek(root.selected) + " · day " + root.dayOfYear(root.selected) + " · " + Qt.formatDate(root.selected, "yyyy")
                     color: Theme.muted; font.family: Theme.font; font.pixelSize: 12
                 }
                 Item { width: 1; height: 6 }

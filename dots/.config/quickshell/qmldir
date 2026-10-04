@@ -15,6 +15,7 @@ MediaChip MediaChip.qml
 Card Card.qml
 Seg Seg.qml
 IconKey IconKey.qml
+ClockDemo ClockDemo.qml
 Toggle Toggle.qml
 ListRow ListRow.qml
 LevelSlider LevelSlider.qml

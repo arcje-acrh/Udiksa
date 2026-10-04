@@ -46,7 +46,7 @@ Singleton {
     readonly property int feedbackTime:   1500   // inline key feedback (volume, brightness, ...) stays this long
     // full notch height while each panel is open (logical px); width = the resting notch
     readonly property var panelHeight: ({
-        battery: 96, power: 130, usage: 360, media: 150, notifications: 220, system: 440, tailscale: 310, launcher: 460, bluetooth: 260, wifi: 260, volume: 270, clock: 300
+        battery: 96, power: 130, usage: 360, media: 150, notifications: 220, system: 440, tailscale: 310, launcher: 460, bluetooth: 260, wifi: 260, volume: 270, clock: 300, clockA: 300, clockB: 300, clockC: 300
     })
     // ---- notifications (Notifications.qml) ----
     readonly property int notifWidth:   380     // card width
