@@ -11,16 +11,24 @@ Rectangle {
     property bool led: false
     property bool hot: false
     property bool menu: false
+    property string label: ""          // a small name under the icon (big tiles)
+    property int glyphSize: 16
     signal clicked()
     width: 34; height: 30; radius: 2
     color: on ? Theme.bg : (ma.containsMouse ? Theme.hover : Theme.raised)
     border.width: 1; border.color: on ? Theme.dim : Theme.hover
     KeyEdge { pressed: root.on }
     Text {
-        anchors.centerIn: parent
+        anchors.horizontalCenter: parent.horizontalCenter
+        anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: root.label !== "" ? -8 : 0
         text: root.glyph
         color: root.hot ? Theme.coral : (root.on ? Theme.text : Theme.muted)
-        font.family: Theme.font; font.pixelSize: 16
+        font.family: Theme.font; font.pixelSize: root.glyphSize
+    }
+    Text {
+        visible: root.label !== ""
+        anchors.horizontalCenter: parent.horizontalCenter; y: parent.height - 22
+        text: root.label; color: root.on ? Theme.text : Theme.muted; font.family: Theme.font; font.pixelSize: 10
     }
     Rectangle {   // LED (switches)
         visible: root.led || root.hot
@@ -29,7 +37,7 @@ Rectangle {
     }
     Text {   // submenu mark
         visible: root.menu
-        x: parent.width - 9; y: parent.height - 12
+        x: parent.width - 11; y: 4
         text: "▾"; color: Theme.dim; font.family: Theme.font; font.pixelSize: 9
     }
     MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.clicked() }

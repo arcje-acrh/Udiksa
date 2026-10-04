@@ -26,6 +26,7 @@ Item {
     property date selected: new Date()
     readonly property bool adding: tab === "add"
     property string tab: "day"                                   // right side: day | alarms | timer | weather | add
+    readonly property bool overview: tab === "day" || tab === "alarms" || tab === "add"   // the page of the rail's first key
     property string menu: ""                                      // open submenu of the toolbar: "" | rec | shot
     signal done()
     // Record / Screenshot: the notch closes first so it is not in the picture, then the same scripts the keys use
@@ -78,9 +79,28 @@ Item {
         anchors.margins: 16; anchors.leftMargin: 22; anchors.rightMargin: 22
         spacing: 14
 
+        // ---------- the rail: pages, icons only (the name shows on hover) ----------
+        Column {
+            id: rail
+            width: 34; height: parent.height
+            spacing: 6
+            readonly property var tabs: ["day", "controls", "timer", "weather"]
+            Repeater {
+                model: [["󰃭", "Overview"], ["󰒓", "Controls"], ["󱎫", "Timer"], ["󰖕", "Weather"]]
+                delegate: IconKey {
+                    required property int index
+                    required property var modelData
+                    glyph: modelData[0]; tip: modelData[1]
+                    on: index === 0 ? root.overview : root.tab === rail.tabs[index]
+                    onClicked: { root.menu = ""; root.tab = rail.tabs[index] }
+                }
+            }
+        }
+
         Card {
             id: cal
-            width: (parent.width - parent.spacing) * 0.58; height: parent.height
+            visible: root.tab !== "controls"
+            width: (parent.width - rail.width - 2 * parent.spacing) * 0.58; height: parent.height
             spacing: 4
             Item {
                 width: parent.width; height: 24
@@ -167,50 +187,58 @@ Item {
 
         Rectangle {
             id: dayCard
-            width: (parent.width - parent.spacing) * 0.42; height: parent.height
+            width: root.tab === "controls" ? parent.width - rail.width - parent.spacing : (parent.width - rail.width - 2 * parent.spacing) * 0.42; height: parent.height
             radius: 12; color: Theme.surface
             clip: true                                   // a very full day never spills out
 
-            // ---------- the toolbar: pages | switches and capture. Icons only, the name shows on hover ----------
+            // ---------- overview: Day / Next / New, three small icon keys ----------
             Row {
                 id: tabs
-                visible: !Agenda.ringing
+                visible: !Agenda.ringing && root.overview
                 anchors.horizontalCenter: parent.horizontalCenter
                 y: 12
                 spacing: 3
-                readonly property var ids: ["day", "alarms", "timer", "weather", "add"]
-                readonly property var glyphs: ["󰃭", "󰃱", "󱎫", "󰖕", "󰐕"]
-                readonly property var names: ["Day", "Next", "Timer", "Weather", "New"]
+                readonly property var ids: ["day", "alarms", "add"]
+                readonly property var glyphs: ["󰃭", "󰃱", "󰐕"]
+                readonly property var names: ["Day", "Next", "New"]
                 Repeater {
-                    model: 5
+                    model: 3
                     delegate: IconKey {
                         required property int index
                         glyph: tabs.glyphs[index]; tip: tabs.names[index]
                         on: root.tab === tabs.ids[index]
-                        onClicked: { root.menu = ""; tabs.ids[index] === "add" ? root.openForm() : root.tab = tabs.ids[index] }
+                        onClicked: tabs.ids[index] === "add" ? root.openForm() : root.tab = tabs.ids[index]
                     }
                 }
-                Rectangle { width: 1; height: 22; anchors.verticalCenter: parent.verticalCenter; color: Theme.hover }
-                IconKey { glyph: "󰅶"; tip: Modes.awake ? "Keep awake: on" : "Keep awake"; on: Modes.awake; led: true
+            }
+
+            // ---------- controls page: the four buttons as big tiles ----------
+            Row {
+                id: ctl
+                visible: root.tab === "controls" && !Agenda.ringing
+                anchors.horizontalCenter: parent.horizontalCenter
+                y: 30
+                spacing: 12
+                IconKey { width: 120; height: 76; glyphSize: 28; glyph: "󰅶"; label: "Keep awake"; on: Modes.awake; led: true
                           onClicked: { root.menu = ""; Modes.setAwake(!Modes.awake) } }
-                IconKey { glyph: "󰊴"; tip: Modes.game ? "Game mode: on" : "Game mode"; on: Modes.game; led: true
+                IconKey { width: 120; height: 76; glyphSize: 28; glyph: "󰊴"; label: "Game mode"; on: Modes.game; led: true
                           onClicked: { root.menu = ""; Modes.setGame(!Modes.game) } }
-                IconKey { id: recKey; glyph: Recorder.on ? "󰓛" : "󰑋"; tip: Recorder.on ? "Stop recording" : "Record"; hot: Recorder.on; menu: !Recorder.on
+                IconKey { id: recKey; width: 120; height: 76; glyphSize: 28; glyph: Recorder.on ? "󰓛" : "󰑋"; label: Recorder.on ? "Stop" : "Record"; hot: Recorder.on; menu: !Recorder.on
                           onClicked: Recorder.on ? Recorder.stop() : (root.menu = root.menu === "rec" ? "" : "rec") }
-                IconKey { id: shotKey; glyph: "󰹑"; tip: "Screenshot"; menu: true
+                IconKey { id: shotKey; width: 120; height: 76; glyphSize: 28; glyph: "󰹑"; label: "Screenshot"; menu: true
                           onClicked: root.menu = root.menu === "shot" ? "" : "shot" }
             }
             // submenu of Record / Screenshot: small, icon + short name
             Rectangle {
                 id: sub
-                visible: root.menu !== "" && !Agenda.ringing
+                visible: root.menu !== "" && root.tab === "controls" && !Agenda.ringing
                 z: 30
                 readonly property var items: root.menu === "rec"
                     ? [["󰍹", "Screen", "screen"], ["󰩭", "Area", "region"], ["󰕾", "Screen + sound", "sound"]]
                     : [["󰩭", "Area", "area"], ["󰖲", "Window", "window"], ["󰍹", "Screen", "screen"], ["󰏫", "Draw on it", "edit"]]
                 readonly property Item anchorKey: root.menu === "rec" ? recKey : shotKey
-                x: Math.min(parent.width - width - 8, tabs.x + anchorKey.x + anchorKey.width - width)
-                y: tabs.y + 36
+                x: Math.min(parent.width - width - 8, ctl.x + anchorKey.x)
+                y: ctl.y + anchorKey.height + 6
                 width: 150; height: col.implicitHeight + 8; radius: 3
                 color: Theme.surface; border.width: 1; border.color: Theme.hover
                 Column {
