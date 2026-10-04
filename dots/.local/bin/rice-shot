@@ -10,9 +10,12 @@ case ${1:-} in
         mkdir -p "$out"
         img=$(mktemp --suffix=.png)
         trap 'rm -f "$img"' EXIT
-        hyprshot -m region -z -s -r > "$img" 2>/dev/null
+        hyprshot -m region -z -s --raw > "$img" 2>/dev/null
         [[ -s $img ]] || exit 0                          # Esc while picking
-        satty --filename "$img" --output-filename "$out/Screenshot $(date '+%Y-%m-%d %H-%M-%S').png"
+        file="$out/Screenshot $(date '+%Y-%m-%d %H-%M-%S').png"
+        satty --filename "$img" --output-filename "$file" 2>/dev/null
+        # Enter saved it (Esc did not): say so, like the plain screenshots do
+        [[ -s $file ]] && notify-send -a Screenshot -i "$file" "Screenshot saved" "Copied to the clipboard · ${file/#$HOME/~}"
         ;;
     *) sed -n '2,5p' "$0"; exit 2 ;;
 esac
