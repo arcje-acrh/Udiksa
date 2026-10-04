@@ -80,8 +80,10 @@ Item {
         ? ((Notifs.current.summary || "") + (Notifs.current.body ? "  " + Notifs.current.body : "")).replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ·  ")
         : ""
     TextMetrics { id: nfMetrics; font.family: Theme.font; font.pixelSize: 12; text: root.notifText }
-    readonly property int notifExtra: Math.max(80, Math.min(560, Math.ceil(20 + clockRow.width + 28 + 18 + 10 + nfApp.implicitWidth + 10
-        + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth)))
+    // ... but the notch never gets wider than 60 % of the screen (longer texts end in "…")
+    readonly property int notifExtra: Math.min(Math.max(0, Math.round(maxWidth * 0.6) - restWidth),
+        Math.max(80, Math.min(560, Math.ceil(20 + clockRow.width + 28 + 18 + 10 + nfApp.implicitWidth + 10
+        + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth))))
     width: panel !== "" ? panelW : Math.min(maxWidth, restWidth + (notifShow ? notifExtra : 0))
     // smooth for panels (opening AND closing: `loaded` stays set until the close has finished); the
     // little overshoot "breath" only for an inline notification
