@@ -102,12 +102,17 @@ hl.bind(mainMod .. " + SHIFT + Page_Up",    hl.dsp.window.move({ workspace = "r-
 
 -- scratchpad
 hl.bind(mainMod .. " + S",             hl.dsp.workspace.toggle_special("magic"))
+-- every screenshot goes through rice-shot (saves, copies, "Screenshot saved" card; a click opens the picture)
+local shot = os.getenv("HOME") .. "/.local/bin/rice-shot"
+
 -- move the window to the scratchpad: SUPER + SHIFT + S.
 -- Laptops' "snip" key (Windows' Win+Shift+S) sends the same keys, but with the RIGHT Shift, all within a
 -- few ms (G16 F6, measured 2026-09-29) -- so Super + Right Shift + S takes a region screenshot instead.
+-- With your own LEFT Shift held as well, the snip key takes a window (like Shift + Print); the key's burst is
+-- Right Shift only, so Left Shift down at the same time can only be you.
 hl.bind(mainMod .. " + SHIFT + S", function() -- window to the scratchpad (Right Shift: region screenshot)
     if hl.is_key_down("Shift_R") then
-        hl.dispatch(hl.dsp.exec_cmd("hyprshot -m region -o " .. programs.screenshots))
+        hl.dispatch(hl.dsp.exec_cmd(shot .. (hl.is_key_down("Shift_L") and " window" or " area")))
     else
         hl.dispatch(hl.dsp.window.move({ workspace = "special:magic" }))
     end
@@ -115,10 +120,9 @@ end)
 
 -- Laptops without Print Screen: the same modes on the snip key (F6 sends Super + Right Shift + S), mirroring the
 -- Print Screen modifiers: Ctrl = whole screen, Alt = draw on it, Ctrl + Alt = a window. Typed by hand, either Shift works.
-local shotbin = os.getenv("HOME") .. "/.local/bin/rice-shot"
-hl.bind(mainMod .. " + CTRL + SHIFT + S",       hl.dsp.exec_cmd("hyprshot -m output -o " .. programs.screenshots))
-hl.bind(mainMod .. " + ALT + SHIFT + S",        hl.dsp.exec_cmd(shotbin .. " edit"))
-hl.bind(mainMod .. " + CTRL + ALT + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m window -o " .. programs.screenshots))
+hl.bind(mainMod .. " + CTRL + SHIFT + S",       hl.dsp.exec_cmd(shot .. " screen"))
+hl.bind(mainMod .. " + ALT + SHIFT + S",        hl.dsp.exec_cmd(shot .. " edit"))
+hl.bind(mainMod .. " + CTRL + ALT + SHIFT + S", hl.dsp.exec_cmd(shot .. " window"))
 
 -- app scratchpads (~/.local/bin/rice-scratch): each app on its own hidden workspace, the key shows / hides it
 -- and starts the app the first time. System monitor = btop; music and chat = the apps picked in
@@ -135,11 +139,10 @@ hl.bind(mainMod .. " + mouse:272",     hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273",     hl.dsp.window.resize(), { mouse = true })
 
 -- screenshots (hyprshot): region / window / whole screen -> file + clipboard
-hl.bind("Print",                       hl.dsp.exec_cmd("hyprshot -m region -o " .. programs.screenshots))
-hl.bind("SHIFT + Print",               hl.dsp.exec_cmd("hyprshot -m window -o " .. programs.screenshots))
-hl.bind("CTRL + Print",                hl.dsp.exec_cmd("hyprshot -m output -o " .. programs.screenshots))
+hl.bind("Print",                       hl.dsp.exec_cmd(shot .. " area"))
+hl.bind("SHIFT + Print",               hl.dsp.exec_cmd(shot .. " window"))
+hl.bind("CTRL + Print",                hl.dsp.exec_cmd(shot .. " screen"))
 -- screenshot to draw on: the screen freezes, pick an area, it opens in the editor (satty; Enter saves + copies)
-local shot = os.getenv("HOME") .. "/.local/bin/rice-shot"
 hl.bind("ALT + Print",                 hl.dsp.exec_cmd(shot .. " edit"))
 
 -- screen recording (~/.local/bin/rice-record): the same keys again stop it (or click the dot in the notch);

@@ -199,7 +199,7 @@ Afterwards: Wi-Fi passwords, signing in to your apps, and `sudo tailscale up` if
 | <kbd>Super</kbd>+<kbd>P</kbd> | Screens: extend, mirror, only one |
 | <kbd>Print</kbd> / <kbd>Shift</kbd>+<kbd>Print</kbd> / <kbd>Ctrl</kbd>+<kbd>Print</kbd> | Screenshot: area / window / screen |
 | <kbd>Alt</kbd>+<kbd>Print</kbd> | Screenshot to draw on (arrows, text, blur) |
-| Laptop snip key (<kbd>F6</kbd> on ASUS, sends <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>) | Screenshot: area. Hold <kbd>Ctrl</kbd> for the whole screen, <kbd>Alt</kbd> to draw on it, <kbd>Ctrl</kbd>+<kbd>Alt</kbd> for a window (typed by hand: <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>Ctrl</kbd>/<kbd>Alt</kbd>+<kbd>S</kbd>) |
+| Laptop snip key (<kbd>F6</kbd> on ASUS, sends <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>S</kbd>) | Screenshot: area. With <kbd>Shift</kbd> held (left one) a window, <kbd>Ctrl</kbd> the whole screen, <kbd>Alt</kbd> draw on it (<kbd>Ctrl</kbd>+<kbd>Alt</kbd> also takes a window; typed by hand: <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>Ctrl</kbd>/<kbd>Alt</kbd>+<kbd>S</kbd>) |
 | <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>R</kbd> (+<kbd>Shift</kbd> area, +<kbd>Ctrl</kbd> with sound) | Record the screen; again = stop |
 | <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> | Colour picker |
 | <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> / <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>\\</kbd> / <kbd>Super</kbd>+<kbd>C</kbd> | Pin window / picture-in-picture / centre |

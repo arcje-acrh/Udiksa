@@ -1,21 +1,39 @@
 #!/usr/bin/env bash
-# rice-shot -- screenshots that need more than hyprshot's plain keys (those stay in binds.lua).
-#   rice-shot edit    the screen freezes, pick an area, it opens in the editor (satty) to draw arrows, boxes, text,
-#                     blur; Enter = copy + save to ~/Pictures/Screenshots, Esc = throw away (Alt+Print)
+# rice-shot -- every screenshot key (binds.lua): saves to ~/Pictures/Screenshots, copies to the clipboard, and shows a
+# "Screenshot saved" notification; clicking it opens the picture (in the default image viewer).
+#   rice-shot area      drag a rectangle                 rice-shot window   click a window
+#   rice-shot screen    the whole screen                 rice-shot edit     the screen freezes, pick an area, it opens
+#                       in the editor (satty) to draw arrows, boxes, text, blur; Enter = copy + save, Esc = throw away
 # satty's look (font, the theme's colours) is in ~/.config/satty/config.toml, written by rice-theme.
 set -u
+out="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")/Screenshots"
+mkdir -p "$out"
+file="$out/Screenshot $(date '+%Y-%m-%d %H-%M-%S').png"
+
+# saved FILE: tell the user. notify-send -A makes a card whose click is the "default" action (the shell runs it
+# when you click the card) and prints that action's name when it happens; then the picture opens.
+saved() {
+    [[ -s $1 ]] || return 0
+    (   a=$(notify-send -a Screenshot -i "$1" -t 8000 -A default=Open "Screenshot saved" "Copied to the clipboard · ${1/#$HOME/~} · click to open")
+        [[ $a == default ]] && xdg-open "$1"
+    ) >/dev/null 2>&1 &
+}
+
 case ${1:-} in
+    area|window|screen)
+        mode=(-m region); [[ $1 == window ]] && mode=(-m window)
+        # the whole screen = the focused monitor, named (plain "-m output" makes you click a monitor first)
+        [[ $1 == screen ]] && mode=(-m output -m "$(hyprctl monitors -j | jq -r '.[] | select(.focused) | .name')")
+        hyprshot "${mode[@]}" -s -o "$out" -f "${file##*/}" 2>/dev/null
+        saved "$file"
+        ;;
     edit)
-        out="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")/Screenshots"
-        mkdir -p "$out"
         img=$(mktemp --suffix=.png)
         trap 'rm -f "$img"' EXIT
         hyprshot -m region -z -s --raw > "$img" 2>/dev/null
         [[ -s $img ]] || exit 0                          # Esc while picking
-        file="$out/Screenshot $(date '+%Y-%m-%d %H-%M-%S').png"
         satty --filename "$img" --output-filename "$file" 2>/dev/null
-        # Enter saved it (Esc did not): say so, like the plain screenshots do
-        [[ -s $file ]] && notify-send -a Screenshot -i "$file" "Screenshot saved" "Copied to the clipboard · ${file/#$HOME/~}"
+        saved "$file"                                    # only if Enter saved it (Esc did not)
         ;;
-    *) sed -n '2,5p' "$0"; exit 2 ;;
+    *) sed -n '2,7p' "$0"; exit 2 ;;
 esac
