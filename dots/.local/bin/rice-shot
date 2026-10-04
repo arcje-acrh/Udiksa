@@ -14,7 +14,7 @@ file="$out/Screenshot $(date '+%Y-%m-%d %H-%M-%S').png"
 # when you click the card) and prints that action's name when it happens; then the picture opens.
 saved() {
     [[ -s $1 ]] || return 0
-    (   a=$(notify-send -a Screenshot -i "$1" -t 8000 -A default=Open "Screenshot saved" "Copied to the clipboard · ${1/#$HOME/~} · click to open")
+    (   a=$(notify-send -a Screenshot -i "$1" -t 8000 -A default=Open "Screenshot saved" "Copied · ${1##*/} · click to open")
         [[ $a == default ]] && xdg-open "$1"
     ) >/dev/null 2>&1 &
 }
