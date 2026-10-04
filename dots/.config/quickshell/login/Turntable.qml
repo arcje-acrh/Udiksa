@@ -1,8 +1,7 @@
 // Turntable.qml -- the lock screen's media player: a vinyl record that spins while the music plays.
 //   * the cover is the record's label, the title and artist run round the grooves like the print on a sleeve
-//   * a tonearm rests on the record and moves from the outer groove to the inner one as the track plays;
-//     paused or stopped, it swings away. Three round keys on the right edge: previous / play-pause / next
-//     (a click on the label also plays / pauses).
+//   * a round button at the top right picks which player to show (left click = next, right click = automatic);
+//   * three round keys on the right edge: previous / play-pause / next (a click on the label also plays / pauses).
 // Loaded by LoginScreen.qml (lock mode only). s = screen height / 768 like the rest of that file.
 import QtQuick
 import QtQuick.Shapes
@@ -18,10 +17,25 @@ Item {
     property string font: "Iosevka Nerd Font"
 
     // ---- the player ----
-    readonly property var player: {
-        const ps = Mpris.players.values
-        for (let i = 0; i < ps.length; i++) if (ps[i].isPlaying) return ps[i]
-        return ps.length ? ps[0] : null
+    // which player: the one that is playing; it STAYS when it pauses (no jumping to another player), and another one
+    // only takes over when it starts playing. The button on the record picks one by hand (left click = next, right
+    // click = automatic again). The playerctld proxy is not a player.
+    readonly property var all: Mpris.players.values.filter(p => !/playerctld/i.test((p.dbusName || "") + (p.identity || "")))
+    property var picked: null                // chosen with the button; null = automatic
+    property var followed: null              // automatic: the last player that played
+    readonly property var player: (picked && all.indexOf(picked) >= 0) ? picked
+        : ((followed && all.indexOf(followed) >= 0) ? followed : (all.length ? all[0] : null))
+    function follow() {
+        if (followed && all.indexOf(followed) < 0) followed = null
+        if (!followed || !followed.isPlaying) { const p = all.find(x => x.isPlaying); if (p) followed = p }
+        if (!followed && all.length) followed = all[0]
+    }
+    onAllChanged: follow()
+    Component.onCompleted: follow()
+    Repeater { model: root.all; delegate: Item { required property var modelData; Connections { target: modelData; function onIsPlayingChanged() { root.follow() } } } }
+    function nextPlayer() {
+        if (all.length < 2) return
+        picked = all[(Math.max(0, all.indexOf(player)) + 1) % all.length]
     }
     readonly property bool has: player !== null && !!player.trackTitle
     readonly property bool playing: has && player.isPlaying
@@ -35,7 +49,6 @@ Item {
         const v = m ? m["mpris:length"] : 0
         return v ? Number(v) / 1000000 : 0
     }
-    readonly property real progress: has && metaLen > 0 ? Math.max(0, Math.min(1, player.position / metaLen)) : 0
 
     // ---- geometry: the record is the box, everything else is drawn around it ----
     readonly property real dia: 330 * s
@@ -138,27 +151,29 @@ Item {
         onClicked: if (root.has && root.player.canTogglePlaying) root.player.togglePlaying()
     }
 
-    // ---- the tonearm: pivot top right; the needle runs from the outer groove to the inner one ----
-    // A real tonearm keeps its length and turns about the pivot: the needle runs along an arc. delta = the angle between the
-    // arm and the line pivot -> record centre; delta(r) is the one that puts the needle r away from the centre (law of cosines).
-    readonly property real pivotDist: rad * 1.18
-    readonly property real pivotX: rad + pivotDist * Math.cos(-52 * Math.PI / 180)
-    readonly property real pivotY: rad + pivotDist * Math.sin(-52 * Math.PI / 180)
-    readonly property real armLen: pivotDist - 0.40 * rad
-    readonly property real baseAng: Math.atan2(rad - pivotY, rad - pivotX)                  // pivot -> centre, radians
-    function deltaFor(r) { return Math.acos(Math.max(-1, Math.min(1, (pivotDist * pivotDist + armLen * armLen - r * r) / (2 * pivotDist * armLen)))) }
-    property real armDelta: playing ? deltaFor(rad * (0.93 - 0.46 * progress)) : 68 * Math.PI / 180      // paused: swung up and away
-    Behavior on armDelta { NumberAnimation { duration: 900; easing.type: Easing.InOutCubic } }
-    readonly property real armAng: (baseAng + armDelta) * 180 / Math.PI
-    Item {
-        x: root.pivotX; y: root.pivotY; width: 0; height: 0
-        rotation: root.armAng
-        Rectangle { x: -root.rad * 0.16; y: -3 * root.s; width: root.armLen + root.rad * 0.16; height: 6 * root.s; radius: 3 * root.s; color: root.fg; opacity: 0.85 }   // arm + counterweight stub
-        Rectangle { x: -root.rad * 0.20; y: -6 * root.s; width: root.rad * 0.10; height: 12 * root.s; radius: 2 * root.s; color: root.fg; opacity: 0.55 }              // counterweight
-        Rectangle { x: root.armLen - 8 * root.s; y: -6 * root.s; width: 18 * root.s; height: 12 * root.s; radius: 2 * root.s; color: root.accent }                       // headshell
+    // ---- the player button, top right of the record: which player to show ----
+    readonly property real btnX: rad + rad * 1.18 * Math.cos(-52 * Math.PI / 180)
+    readonly property real btnY: rad + rad * 1.18 * Math.sin(-52 * Math.PI / 180)
+    Rectangle {
+        visible: root.all.length > 0
+        x: root.btnX - 17 * root.s; y: root.btnY - 17 * root.s
+        width: 34 * root.s; height: width; radius: width / 2
+        color: pma.containsMouse ? Qt.alpha(root.accent, 0.25) : Qt.alpha("#000000", 0.4)
+        border.width: 1; border.color: Qt.alpha(pma.containsMouse ? root.accent : root.fg, pma.containsMouse ? 0.9 : 0.4)
+        Text { anchors.centerIn: parent; text: root.picked ? "󰐃" : "󰝚"; color: pma.containsMouse || root.picked ? root.accent : root.fg
+               font { family: root.font; pixelSize: 15 * root.s } }
+        Text {                                       // whose track this is (+ n/m when there are several)
+            x: parent.width + 10 * root.s; anchors.verticalCenter: parent.verticalCenter
+            text: root.player ? (root.player.identity || "").toUpperCase() + (root.all.length > 1 ? "  " + (root.all.indexOf(root.player) + 1) + "/" + root.all.length : "") : ""
+            color: root.fg; opacity: 0.65; font { family: root.font; pixelSize: 11 * root.s; letterSpacing: 2 * root.s }
+        }
+        MouseArea {
+            id: pma
+            anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
+            acceptedButtons: Qt.LeftButton | Qt.RightButton
+            onClicked: (m) => { if (m.button === Qt.RightButton) root.picked = null; else root.nextPlayer() }
+        }
     }
-    Rectangle { x: root.pivotX - 13 * root.s; y: root.pivotY - 13 * root.s; width: 26 * root.s; height: width; radius: width / 2; color: "#121216"; border.width: 2; border.color: Qt.alpha(root.fg, 0.7) }
-    Rectangle { x: root.pivotX - 4 * root.s; y: root.pivotY - 4 * root.s; width: 8 * root.s; height: width; radius: width / 2; color: root.accent }
 
     // ---- three round keys on the right edge ----
     Repeater {
