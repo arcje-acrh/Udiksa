@@ -470,7 +470,7 @@ Item {
     Component { id: volumePanel;    VolumePanel {} }
     Component { id: wifiPanel;      WifiPanel {} }
     Component { id: bluetoothPanel; BluetoothPanel {} }
-    Component { id: clockPanel;     ClockPanel {} }
+    Component { id: clockPanel;     ClockPanel { onDone: root.close() } }
     Component { id: mediaPanel;     MediaPanel {} }
     Component { id: notificationsPanel; NotificationsPanel {} }
     Component { id: systemPanel;    SystemPanel { onOpenPanel: (id) => root.open(id) } }

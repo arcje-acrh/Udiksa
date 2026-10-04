@@ -14,6 +14,7 @@ Status Status.qml
 MediaChip MediaChip.qml
 Card Card.qml
 Seg Seg.qml
+IconKey IconKey.qml
 Toggle Toggle.qml
 ListRow ListRow.qml
 LevelSlider LevelSlider.qml
