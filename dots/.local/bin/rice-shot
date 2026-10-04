@@ -10,10 +10,14 @@ out="$(xdg-user-dir PICTURES 2>/dev/null || echo "$HOME/Pictures")/Screenshots"
 mkdir -p "$out"
 file="$out/Screenshot $(date '+%Y-%m-%d %H-%M-%S').png"
 
+# hyprshot returns a moment BEFORE grim has finished writing the picture, so look for it for up to 3 s (an instant
+# area pick hides this; a slow one used to find no file: no card, and the editor exited as if Esc had been pressed)
+waitfile() { local i; for ((i = 0; i < 30; i++)); do [[ -s $1 ]] && { sleep 0.2; return 0; }; sleep 0.1; done; return 1; }
+
 # saved FILE: tell the user. notify-send -A makes a card whose click is the "default" action (the shell runs it
 # when you click the card) and prints that action's name when it happens; then the picture opens.
 saved() {
-    [[ -s $1 ]] || return 0
+    waitfile "$1" || return 0
     (   a=$(notify-send -a Screenshot -i "$1" -t 8000 -A default=Open "Screenshot saved" "Copied · ${1##*/} · click to open")
         [[ $a == default ]] && xdg-open "$1"
     ) >/dev/null 2>&1 &
@@ -31,7 +35,7 @@ case ${1:-} in
         img=$(mktemp --suffix=.png)
         trap 'rm -f "$img"' EXIT
         hyprshot -m region -z -s --raw > "$img" 2>/dev/null
-        [[ -s $img ]] || exit 0                          # Esc while picking
+        waitfile "$img" || exit 0                        # nothing came: Esc while picking
         satty --filename "$img" --output-filename "$file" 2>/dev/null
         saved "$file"                                    # only if Enter saved it (Esc did not)
         ;;
