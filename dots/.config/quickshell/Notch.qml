@@ -75,13 +75,14 @@ Item {
     // makes the notch "breathe" a little wider while it shows
     // ... but never wider than the screen (a rotated / small screen): the panel's own layout shrinks with it
     readonly property int panelW: loaded === "" || !panelItem || !(panelItem.wantWidth > 0) ? restWidth : Math.min(maxWidth, Math.max(restWidth, panelItem.wantWidth))
-    // inline notification (line breaks -> " · "): the notch grows a little wider (80..200 px extra), and TALLER for a
+    // inline notification (line breaks -> " · "): the notch is as wide as the text needs (380 px up to 200 px wider than
+    // at rest) and TALLER for a
     // long text (wraps to at most 3 lines) instead of ever wider
     readonly property string notifText: Notifs.current
         ? ((Notifs.current.summary || "") + (Notifs.current.body ? "  " + Notifs.current.body : "")).replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ·  ")
         : ""
     TextMetrics { id: nfMetrics; font.family: Theme.font; font.pixelSize: 12; text: root.notifText }
-    readonly property int notifExtra: Math.max(80, Math.min(200, Math.ceil(20 + 18 + 10 + nfApp.implicitWidth + 10
+    readonly property int notifExtra: Math.max(380 - restWidth, Math.min(200, Math.ceil(20 + 18 + 10 + nfApp.implicitWidth + 10
         + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth)))
     // the text's room (the notch at its target width, minus clock, icon, app name, +N) and how many lines it needs there
     readonly property real nfTextW: Math.max(120, restWidth + notifExtra - 20 - 24 - 18 - nfApp.implicitWidth - (Notifs.unread > 1 ? 50 : 0) - 20)
@@ -109,7 +110,7 @@ Item {
             l.words[l.words.length - 1] += "…"; l.w = l.words.reduce((t, x) => t + nfFm.advanceWidth(x), 0) + space * (l.words.length - 1)
         }
         // the last line is stretched too, unless it is much shorter than the width (it would look torn apart)
-        lines.forEach((l, k) => l.full = k < lines.length - 1 || l.w > nfBodyW * 0.85)
+        lines.forEach((l, k) => l.full = lines.length > 1 && (k < lines.length - 1 || l.w > nfBodyW * 0.85))
         return lines
     }
     // tall = it does not fit on one line AND there is a body: title row on top (like a short one), the body under it
