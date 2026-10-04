@@ -81,10 +81,10 @@ Item {
         ? ((Notifs.current.summary || "") + (Notifs.current.body ? "  " + Notifs.current.body : "")).replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ·  ")
         : ""
     TextMetrics { id: nfMetrics; font.family: Theme.font; font.pixelSize: 12; text: root.notifText }
-    readonly property int notifExtra: Math.max(80, Math.min(200, Math.ceil(20 + clockRow.width + 28 + 18 + 10 + nfApp.implicitWidth + 10
+    readonly property int notifExtra: Math.max(80, Math.min(200, Math.ceil(20 + 18 + 10 + nfApp.implicitWidth + 10
         + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth)))
     // the text's room (the notch at its target width, minus clock, icon, app name, +N) and how many lines it needs there
-    readonly property real nfTextW: Math.max(120, restWidth + notifExtra - (20 + clockRow.width + 28) - 24 - 18 - nfApp.implicitWidth - (Notifs.unread > 1 ? 50 : 0) - 20)
+    readonly property real nfTextW: Math.max(120, restWidth + notifExtra - 20 - 24 - 18 - nfApp.implicitWidth - (Notifs.unread > 1 ? 50 : 0) - 20)
     readonly property string notifSummary: Notifs.current ? (Notifs.current.summary || "").replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ") : ""
     readonly property string notifBody: Notifs.current ? (Notifs.current.body || "").replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ") : ""
     Text { id: nfProbe; visible: false; width: root.nfTextW; wrapMode: Text.WordWrap; maximumLineCount: 2; text: root.notifText
@@ -219,10 +219,12 @@ Item {
             // only the slide to the left (key feedback / notification) is animated, via `shift`;
             // width changes (panels opening / closing) move it instantly with the notch -- animating
             // x itself made the date trail behind and slide after the notch had settled
-            property real shift: root.inlineMode ? 1 : 0
+            property real shift: root.feedback ? 1 : 0
             Behavior on shift { NumberAnimation { duration: Theme.notchAnim; easing.type: Easing.OutCubic } }
             x: 20 * shift + (parent.width - width) / 2 * (1 - shift)
             anchors.verticalCenter: parent.verticalCenter
+            opacity: root.notifShow ? 0 : 1           // a notification covers the whole row: no time next to it
+            Behavior on opacity { NumberAnimation { duration: 120 } }
             spacing: 10
             Text {
                 text: Qt.formatDateTime(clock.date, "HH:mm")
@@ -327,7 +329,7 @@ Item {
         // Hover (or click) = the notifications panel; the mouse on it keeps it showing.
         Item {
             id: nf
-            x: 20 + clockRow.width + 28
+            x: 20
             width: parent.width - x - 24
             height: root.height             // taller than the strip when the text wraps
             opacity: root.notifShow ? 1 : 0
@@ -401,6 +403,7 @@ Item {
                 y: Theme.stripHeight - 4
                 width: parent.width - x
                 wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
+                horizontalAlignment: Text.AlignJustify
                 text: root.notifBody
                 color: Qt.alpha(Theme.text, 0.8); font.family: Theme.font; font.pixelSize: 12
             }
