@@ -48,7 +48,7 @@ The notch on hover, tiling, the launcher, live theme switching (open apps recolo
   notifications. No pop-up windows anywhere.
 - **Live themes.** <kbd>Super</kbd>+<kbd>T</kbd> opens the theme switcher. Everything follows at once, windows that
   are already open included: the shell, window borders, the terminal and its prompt, btop, fastfetch, cava, cmatrix,
-  the clock, ncspot, GTK and Qt apps, the screenshot editor, the mouse pointer, the login screen and the GRUB menu.
+  the clock, ncspot, GTK and Qt apps, the screenshot editor, the Zed code editor, the mouse pointer, the login screen and the GRUB menu.
 - **A real Settings app** (<kbd>Super</kbd>+<kbd>I</kbd>), in the same style: tiling layout, gaps, corners and
   animations; displays (resolution, scale, rotation, several monitors); sound per app; mouse, keyboard and touchpad;
   Wi-Fi, Bluetooth, Tailscale; battery, sleep and hibernation; default and startup apps; shortcuts. Every change

@@ -840,6 +840,54 @@ palette = [{", ".join(f'"{c}"' for c in pal)}]
 """)
 
 
+def zed(p):
+    """Zed (the code editor, `zeditor`): a "Rice" theme in ~/.config/zed/themes/rice.json, rewritten on every theme
+    change; Zed watches that folder and recolours open windows live. The font and the "Rice" choice are in
+    dots/.config/zed/settings.json (yours to edit)."""
+    if not shutil.which("zeditor"):
+        return
+    n = p["ansi"]; dark = p["mode"] == "dark"
+    sel = p["accent"] + "40"                                           # 25 % accent for selections / highlights
+    st = {
+        "background": p["bg"], "surface.background": p["surface"], "elevated_surface.background": p["surface"],
+        "border": p["raised"], "border.variant": p["surface"], "border.focused": p["accent"], "border.selected": p["accent"],
+        "border.transparent": "#00000000", "border.disabled": p["raised"],
+        "element.background": p["raised"], "element.hover": p["hover"], "element.active": p["hover"],
+        "element.selected": p["hover"], "element.disabled": p["raised"],
+        "ghost_element.background": "#00000000", "ghost_element.hover": p["raised"], "ghost_element.active": p["hover"],
+        "ghost_element.selected": p["raised"],
+        "text": p["text"], "text.muted": p["muted"], "text.placeholder": p["dim"], "text.disabled": p["dim"],
+        "text.accent": p["accent"], "icon": p["text"], "icon.muted": p["muted"], "icon.disabled": p["dim"],
+        "icon.accent": p["accent"],
+        "title_bar.background": p["bg"], "status_bar.background": p["bg"], "toolbar.background": p["bg"],
+        "tab_bar.background": p["surface"], "tab.inactive_background": p["surface"], "tab.active_background": p["bg"],
+        "panel.background": p["surface"], "scrollbar.thumb.background": p["raised"],
+        "scrollbar.thumb.hover_background": p["hover"], "scrollbar.track.background": p["bg"],
+        "editor.background": p["bg"], "editor.foreground": p["text"], "editor.gutter.background": p["bg"],
+        "editor.line_number": p["dim"], "editor.active_line_number": p["text"],
+        "editor.active_line.background": p["surface"], "editor.highlighted_line.background": p["surface"],
+        "editor.document_highlight.read_background": sel, "editor.document_highlight.write_background": sel,
+        "search.match_background": sel, "terminal.background": p["bg"], "terminal.foreground": p["text"],
+        "conflict": n[3], "created": n[2], "deleted": n[1], "error": n[1], "hint": p["muted"], "ignored": p["dim"],
+        "info": n[4], "modified": n[3], "predictive": p["dim"], "renamed": n[4], "success": n[2], "warning": n[3],
+        "players": [{"cursor": p["accent"], "background": p["accent"], "selection": sel}],
+        "syntax": {
+            "comment": {"color": p["muted"], "font_style": "italic"}, "keyword": {"color": p["accent"]},
+            "string": {"color": n[2]}, "number": {"color": n[3]}, "boolean": {"color": n[3]},
+            "constant": {"color": n[3]}, "function": {"color": n[4]}, "type": {"color": p["accent2"]},
+            "variable": {"color": p["text"]}, "property": {"color": n[6]}, "operator": {"color": p["muted"]},
+            "punctuation": {"color": p["muted"]}, "tag": {"color": p["accent"]}, "attribute": {"color": p["accent2"]},
+            "link_uri": {"color": p["accent2"]}, "title": {"color": p["accent"], "font_weight": 700},
+            "emphasis.strong": {"color": p["text"], "font_weight": 700},
+        },
+    }
+    for i, nm in enumerate(("black", "red", "green", "yellow", "blue", "magenta", "cyan", "white")):
+        st[f"terminal.ansi.{nm}"] = n[i]; st[f"terminal.ansi.bright_{nm}"] = n[i + 8]
+    theme = {"$schema": "https://zed.dev/schema/themes/v0.2.0.json", "name": "Rice", "author": "Udiksa",
+             "themes": [{"name": "Rice", "appearance": "dark" if dark else "light", "style": st}]}
+    write(os.path.join(HOME, ".config/zed/themes/rice.json"), json.dumps(theme, indent=2) + "\n")
+
+
 def cursor(p):
     """The Udiksa mouse pointer (Bibata Original, ~/.local/bin/rice-cursor): all in the accent, no border, every other
     colour from the theme; it reads colors.json, written by quickshell(p) just before. Built in the background
@@ -1111,7 +1159,7 @@ def cmd_apply(img, pos=None, transition="grow"):
     if os.path.exists(kbd):
         subprocess.Popen([kbd, "theme"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     hypr(p, theme); kitty(p, theme); starship(p); fastfetch(p); gtk(p, theme); qt(p, theme)
-    ncspot(p); cava(p); satty(p); cursor(p); btop(p); viewers(p); office(p)
+    ncspot(p); cava(p); satty(p); zed(p); cursor(p); btop(p); viewers(p); office(p)
     reload_apps()
     write(STATE, json.dumps({"theme": theme, "wallpaper": img}) + "\n")   # the switcher reads this: before the slow part
     # boot + login screens last: GRUB alone takes ~3 s, and the open apps should not wait for it to recolour

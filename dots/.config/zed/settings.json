@@ -1,0 +1,11 @@
+// Zed settings. The "Rice" theme is written by rice-theme on every theme change (~/.config/zed/themes/rice.json).
+{
+  "theme": "Rice",
+  "ui_font_family": "Iosevka Nerd Font",
+  "buffer_font_family": "Iosevka Nerd Font",
+  "buffer_font_size": 15,
+  "ui_font_size": 15,
+  "telemetry": { "diagnostics": false, "metrics": false },
+  "auto_update": false,
+  "vim_mode": false
+}
