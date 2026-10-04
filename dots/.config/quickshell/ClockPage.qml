@@ -1,7 +1,7 @@
-// ClockPage.qml -- DEMO: the advanced page of one date option, in its own notch panel (opened from ClockDemo's lower row).
+// ClockPage.qml -- the page of one date option (timer, alarm, reminder, event), in its own notch panel opened from ClockPanel's lower row.
 //   kind "timer"     presets + pause / resume / cancel on the left; label + any minutes on the right
 //   kind "alarm" | "reminder" | "event"   the form on the left (what, time, day, repeat), what is already set on the right
-// The back key returns to the main panel.
+// The back key returns to the date panel.
 import QtQuick
 import Quickshell
 

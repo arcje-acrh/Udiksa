@@ -1,42 +1,20 @@
-// IconKey.qml -- an icon-only key (same retro bevel as Seg.qml): one glyph.
-// on = pressed in (the page you are on, or a switch that is on), led = a small lit LED in the corner while on,
-// hot = amber/coral LED while something runs (e.g. recording), dot = a tiny "opens a submenu" mark in the corner.
+// IconKey.qml -- a small flat key with one glyph or short word (the clock pages' presets, steppers and add buttons).
+// on = a soft accent fill and an accent glyph (the chosen one).
 import QtQuick
 
 Rectangle {
     id: root
     property string glyph: ""
     property bool on: false
-    property bool led: false
-    property bool hot: false
-    property bool menu: false
-    property string label: ""          // a small name under the icon (big tiles)
     property int glyphSize: 16
     signal clicked()
     width: 34; height: 30; radius: 8
-    color: on ? Theme.hover : (ma.containsMouse ? Theme.hover : Theme.raised)
-    border.width: on ? 1 : 0; border.color: Theme.coral
+    color: on ? Qt.alpha(Theme.coral, 0.22) : (ma.containsMouse ? Theme.hover : Theme.raised)
     Text {
-        anchors.horizontalCenter: parent.horizontalCenter
-        anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: root.label !== "" ? -8 : 0
+        anchors.centerIn: parent
         text: root.glyph
-        color: root.hot ? Theme.coral : (root.on ? Theme.coral : (ma.containsMouse ? Theme.text : Theme.muted))
+        color: root.on ? Theme.coral : (ma.containsMouse ? Theme.text : Theme.muted)
         font.family: Theme.font; font.pixelSize: root.glyphSize
-    }
-    Text {
-        visible: root.label !== ""
-        anchors.horizontalCenter: parent.horizontalCenter; y: parent.height - 22
-        text: root.label; color: root.on ? Theme.text : Theme.muted; font.family: Theme.font; font.pixelSize: 10
-    }
-    Rectangle {   // LED (switches)
-        visible: root.led || root.hot
-        x: parent.width - 8; y: 4; width: 4; height: 4; radius: 2
-        color: (root.on || root.hot) ? Theme.coral : Theme.dim
-    }
-    Text {   // submenu mark
-        visible: root.menu
-        x: parent.width - 11; y: 4
-        text: "▾"; color: Theme.dim; font.family: Theme.font; font.pixelSize: 9
     }
     MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: root.clicked() }
 }

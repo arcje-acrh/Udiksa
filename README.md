@@ -113,7 +113,7 @@ Rosé Pine Dawn · Solarized Dark · Terafox · Tokyo Night · Vantablack · Whi
 
 | Calendar and weather · Everforest Light | Sound · Rosé Pine |
 |:---:|:---:|
-| <img src="docs/screenshots/notch-clock.webp" alt="Calendar with events, timer and alarms"> | <img src="docs/screenshots/notch-volume.webp" alt="Sound panel: output, microphone, devices"> |
+| <img src="docs/screenshots/notch-clock.webp" alt="Date panel: calendar, today with weather, and tiles for timer, alarm, reminder and event"> | <img src="docs/screenshots/notch-volume.webp" alt="Sound panel: output, microphone, devices"> |
 
 | Media · Gruvbox Dark | Battery · Nord |
 |:---:|:---:|

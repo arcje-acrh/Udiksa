@@ -461,7 +461,7 @@ Item {
             active: root.loaded !== ""
             sourceComponent: ({
                 battery: batteryPanel, power: powerPanel, volume: volumePanel, wifi: wifiPanel,
-                bluetooth: bluetoothPanel, clock: clockPanel, clockA: clockA, clockTimer: clockTimer, clockAlarm: clockAlarm, clockReminder: clockReminder, clockEvent: clockEvent, media: mediaPanel, notifications: notificationsPanel, system: systemPanel, tailscale: tailscalePanel, launcher: launcherPanel, usage: usagePanel
+                bluetooth: bluetoothPanel, clock: clockPanel, clockTimer: clockTimer, clockAlarm: clockAlarm, clockReminder: clockReminder, clockEvent: clockEvent, media: mediaPanel, notifications: notificationsPanel, system: systemPanel, tailscale: tailscalePanel, launcher: launcherPanel, usage: usagePanel
             })[root.loaded] ?? null
         }
     }
@@ -470,12 +470,11 @@ Item {
     Component { id: volumePanel;    VolumePanel {} }
     Component { id: wifiPanel;      WifiPanel {} }
     Component { id: bluetoothPanel; BluetoothPanel {} }
-    Component { id: clockPanel;     ClockPanel {} }
-    Component { id: clockTimer;     ClockPage { kind: "timer";    onBack: root.open("clockA") } }
-    Component { id: clockAlarm;     ClockPage { kind: "alarm";    onBack: root.open("clockA") } }
-    Component { id: clockReminder;  ClockPage { kind: "reminder"; onBack: root.open("clockA") } }
-    Component { id: clockEvent;     ClockPage { kind: "event";    onBack: root.open("clockA") } }
-    Component { id: clockA;         ClockDemo { onDone: root.close(); onPage: (id) => root.open(id) } }
+    Component { id: clockPanel;     ClockPanel { onDone: root.close(); onPage: (id) => root.open(id) } }
+    Component { id: clockTimer;     ClockPage { kind: "timer";    onBack: root.open("clock") } }
+    Component { id: clockAlarm;     ClockPage { kind: "alarm";    onBack: root.open("clock") } }
+    Component { id: clockReminder;  ClockPage { kind: "reminder"; onBack: root.open("clock") } }
+    Component { id: clockEvent;     ClockPage { kind: "event";    onBack: root.open("clock") } }
     Component { id: mediaPanel;     MediaPanel {} }
     Component { id: notificationsPanel; NotificationsPanel {} }
     Component { id: systemPanel;    SystemPanel { onOpenPanel: (id) => root.open(id) } }
