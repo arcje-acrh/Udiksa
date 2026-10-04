@@ -3,8 +3,8 @@
 -- Settings > Display and saved in ~/.config/hypr/local/monitors.lua, which overrides this (personal layer).
 -- https://wiki.hypr.land/Configuring/Basics/Monitors/
 hl.monitor({
-    output   = "",
-    mode     = "preferred",
-    position = "auto",
-    scale    = "auto",
+    output   = "",           -- "" = every screen
+    mode     = "preferred",  -- the screen's own best resolution and refresh rate
+    position = "auto",       -- placed side by side automatically
+    scale    = "auto",       -- Hyprland picks the scale from the screen's density
 })

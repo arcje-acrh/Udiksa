@@ -4,9 +4,9 @@
 -- ignore maximize requests from apps
 hl.window_rule({
     name  = "suppress-maximize-events",
-    match = { class = ".*" },
+    match = { class = ".*" },  -- every window
 
-    suppress_event = "maximize",
+    suppress_event = "maximize",  -- ignore apps' maximize requests
 })
 
 -- fix some dragging issues with XWayland
@@ -21,7 +21,7 @@ hl.window_rule({
         pin        = false,
     },
 
-    no_focus = true,
+    no_focus = true,  -- do not give these focus
 })
 
 -- Hyprland's own run-dialog window
@@ -29,8 +29,8 @@ hl.window_rule({
     name  = "move-hyprland-run",
     match = { class = "hyprland-run" },
 
-    move  = "20 monitor_h-120",
-    float = true,
+    move  = "20 monitor_h-120",  -- px from the left, 120 px above the bottom
+    float = true,                -- floating
 })
 
 -- ---------------------------------------------------------------------------
@@ -44,11 +44,11 @@ hl.window_rule({
     match = { title = "^(Picture-in-Picture|Picture in picture)$" },
 
     float             = true,
-    pin               = true,
-    size              = "480 270",
+    pin               = true,       -- follow you to every workspace
+    size              = "480 270",  -- small video window
     move              = "monitor_w-500 monitor_h-290",
-    keep_aspect_ratio = true,
-    no_initial_focus  = true,
+    keep_aspect_ratio = true,  -- keep the video's shape
+    no_initial_focus  = true,  -- do not steal focus
 })
 
 -- file pickers and save / open / print dialogs: float in the middle
@@ -56,8 +56,8 @@ hl.window_rule({
     name  = "dialogs",
     match = { title = "^(Open|Open File|Open Files|Open Folder|Save|Save As|Save File|Select a File|Choose Files?|File Upload|Select Folder|Export|Import|Print|Properties|Preferences|Rename)( .*)?$" },
 
-    float  = true,
-    center = true,
+    float  = true,  -- float ...
+    center = true,  -- ... in the middle
 })
 hl.window_rule({
     name  = "portal-file-chooser",
@@ -145,7 +145,7 @@ hl.window_rule({
     name  = "kitty-own-alpha",
     match = { class = "^kitty$" },
 
-    opacity = "1.0 override 1.0 override",
+    opacity = "1.0 override 1.0 override",  -- "override" = ignore the global opacity (kitty has its own)
 })
 
 -- ---------------------------------------------------------------------------
@@ -157,8 +157,8 @@ hl.layer_rule({
     name  = "shell-blur",
     match = { namespace = "^(quickshell|shell).*" },
 
-    blur         = true,
-    ignore_alpha = 0.2,
+    blur         = true,  -- blur what is behind the shell
+    ignore_alpha = 0.2,   -- do not blur fully transparent pixels
 })
 
 -- ---------------------------------------------------------------------------
@@ -179,7 +179,7 @@ hl.window_rule({
     float     = true,
     size      = "968 640",
     move      = "monitor_w*0.5-484 monitor_h*0.5-421",
-    workspace = "special:music",
+    workspace = "special:music",  -- on the music scratchpad (Super+M)
 })
 hl.window_rule({
     name             = "music-cava",
@@ -188,7 +188,7 @@ hl.window_rule({
     size             = "968 220",
     move             = "monitor_w*0.5-484 monitor_h*0.5+231",
     workspace        = "special:music",
-    no_initial_focus = true,
+    no_initial_focus = true,  -- do not steal focus
 })
 
 -- Settings app (~/.config/quickshell/Settings.qml, Super+I): floating, centred, 1600x1000 (user 2026-09-26)
@@ -224,7 +224,7 @@ hl.window_rule({
     match  = { class = "^com\\.gabm\\.satty$" },
     float  = true,
     center = true,
-    size   = "monitor_w*0.8 monitor_h*0.8",
+    size   = "monitor_w*0.8 monitor_h*0.8",  -- 80 % of the screen
 })
 
 -- nano (text files, "Edit" in Settings) and script runs: small centred floating terminals
