@@ -74,24 +74,26 @@ Item {
     readonly property int eventsToday: { Agenda.items; return Agenda.itemsOn(now).filter(i => i.kind === "event").length }
     readonly property real timerLeft: Agenda.timerPaused ? Agenda.timerLeft : (Agenda.timerEnd > 0 ? Math.max(0, Agenda.timerEnd - now.getTime()) : 0)
 
-    // a wide button of the lower row: an icon, and its value once something is set
-    component OptButton: Rectangle {
-        id: ob
+    // one cell of the rail and of the lower bar: flat, no box of its own (the bar is the card); hover = a soft pill
+    component Cell: Item {
+        id: ce
         property string glyph: ""
         property string value: ""
-        property bool lit: false
+        property bool on: false
+        property bool led: false
+        property bool hot: false
+        property bool menu: false
         signal clicked()
-        height: 44; radius: 2
-        color: ma.containsMouse ? Theme.hover : Theme.raised
-        border.width: 1; border.color: Theme.hover
-        KeyEdge {}
+        Rectangle { anchors.fill: parent; anchors.margins: 3; radius: 8; color: ma.containsMouse ? Theme.raised : "transparent" }
         Row {
-            anchors.centerIn: parent; spacing: 8
-            Text { anchors.verticalCenter: parent.verticalCenter; text: ob.glyph; color: ob.lit ? Theme.coral : Theme.muted; font.family: Theme.font; font.pixelSize: 18 }
-            Text { visible: ob.value !== ""; anchors.verticalCenter: parent.verticalCenter; width: Math.min(implicitWidth, ob.width - 56); elide: Text.ElideRight
-                   text: ob.value; color: ob.lit ? Theme.coral : Theme.text; font.family: Theme.font; font.pixelSize: 12; font.bold: true }
+            anchors.centerIn: parent; spacing: 7
+            Text { anchors.verticalCenter: parent.verticalCenter; text: ce.glyph; color: (ce.on || ce.hot) ? Theme.coral : (ma.containsMouse ? Theme.text : Theme.muted); font.family: Theme.font; font.pixelSize: 17 }
+            Text { visible: ce.value !== ""; anchors.verticalCenter: parent.verticalCenter; width: Math.min(implicitWidth, ce.width - 52); elide: Text.ElideRight
+                   text: ce.value; color: Theme.coral; font.family: Theme.font; font.pixelSize: 12; font.bold: true }
         }
-        MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: ob.clicked() }
+        Rectangle { visible: ce.led; x: parent.width - 10; y: 7; width: 4; height: 4; radius: 2; color: ce.on ? Theme.coral : Theme.dim }
+        Text { visible: ce.menu; x: parent.width - 11; y: parent.height - 14; text: "▾"; color: Theme.dim; font.family: Theme.font; font.pixelSize: 9 }
+        MouseArea { id: ma; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: ce.clicked() }
     }
 
     Item {
@@ -101,21 +103,26 @@ Item {
         readonly property int railW: 36
         readonly property int calW: 296
         readonly property int rx: railW + g + calW + g
-        readonly property int topH: 150
+        readonly property int barH: 40
+        readonly property int topH: height - barH - g
 
-        // ---------------- rail: four buttons, the full height ----------------
-        Column {
+        // ---------------- rail: one card, four cells, the full height ----------------
+        Rectangle {
             id: rail
-            x: 0; y: 0; width: area.railW; spacing: 6
-            readonly property real bh: (area.height - 3 * spacing) / 4
-            IconKey { width: parent.width; height: rail.bh; glyphSize: 17; glyph: "󰅶"; on: Modes.awake; led: true
-                      onClicked: { root.menu = ""; Modes.setAwake(!Modes.awake) } }
-            IconKey { width: parent.width; height: rail.bh; glyphSize: 17; glyph: "󰊴"; on: Modes.game; led: true
-                      onClicked: { root.menu = ""; Modes.setGame(!Modes.game) } }
-            IconKey { id: recKey; width: parent.width; height: rail.bh; glyphSize: 17; glyph: Recorder.on ? "󰓛" : "󰑋"; hot: Recorder.on; menu: !Recorder.on
-                      onClicked: Recorder.on ? Recorder.stop() : (root.menu = root.menu === "rec" ? "" : "rec") }
-            IconKey { id: shotKey; width: parent.width; height: rail.bh; glyphSize: 17; glyph: "󰹑"; menu: true
-                      onClicked: root.menu = root.menu === "shot" ? "" : "shot" }
+            x: 0; y: 0; width: area.railW; height: area.height
+            radius: 12; color: Theme.surface
+            Column {
+                anchors.fill: parent; anchors.margins: 4
+                readonly property real ch: height / 4
+                Cell { width: parent.width; height: parent.ch; glyph: "󰅶"; on: Modes.awake; led: true
+                       onClicked: { root.menu = ""; Modes.setAwake(!Modes.awake) } }
+                Cell { width: parent.width; height: parent.ch; glyph: "󰊴"; on: Modes.game; led: true
+                       onClicked: { root.menu = ""; Modes.setGame(!Modes.game) } }
+                Cell { id: recKey; width: parent.width; height: parent.ch; glyph: Recorder.on ? "󰓛" : "󰑋"; hot: Recorder.on; menu: !Recorder.on
+                       onClicked: Recorder.on ? Recorder.stop() : (root.menu = root.menu === "rec" ? "" : "rec") }
+                Cell { id: shotKey; width: parent.width; height: parent.ch; glyph: "󰹑"; menu: true
+                       onClicked: root.menu = root.menu === "shot" ? "" : "shot" }
+            }
         }
 
         // ---------------- calendar ----------------
@@ -261,14 +268,22 @@ Item {
             }
         }
 
-        // ---------------- below: four date options, each opens its own panel ----------------
-        Row {
-            x: area.rx; y: area.topH + area.g; spacing: area.g
-            readonly property real bw: (area.width - area.rx - 3 * area.g) / 4
-            OptButton { width: parent.bw; glyph: "󱎫"; lit: Agenda.timerOn; value: Agenda.timerOn ? Agenda.fmt(root.timerLeft) : ""; onClicked: root.page("clockTimer") }
-            OptButton { width: parent.bw; glyph: "󰀠"; lit: root.nextAlarm !== null; value: root.nextAlarm ? root.nextAlarm.time : ""; onClicked: root.page("clockAlarm") }
-            OptButton { width: parent.bw; glyph: "󰃀"; lit: root.nextReminder !== null; value: root.nextReminder ? root.nextReminder.text : ""; onClicked: root.page("clockReminder") }
-            OptButton { width: parent.bw; glyph: "󰃶"; lit: root.eventsToday > 0; value: root.eventsToday > 0 ? "" + root.eventsToday : ""; onClicked: root.page("clockEvent") }
+        // ---------------- below: one bar, four date options; each opens its own panel ----------------
+        Rectangle {
+            x: area.rx; y: area.height - area.barH; width: area.width - x; height: area.barH
+            radius: 12; color: Theme.surface
+            Row {
+                anchors.fill: parent; anchors.margins: 4
+                readonly property real cw: width / 4
+                Cell { width: parent.cw; height: parent.height; glyph: "󱎫"; on: Agenda.timerOn; value: Agenda.timerOn ? Agenda.fmt(root.timerLeft) : ""; onClicked: root.page("clockTimer") }
+                Cell { width: parent.cw; height: parent.height; glyph: "󰀠"; on: root.nextAlarm !== null; value: root.nextAlarm ? root.nextAlarm.time : ""; onClicked: root.page("clockAlarm") }
+                Cell { width: parent.cw; height: parent.height; glyph: "󰃀"; on: root.nextReminder !== null; value: root.nextReminder ? root.nextReminder.text : ""; onClicked: root.page("clockReminder") }
+                Cell { width: parent.cw; height: parent.height; glyph: "󰃶"; on: root.eventsToday > 0; value: root.eventsToday > 0 ? "" + root.eventsToday : ""; onClicked: root.page("clockEvent") }
+            }
+            Repeater {   // hairlines between the cells
+                model: 3
+                delegate: Rectangle { required property int index; x: 4 + (parent.width - 8) / 4 * (index + 1); y: 11; width: 1; height: parent.height - 22; color: Theme.hover }
+            }
         }
 
         // ---------------- record / screenshot: a small list next to the rail ----------------

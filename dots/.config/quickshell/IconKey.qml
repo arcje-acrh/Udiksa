@@ -13,15 +13,14 @@ Rectangle {
     property string label: ""          // a small name under the icon (big tiles)
     property int glyphSize: 16
     signal clicked()
-    width: 34; height: 30; radius: 2
-    color: on ? Theme.bg : (ma.containsMouse ? Theme.hover : Theme.raised)
-    border.width: 1; border.color: on ? Theme.dim : Theme.hover
-    KeyEdge { pressed: root.on }
+    width: 34; height: 30; radius: 8
+    color: on ? Theme.hover : (ma.containsMouse ? Theme.hover : Theme.raised)
+    border.width: on ? 1 : 0; border.color: Theme.coral
     Text {
         anchors.horizontalCenter: parent.horizontalCenter
         anchors.verticalCenter: parent.verticalCenter; anchors.verticalCenterOffset: root.label !== "" ? -8 : 0
         text: root.glyph
-        color: root.hot ? Theme.coral : (root.on ? Theme.text : Theme.muted)
+        color: root.hot ? Theme.coral : (root.on ? Theme.coral : (ma.containsMouse ? Theme.text : Theme.muted))
         font.family: Theme.font; font.pixelSize: root.glyphSize
     }
     Text {
