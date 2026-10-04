@@ -75,13 +75,19 @@ Item {
     // makes the notch "breathe" a little wider while it shows
     // ... but never wider than the screen (a rotated / small screen): the panel's own layout shrinks with it
     readonly property int panelW: loaded === "" || !panelItem || !(panelItem.wantWidth > 0) ? restWidth : Math.min(maxWidth, Math.max(restWidth, panelItem.wantWidth))
-    // inline notification: one line (line breaks -> " · "); the notch grows to fit it, 80..560 px extra
+    // inline notification (line breaks -> " · "): the notch grows a little wider (80..200 px extra), and TALLER for a
+    // long text (wraps to at most 3 lines) instead of ever wider
     readonly property string notifText: Notifs.current
         ? ((Notifs.current.summary || "") + (Notifs.current.body ? "  " + Notifs.current.body : "")).replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ·  ")
         : ""
     TextMetrics { id: nfMetrics; font.family: Theme.font; font.pixelSize: 12; text: root.notifText }
-    readonly property int notifExtra: Math.max(80, Math.min(560, Math.ceil(20 + clockRow.width + 28 + 18 + 10 + nfApp.implicitWidth + 10
+    readonly property int notifExtra: Math.max(80, Math.min(200, Math.ceil(20 + clockRow.width + 28 + 18 + 10 + nfApp.implicitWidth + 10
         + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth)))
+    // the text's room (the notch at its target width, minus clock, icon, app name, +N) and how many lines it needs there
+    readonly property real nfTextW: Math.max(120, restWidth + notifExtra - (20 + clockRow.width + 28) - 24 - 18 - nfApp.implicitWidth - (Notifs.unread > 1 ? 50 : 0) - 20)
+    Text { id: nfProbe; visible: false; width: root.nfTextW; wrapMode: Text.WordWrap; maximumLineCount: 3; text: root.notifText
+           font.family: Theme.font; font.pixelSize: 12 }
+    readonly property int notifH: nfProbe.lineCount > 1 ? (nfProbe.lineCount - 1) * 16 + 6 : 0
     width: panel !== "" ? panelW : Math.min(maxWidth, restWidth + (notifShow ? notifExtra : 0))
     // smooth for panels (opening AND closing: `loaded` stays set until the close has finished); the
     // little overshoot "breath" only for an inline notification
@@ -92,7 +98,7 @@ Item {
             easing.overshoot: 1.4
         }
     }
-    height: panel !== "" ? panelH : Theme.stripHeight
+    height: panel !== "" ? panelH : Theme.stripHeight + (notifShow ? notifH : 0)
     Behavior on height { NumberAnimation { duration: Theme.notchAnim; easing.type: Easing.OutCubic } }
 
     SystemClock { id: clock; precision: SystemClock.Minutes }
@@ -151,7 +157,7 @@ Item {
         // coming back after a panel: only once the notch is back at its resting width (a wide panel
         // shrinks sideways), so the clock and icons never slide or overlap
         readonly property bool settled: Math.abs(root.width - Math.min(root.maxWidth, root.restWidth + (root.notifShow ? root.notifExtra : 0))) < 1.5
-                                         && root.height < Theme.stripHeight + 1.5
+                                         && (root.height < Theme.stripHeight + 1.5 || root.notifShow)
         opacity: root.panel === "" && settled ? 1 : 0
         enabled: root.panel === ""
         Behavior on opacity { NumberAnimation { duration: 180 } }
@@ -316,7 +322,7 @@ Item {
             id: nf
             x: 20 + clockRow.width + 28
             width: parent.width - x - 24
-            height: parent.height
+            height: root.height             // taller than the strip when the text wraps
             opacity: root.notifShow ? 1 : 0
             visible: opacity > 0
             Behavior on opacity {
@@ -366,8 +372,8 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - nfIcon.width - nfApp.width - (nfMore.visible ? nfMore.width + 10 : 0) - 2 * parent.spacing
                     elide: Text.ElideRight
-                    maximumLineCount: 1
-                    wrapMode: Text.NoWrap
+                    maximumLineCount: 3
+                    wrapMode: Text.WordWrap
                     text: root.notifText
                     color: Theme.text; font.family: Theme.font; font.pixelSize: 12
                 }
