@@ -56,9 +56,11 @@ and themes that recolour everything, from the boot menu to the mouse pointer and
   applies live.
 - **Retro-hardware controls.** LED bars instead of sliders, keys that press in, hairline switches, Iosevka
   everywhere. Rounded screen corners match the windows.
-- **Tools built in.** Screen recording (GPU-encoded, with or without sound), a colour picker, screenshots you can
-  draw on, keep awake, game mode, a terminal clock (`clock`), a usage panel (CPU per core, memory, network, disks, busiest programs), app
-  scratchpads (system monitor, music, chat), clipboard history, emoji, a calculator, low-battery warnings.
+- **Tools built in.** Screen recording (GPU-encoded, with or without sound), a colour picker, screenshots (area,
+  window, screen, or drawn on; a click on the notch's "saved" card opens the picture, and laptops without Print Screen
+  get the same modes on the snip key), keep awake, game mode, a terminal clock (`clock`), a usage panel (CPU per core,
+  memory, network, disks, busiest programs), app scratchpads (system monitor, music, chat), clipboard history, emoji,
+  a calculator, low-battery warnings.
 - **Yours stays yours.** Everything you change in Settings lives in a personal layer (`~/.config/hypr/local/`),
   apart from the design, so updating the rice never overwrites your choices.
 - **Fits the machine.** Screens, GPU, battery, Bluetooth and boot loader are detected, and the shell only shows what
@@ -185,7 +187,7 @@ Afterwards: Wi-Fi passwords, signing in to your apps, and `sudo tailscale up` if
 | Keys | Action |
 |---|---|
 | <kbd>Super</kbd>+<kbd>Enter</kbd> | Terminal (kitty) |
-| <kbd>Super</kbd>+<kbd>R</kbd> | Launcher |
+| <kbd>Super</kbd>+<kbd>R</kbd> | Launcher: apps, maths, commands; type <kbd>></kbd> for the menu (clipboard, emoji, windows, scripts, tools, **Keybinds**) |
 | <kbd>Super</kbd>+<kbd>I</kbd> | Settings |
 | <kbd>Super</kbd>+<kbd>T</kbd> / <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd> | Theme switcher / next wallpaper |
 | <kbd>Super</kbd>+<kbd>E</kbd> | Files |
