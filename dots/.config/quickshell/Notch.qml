@@ -89,12 +89,32 @@ Item {
     readonly property string notifBody: Notifs.current ? (Notifs.current.body || "").replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ") : ""
     Text { id: nfProbe; visible: false; width: root.nfTextW; wrapMode: Text.WordWrap; maximumLineCount: 2; text: root.notifText
            font.family: Theme.font; font.pixelSize: 12 }
-    // body under the title row, as wide as the notification from the icon's right edge on
-    Text { id: nfBodyProbe; visible: false; width: root.nfTextW + nfApp.implicitWidth + 10; wrapMode: Text.WordWrap; maximumLineCount: 2
-           text: root.notifBody; font.family: Theme.font; font.pixelSize: 12 }
+    // the body, broken into lines by hand so EVERY line can be justified (QML's own AlignJustify leaves the last
+    // line ragged): [{ words: [...], w: natural width of the words, full: justify this line }], at most 2 lines
+    FontMetrics { id: nfFm; font.family: Theme.font; font.pixelSize: 12 }
+    readonly property real nfBodyW: nfTextW + nfApp.implicitWidth + 10
+    readonly property var notifLines: {
+        const words = notifBody.split(/\s+/).filter(w => w), space = nfFm.advanceWidth(" "), lines = []
+        let cur = [], w = 0, i = 0
+        for (; i < words.length && lines.length < 2; i++) {
+            const ww = nfFm.advanceWidth(words[i])
+            if (cur.length && w + space + ww > nfBodyW) { lines.push({ words: cur, w: w }); cur = []; w = 0 }
+            if (lines.length >= 2) break
+            w += (cur.length ? space : 0) + ww; cur.push(words[i])
+        }
+        if (cur.length && lines.length < 2) { lines.push({ words: cur, w: w }); cur = [] }
+        if (i < words.length && lines.length) {              // more text than 2 lines: end the 2nd with an ellipsis
+            const l = lines[lines.length - 1]
+            while (l.words.length > 1 && l.w + space + nfFm.advanceWidth("…") > nfBodyW) { l.w -= space + nfFm.advanceWidth(l.words[l.words.length - 1]); l.words.pop() }
+            l.words[l.words.length - 1] += "…"; l.w = l.words.reduce((t, x) => t + nfFm.advanceWidth(x), 0) + space * (l.words.length - 1)
+        }
+        // the last line is stretched too, unless it is much shorter than the width (it would look torn apart)
+        lines.forEach((l, k) => l.full = k < lines.length - 1 || l.w > nfBodyW * 0.85)
+        return lines
+    }
     // tall = it does not fit on one line AND there is a body: title row on top (like a short one), the body under it
     readonly property bool notifTall: notifBody !== "" && nfProbe.lineCount > 1
-    readonly property int notifH: notifTall ? nfBodyProbe.lineCount * 16 + 1 : 0
+    readonly property int notifH: notifTall ? notifLines.length * 16 + 1 : 0
     width: panel !== "" ? panelW : Math.min(maxWidth, restWidth + (notifShow ? notifExtra : 0))
     // smooth for panels (opening AND closing: `loaded` stays set until the close has finished); the
     // little overshoot "breath" only for an inline notification
@@ -397,15 +417,28 @@ Item {
                     Text { id: nfMoreT; anchors.centerIn: parent; text: "+" + (Notifs.unread - 1); color: Theme.coral; font.family: Theme.font; font.pixelSize: 11; font.bold: true }
                 }
             }
-            Text {   // tall notification: the body, under the title row, left edge = the app name
+            Column {   // tall notification: the body, under the title row, left edge = the app name, justified
                 visible: root.notifTall
                 x: nfIcon.width + nfRow.spacing
                 y: Theme.stripHeight - 4
                 width: parent.width - x
-                wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
-                horizontalAlignment: Text.AlignJustify
-                text: root.notifBody
-                color: Qt.alpha(Theme.text, 0.8); font.family: Theme.font; font.pixelSize: 12
+                Repeater {
+                    model: root.notifLines
+                    delegate: Row {
+                        required property var modelData
+                        height: 16
+                        spacing: modelData.full && modelData.words.length > 1
+                                 ? Math.max(nfFm.advanceWidth(" "), (parent.width - modelData.words.reduce((t, x) => t + nfFm.advanceWidth(x), 0)) / (modelData.words.length - 1))
+                                 : nfFm.advanceWidth(" ")
+                        Repeater {
+                            model: modelData.words
+                            delegate: Text {
+                                required property string modelData
+                                text: modelData; color: Qt.alpha(Theme.text, 0.8); font.family: Theme.font; font.pixelSize: 12
+                            }
+                        }
+                    }
+                }
             }
         }
     }
