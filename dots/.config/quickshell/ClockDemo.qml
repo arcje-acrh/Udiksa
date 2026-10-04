@@ -99,24 +99,24 @@ Item {
             x: 0; y: 0; spacing: 4
             Column {
                 spacing: 4
-                IconKey { width: 35; height: 46; glyphSize: 17; glyph: "󰅶"; on: Modes.awake; led: true
+                IconKey { width: 35; height: 46.5; glyphSize: 17; glyph: "󰅶"; on: Modes.awake; led: true
                           onClicked: { root.menu = ""; Modes.setAwake(!Modes.awake) } }
-                IconKey { width: 35; height: 46; glyphSize: 17; glyph: "󰊴"; on: Modes.game; led: true
+                IconKey { width: 35; height: 46.5; glyphSize: 17; glyph: "󰊴"; on: Modes.game; led: true
                           onClicked: { root.menu = ""; Modes.setGame(!Modes.game) } }
-                IconKey { id: recKey; width: 35; height: 46; glyphSize: 17; glyph: Recorder.on ? "󰓛" : "󰑋"; hot: Recorder.on; menu: !Recorder.on
+                IconKey { id: recKey; width: 35; height: 46.5; glyphSize: 17; glyph: Recorder.on ? "󰓛" : "󰑋"; hot: Recorder.on; menu: !Recorder.on
                           onClicked: Recorder.on ? Recorder.stop() : (root.menu = root.menu === "rec" ? "" : "rec") }
-                IconKey { id: shotKey; width: 35; height: 46; glyphSize: 17; glyph: "󰹑"; menu: true
+                IconKey { id: shotKey; width: 35; height: 46.5; glyphSize: 17; glyph: "󰹑"; menu: true
                           onClicked: root.menu = root.menu === "shot" ? "" : "shot" }
             }
             Column {
                 spacing: 4
-                IconKey { id: tmKey; width: 35; height: 46; glyphSize: 17; glyph: "󱎫"; on: Agenda.timerOn; led: true
+                IconKey { id: tmKey; width: 35; height: 46.5; glyphSize: 17; glyph: "󱎫"; on: Agenda.timerOn; led: true
                           onClicked: root.menu = root.menu === "timer" ? "" : "timer" }
-                IconKey { id: alKey; width: 35; height: 46; glyphSize: 17; glyph: "󰀠"; on: root.menu === "alarm"
+                IconKey { id: alKey; width: 35; height: 46.5; glyphSize: 17; glyph: "󰀠"; on: root.menu === "alarm"
                           onClicked: root.menu = root.menu === "alarm" ? "" : "alarm" }
-                IconKey { id: rmKey; width: 35; height: 46; glyphSize: 17; glyph: "󰃀"; on: root.menu === "reminder"
+                IconKey { id: rmKey; width: 35; height: 46.5; glyphSize: 17; glyph: "󰃀"; on: root.menu === "reminder"
                           onClicked: root.menu = root.menu === "reminder" ? "" : "reminder" }
-                IconKey { id: evKey; width: 35; height: 46; glyphSize: 17; glyph: "󰃶"; on: root.menu === "event"
+                IconKey { id: evKey; width: 35; height: 46.5; glyphSize: 17; glyph: "󰃶"; on: root.menu === "event"
                           onClicked: root.menu = root.menu === "event" ? "" : "event" }
             }
         }
@@ -188,11 +188,11 @@ Item {
             }
         }
 
-        // ---------------- the big tile: the date, its weather, its events, what is set ----------------
+        // ---------------- date + weather (centred, sized to its content) ----------------
         Card {
             id: dayCard
             x: area.rx; y: 0
-            width: area.width - x; height: area.height
+            width: area.width - x; height: 104
             pad: 10; spacing: 0
             readonly property bool isToday: root.sameDay(root.selected, root.now)
             readonly property var wx: {
@@ -201,45 +201,78 @@ Item {
                 const d = Weather.days.find(x => x.date === Agenda.key(root.selected))
                 return d ? { icon: Weather.icon(d.code, true), t: Weather.deg(d.max) + " " + Weather.deg(d.min), w: Weather.words(d.code) } : null
             }
-            readonly property real timerLeft: Agenda.timerPaused ? Agenda.timerLeft : (Agenda.timerEnd > 0 ? Math.max(0, Agenda.timerEnd - root.now.getTime()) : 0)
             Item {
                 width: parent.width; height: dayCard.height - 2 * dayCard.pad
-                Column {
+                Row {
                     anchors.centerIn: parent
-                    spacing: 7
-                    Row {   // the numeral and its words
-                        anchors.horizontalCenter: parent.horizontalCenter
-                        spacing: 18
+                    spacing: 26
+                    Row {   // the date
+                        anchors.verticalCenter: parent.verticalCenter; spacing: 14
                         Text { anchors.verticalCenter: parent.verticalCenter; text: root.selected.getDate(); color: dayCard.isToday ? Theme.coral : Theme.text
-                               font.family: Theme.font; font.pixelSize: 78; font.bold: true }
+                               font.family: Theme.font; font.pixelSize: 52; font.bold: true }
                         Column { anchors.verticalCenter: parent.verticalCenter; spacing: 2
-                            Text { text: Qt.formatDate(root.selected, "dddd").toUpperCase(); color: Theme.muted; font.family: Theme.font; font.pixelSize: 11; font.letterSpacing: 3 }
-                            Text { text: Qt.formatDate(root.selected, "MMMM") + (root.selected.getFullYear() !== root.now.getFullYear() ? " " + root.selected.getFullYear() : ""); color: Theme.text; font.family: Theme.font; font.pixelSize: 18; font.bold: true }
+                            Text { text: Qt.formatDate(root.selected, "dddd").toUpperCase(); color: Theme.muted; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2 }
+                            Text { text: Qt.formatDate(root.selected, "MMMM") + (root.selected.getFullYear() !== root.now.getFullYear() ? " " + root.selected.getFullYear() : ""); color: Theme.text; font.family: Theme.font; font.pixelSize: 16; font.bold: true }
                             Text { text: dayCard.isToday ? "󰥔 " + Qt.formatTime(root.now, "HH:mm:ss") : (root.selected < root.now ? "past" : "in " + Math.max(1, Math.round((root.selected - root.now) / 86400000)) + " days")
-                                   color: dayCard.isToday ? Theme.muted : Theme.amber; font.family: Theme.font; font.pixelSize: 13 }
+                                   color: dayCard.isToday ? Theme.muted : Theme.amber; font.family: Theme.font; font.pixelSize: 12 }
                         }
                     }
-                    Row {   // its weather
+                    Rectangle { visible: dayCard.wx !== null; anchors.verticalCenter: parent.verticalCenter; width: 1; height: 44; color: Theme.hover }
+                    Row {   // the weather of that day
                         visible: dayCard.wx !== null
-                        anchors.horizontalCenter: parent.horizontalCenter; spacing: 10
-                        Text { text: dayCard.wx ? dayCard.wx.icon : ""; color: Theme.coral; font.family: Theme.font; font.pixelSize: 18 }
-                        Text { text: dayCard.wx ? dayCard.wx.t + "  " + dayCard.wx.w : ""; color: Theme.text; font.family: Theme.font; font.pixelSize: 13 }
-                    }
-                    Repeater {   // that day's events, if any
-                        model: root.dayRows.slice(0, 2)
-                        delegate: Row { required property var modelData; anchors.horizontalCenter: parent.horizontalCenter; spacing: 8
-                            Text { text: modelData.g; color: modelData.c; font.family: Theme.font; font.pixelSize: 12 }
-                            Text { text: modelData.when; visible: modelData.when !== ""; color: modelData.c; font.family: Theme.font; font.pixelSize: 12; font.bold: true }
-                            Text { text: modelData.t; width: Math.min(implicitWidth, dayCard.width - 150); elide: Text.ElideRight; color: Theme.text; font.family: Theme.font; font.pixelSize: 12 }
+                        anchors.verticalCenter: parent.verticalCenter; spacing: 12
+                        Text { anchors.verticalCenter: parent.verticalCenter; text: dayCard.wx ? dayCard.wx.icon : ""; color: Theme.coral; font.family: Theme.font; font.pixelSize: 32 }
+                        Column { anchors.verticalCenter: parent.verticalCenter; spacing: 1
+                            Text { text: dayCard.wx ? dayCard.wx.t : ""; color: Theme.text; font.family: Theme.font; font.pixelSize: 18; font.bold: true }
+                            Text { text: dayCard.wx ? dayCard.wx.w : ""; color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
                         }
                     }
-                    Row {   // what is set: timer, next alarm, next reminder
-                        visible: Agenda.timerOn || root.nextAlarm !== null || root.nextReminder !== null
-                        anchors.horizontalCenter: parent.horizontalCenter; spacing: 18
-                        Text { visible: Agenda.timerOn; text: "󱎫 " + Agenda.fmt(dayCard.timerLeft); color: Agenda.timerPaused ? Theme.amber : Theme.coral; font.family: Theme.font; font.pixelSize: 12; font.bold: true }
-                        Text { visible: root.nextAlarm !== null; text: root.nextAlarm ? "󰀠 " + root.nextAlarm.time : ""; color: Theme.amber; font.family: Theme.font; font.pixelSize: 12 }
-                        Text { visible: root.nextReminder !== null; text: root.nextReminder ? "󰃀 " + root.nextReminder.text : ""; color: Theme.amber; font.family: Theme.font; font.pixelSize: 12 }
+                }
+            }
+        }
+
+        // ---------------- events: that day first, then what comes next ----------------
+        Card {
+            id: evCard
+            x: area.rx; y: dayCard.height + area.g
+            width: 330; height: area.height - y
+            pad: 10; spacing: 0
+            Item {
+                width: parent.width; height: evCard.height - 2 * evCard.pad
+                Column {
+                    anchors.verticalCenter: parent.verticalCenter; width: parent.width; spacing: 3
+                    Repeater {
+                        model: root.listRows(4)
+                        delegate: Row { required property var modelData; spacing: 8
+                            Text { width: 14; text: modelData.g; color: modelData.c; font.family: Theme.font; font.pixelSize: 12 }
+                            Text { width: 88; text: modelData.when; elide: Text.ElideRight; color: modelData.c; font.family: Theme.font; font.pixelSize: 11; font.bold: true }
+                            Text { width: evCard.width - 2 * evCard.pad - 126; text: modelData.t; elide: Text.ElideRight; color: Theme.text; font.family: Theme.font; font.pixelSize: 11 }
+                        }
                     }
+                }
+            }
+        }
+
+        // ---------------- what is set: timer, alarm, reminder ----------------
+        Card {
+            id: setCard
+            x: evCard.x + evCard.width + area.g; y: evCard.y
+            width: area.width - x; height: evCard.height
+            pad: 10; spacing: 0
+            readonly property real timerLeft: Agenda.timerPaused ? Agenda.timerLeft : (Agenda.timerEnd > 0 ? Math.max(0, Agenda.timerEnd - root.now.getTime()) : 0)
+            Item {
+                width: parent.width; height: setCard.height - 2 * setCard.pad
+                Column {
+                    anchors.verticalCenter: parent.verticalCenter; width: parent.width; spacing: 6
+                    Row { spacing: 10
+                        Text { width: 16; text: "󱎫"; color: Agenda.timerOn ? Theme.coral : Theme.muted; font.family: Theme.font; font.pixelSize: 14 }
+                        Text { text: Agenda.timerOn ? Agenda.fmt(setCard.timerLeft) : "–"; color: Agenda.timerPaused ? Theme.amber : (Agenda.timerOn ? Theme.coral : Theme.dim); font.family: Theme.font; font.pixelSize: 13; font.bold: true } }
+                    Row { spacing: 10
+                        Text { width: 16; text: "󰀠"; color: root.nextAlarm ? Theme.amber : Theme.muted; font.family: Theme.font; font.pixelSize: 14 }
+                        Text { text: root.nextAlarm ? root.nextAlarm.time : "–"; color: root.nextAlarm ? Theme.text : Theme.dim; font.family: Theme.font; font.pixelSize: 13; font.bold: true } }
+                    Row { spacing: 10
+                        Text { width: 16; text: "󰃀"; color: root.nextReminder ? Theme.amber : Theme.muted; font.family: Theme.font; font.pixelSize: 14 }
+                        Text { width: setCard.width - 2 * setCard.pad - 26; elide: Text.ElideRight; text: root.nextReminder ? root.nextReminder.text : "–"; color: root.nextReminder ? Theme.text : Theme.dim; font.family: Theme.font; font.pixelSize: 13; font.bold: true } }
                 }
             }
         }
