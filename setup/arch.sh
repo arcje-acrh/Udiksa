@@ -14,6 +14,17 @@ warn() { printf '\033[1;33m  ! %s\033[0m\n' "$*"; }
 die()  { printf '\033[1;31mERROR:\033[0m %s\n' "$*"; exit 1; }
 run()  { if ((DRY)); then printf '    [dry] %s\n' "$*"; else "$@"; fi; }
 ask()  { local q=$1 def=$2 a; read -rp "    $q [$def]: " a; echo "${a:-$def}"; }
+# pick QUESTION DEFAULT ITEM...: a numbered list; the answer is a number from it (or the item's text); Enter = DEFAULT
+pick() {
+    local q=$1 def=$2 i=1 a x; shift 2
+    for x in "$@"; do printf '    %3d) %s\n' "$i" "$x" >&2; i=$((i + 1)); done
+    while :; do
+        read -rp "    $q [$def]: " a; a=${a:-$def}
+        if [[ $a =~ ^[0-9]+$ ]] && ((a >= 1 && a <= $#)); then echo "${!a}"; return; fi
+        for x in "$@"; do [[ $x == "$a" ]] && { echo "$x"; return; }; done
+        warn "type a number from the list"
+    done
+}
 
 # ---------------------------------------------------------------- checks
 ((DRY)) || [[ $EUID -eq 0 ]] || die "run as root (from the Arch USB)"
@@ -25,26 +36,37 @@ windows_disk() { lsblk -rno FSTYPE,PARTTYPE "$1" | grep -qiE '^ntfs|e3c9e316-0b5
 usb_disk=$(lsblk -rno PKNAME "$(findmnt -rno SOURCE /run/archiso/bootmnt 2>/dev/null || echo /nonexistent)" 2>/dev/null || true)
 say "Disks"
 mapfile -t disks < <(lsblk -dpno NAME,TYPE | awk '$2=="disk"{print $1}' | grep -v zram)
-choices=()
+choices=(); labels=()
 for d in "${disks[@]}"; do
     info=$(lsblk -dno SIZE,MODEL "$d" | sed 's/  */ /g')
     if [[ $(basename "$d") == "$usb_disk" ]]; then printf '    %-14s %s   (the USB you booted from: not offered)\n' "$d" "$info"
     elif windows_disk "$d"; then printf '    %-14s %s   (has WINDOWS: not offered)\n' "$d" "$info"
-    else printf '    %-14s %s\n' "$d" "$info"; choices+=("$d"); fi
+    else choices+=("$d"); labels+=("$d  $info"); fi
 done
 ((${#choices[@]})) || die "no disk without Windows found"
-DISK=$(ask "Install Arch on which disk? EVERYTHING on it is erased" "${choices[0]}")
-printf '%s\n' "${choices[@]}" | grep -qx "$DISK" || die "$DISK is not one of the offered disks"
+echo "    Install Arch on which disk? EVERYTHING on it is erased."
+DISK=$(pick "Disk" "${labels[0]}" "${labels[@]}"); DISK=${DISK%% *}
 
 # ---------------------------------------------------------------- you
 say "About you and this machine"
-HOST=$(ask "Computer name" "arch")
+while :; do
+    HOST=$(ask "Computer name (letters, digits, -)" "arch")
+    [[ $HOST =~ ^[a-zA-Z0-9][a-zA-Z0-9-]{0,62}$ ]] && break; warn "not a valid computer name, again"
+done
 while :; do
     USERNAME=$(ask "User name (lowercase letters, digits, - or _)" "")
     [[ $USERNAME =~ ^[a-z_][a-z0-9_-]{0,31}$ ]] && break; warn "not a valid user name, again"
 done
 FULLNAME=$(ask "Your full name" "$USERNAME")
-TZONE=$(ask "Time zone" "Asia/Kolkata")
+# time zone: pick the region, then the place (Enter keeps the default, Asia/Kolkata)
+mapfile -t zones < <(timedatectl list-timezones 2>/dev/null | grep /)
+((${#zones[@]})) || mapfile -t zones < <(cd /usr/share/zoneinfo && find Africa America Antarctica Asia Atlantic Australia Europe Indian Pacific -type f 2>/dev/null | sort)
+echo "    Time zone: first the region"
+REGION=$(pick "Region" "Asia" $(printf '%s\n' "${zones[@]%%/*}" | grep -xE "Africa|America|Antarctica|Arctic|Asia|Atlantic|Australia|Europe|Indian|Pacific" | sort -u))
+mapfile -t places < <(printf '%s\n' "${zones[@]}" | grep "^$REGION/" | sed "s|^$REGION/||")
+echo "    ... then the place"
+PLACE=$(pick "Place" "$([[ $REGION == Asia ]] && echo Kolkata || echo "${places[0]}")" "${places[@]}")
+TZONE="$REGION/$PLACE"
 [[ -f /usr/share/zoneinfo/$TZONE ]] || die "unknown time zone $TZONE (see /usr/share/zoneinfo)"
 if ((DRY)); then PASS=dry; else
     while :; do read -rsp "    Password for $USERNAME: " PASS; echo; read -rsp "    Again: " P2; echo; [[ -n $PASS && $PASS == "$P2" ]] && break; warn "empty or not the same, again"; done
