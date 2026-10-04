@@ -370,8 +370,8 @@ Item {
             Row {
                 id: nfRow
                 anchors.top: parent.top
-                height: Theme.stripHeight          // the title row: level with the clock; a tall body goes under it
-                width: parent.width
+                anchors.horizontalCenter: parent.horizontalCenter       // icon + app + text, centred in the notch
+                height: Theme.stripHeight          // the title row; a tall body goes under it
                 spacing: 10
                 Item {   // app icon, pops in
                     id: nfIcon
@@ -401,7 +401,7 @@ Item {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width - nfIcon.width - nfApp.width - (nfMore.visible ? nfMore.width + 10 : 0) - 2 * parent.spacing
+                    width: Math.min(implicitWidth, nf.width - nfIcon.width - nfApp.width - (nfMore.visible ? nfMore.width : 0) - (nfMore.visible ? 3 : 2) * nfRow.spacing)
                     elide: Text.ElideRight
                     maximumLineCount: 1
                     wrapMode: Text.NoWrap
@@ -417,16 +417,17 @@ Item {
                     Text { id: nfMoreT; anchors.centerIn: parent; text: "+" + (Notifs.unread - 1); color: Theme.coral; font.family: Theme.font; font.pixelSize: 11; font.bold: true }
                 }
             }
-            Column {   // tall notification: the body, under the title row, left edge = the app name, justified
+            Column {   // tall notification: the body under the title row; full lines justified, a short last line centred
                 visible: root.notifTall
-                x: nfIcon.width + nfRow.spacing
+                x: 0
                 y: Theme.stripHeight - 4
-                width: parent.width - x
+                width: parent.width
                 Repeater {
                     model: root.notifLines
                     delegate: Row {
                         required property var modelData
                         height: 16
+                        x: modelData.full ? 0 : (parent.width - width) / 2
                         spacing: modelData.full && modelData.words.length > 1
                                  ? Math.max(nfFm.advanceWidth(" "), (parent.width - modelData.words.reduce((t, x) => t + nfFm.advanceWidth(x), 0)) / (modelData.words.length - 1))
                                  : nfFm.advanceWidth(" ")
