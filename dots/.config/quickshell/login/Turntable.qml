@@ -38,9 +38,9 @@ Item {
         if (all.length < 2) return
         picked = all[(Math.max(0, all.indexOf(player)) + 1) % all.length]
     }
-    readonly property bool has: player !== null && !!player.trackTitle
+    readonly property bool has: player !== null            // a player is there (even paused, even without a title)
     readonly property bool playing: has && player.isPlaying
-    readonly property string title: has ? player.trackTitle : ""
+    readonly property string title: has ? (player.trackTitle || player.identity || "") : ""
     readonly property string artist: has ? (player.trackArtist || "") : ""
     function mmss(t) { t = Math.max(0, Math.floor(t || 0)); return Math.floor(t / 60) + ":" + String(t % 60).padStart(2, "0") }
     // MPRIS does not push the position: ask for it twice a second (and when the track changes)
