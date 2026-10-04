@@ -1,6 +1,14 @@
 // Zed settings. The "Rice" theme is written by rice-theme on every theme change (~/.config/zed/themes/rice.json).
 // Hyprland gives the window the same see-through + blur as every other app, so the theme itself stays solid.
 {
+  "agent_servers": {
+    "claude-acp": {
+      "default_config_options": {
+        "effort": "medium"
+      },
+      "type": "registry"
+    }
+  },
   "theme": "Rice",
   "ui_font_family": "Iosevka Nerd Font",
   "buffer_font_family": "Iosevka Nerd Font",
@@ -20,7 +28,7 @@
 
   // JetBrains / VS Code layout: files on the left, the AI agent on the right
   "project_panel": { "dock": "left", "default_width": 260 },
-  "agent": { "dock": "right", "default_width": 420 },
+  "agent": { "dock": "right", "default_width": 660 },
   "git_panel": { "dock": "left" },
   "outline_panel": { "dock": "right" },
 
