@@ -161,65 +161,66 @@ Item {
             }
         }
 
-        // ---------------- date tile ----------------
+        // ---------------- day tile: the date and its weather, centred, and that day's events ----------------
         Card {
-            id: dateCard
+            id: dayCard
             x: area.rx; y: 0
-            width: 300; height: area.topH
-            pad: 10; spacing: 0
+            width: area.width - x; height: area.topH
+            pad: 8; spacing: 0
+            readonly property bool isToday: root.sameDay(root.selected, root.now)
+            readonly property var wx: {
+                if (!Weather.ok) return null
+                if (isToday) return { icon: Weather.icon(Weather.now.code, Weather.now.day), t: Weather.deg(Weather.now.temp), w: Weather.words(Weather.now.code) }
+                const d = Weather.days.find(x => x.date === Agenda.key(root.selected))
+                return d ? { icon: Weather.icon(d.code, true), t: Weather.deg(d.max) + " " + Weather.deg(d.min), w: Weather.words(d.code) } : null
+            }
+            readonly property var rows: root.dayRows.slice(0, 2)
             Item {
-                width: parent.width; height: dateCard.height - 2 * dateCard.pad
-                Text {
-                    id: bigDay
-                    x: 0; y: -4
-                    text: root.selected.getDate(); color: root.sameDay(root.selected, root.now) ? Theme.coral : Theme.text
-                    font.family: Theme.font; font.pixelSize: 44; font.bold: true
-                }
+                width: parent.width; height: dayCard.height - 2 * dayCard.pad
                 Column {
-                    anchors.left: bigDay.right; anchors.leftMargin: 12; y: -2; spacing: 1
-                    Text { text: Qt.formatDate(root.selected, "dddd, MMMM") + (root.selected.getFullYear() !== root.now.getFullYear() ? " " + root.selected.getFullYear() : ""); color: Theme.text; font.family: Theme.font; font.pixelSize: 13; font.bold: true }
-                    Text { visible: root.sameDay(root.selected, root.now); text: "󰥔 " + Qt.formatTime(root.now, "HH:mm:ss"); color: Theme.muted; font.family: Theme.font; font.pixelSize: 12 }
-                    Text { visible: !root.sameDay(root.selected, root.now); text: root.selected < root.now ? "past" : "in " + Math.max(1, Math.round((root.selected - root.now) / 86400000)) + " days"
-                           color: Theme.amber; font.family: Theme.font; font.pixelSize: 12 }
-                }
-                Column {
-                    x: 0; y: 46; width: parent.width; spacing: 2
-                    Repeater {
-                        model: root.listRows(2)
-                        delegate: Row { required property var modelData; spacing: 8
-                            Text { text: modelData.g; color: modelData.c; font.family: Theme.font; font.pixelSize: 11 }
-                            Text { text: modelData.when; visible: modelData.when !== ""; color: modelData.c; font.family: Theme.font; font.pixelSize: 11; font.bold: true }
-                            Text { text: modelData.t; width: Math.min(implicitWidth, dateCard.width - 150); elide: Text.ElideRight; color: Theme.text; font.family: Theme.font; font.pixelSize: 11 }
+                    anchors.centerIn: parent
+                    spacing: 5
+                    Row {
+                        anchors.horizontalCenter: parent.horizontalCenter
+                        spacing: 24
+                        Row {   // the date
+                            anchors.verticalCenter: parent.verticalCenter; spacing: 12
+                            Text { anchors.verticalCenter: parent.verticalCenter; text: root.selected.getDate(); color: dayCard.isToday ? Theme.coral : Theme.text
+                                   font.family: Theme.font; font.pixelSize: 40; font.bold: true }
+                            Column { anchors.verticalCenter: parent.verticalCenter; spacing: 1
+                                Text { text: Qt.formatDate(root.selected, "dddd, MMMM") + (root.selected.getFullYear() !== root.now.getFullYear() ? " " + root.selected.getFullYear() : ""); color: Theme.text; font.family: Theme.font; font.pixelSize: 13; font.bold: true }
+                                Text { text: dayCard.isToday ? "󰥔 " + Qt.formatTime(root.now, "HH:mm:ss") : (root.selected < root.now ? "past" : "in " + Math.max(1, Math.round((root.selected - root.now) / 86400000)) + " days")
+                                       color: dayCard.isToday ? Theme.muted : Theme.amber; font.family: Theme.font; font.pixelSize: 12 }
+                            }
+                        }
+                        Rectangle { visible: dayCard.wx !== null; anchors.verticalCenter: parent.verticalCenter; width: 1; height: 38; color: Theme.hover }
+                        Row {   // the weather of that day
+                            visible: dayCard.wx !== null
+                            anchors.verticalCenter: parent.verticalCenter; spacing: 10
+                            Text { anchors.verticalCenter: parent.verticalCenter; text: dayCard.wx ? dayCard.wx.icon : ""; color: Theme.coral; font.family: Theme.font; font.pixelSize: 26 }
+                            Column { anchors.verticalCenter: parent.verticalCenter; spacing: 0
+                                Text { text: dayCard.wx ? dayCard.wx.t : ""; color: Theme.text; font.family: Theme.font; font.pixelSize: 16; font.bold: true }
+                                Text { text: dayCard.wx ? dayCard.wx.w : ""; color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
+                            }
                         }
                     }
-                }
-            }
-        }
-
-        // ---------------- weather tile ----------------
-        Card {
-            id: wxCard
-            x: dateCard.x + dateCard.width + area.g; y: 0
-            width: area.width - x; height: area.topH
-            pad: 10; spacing: 0
-            Item {
-                width: parent.width; height: wxCard.height - 2 * wxCard.pad
-                Text { visible: !Weather.ok; anchors.centerIn: parent; text: !Weather.wanted ? "no place set" : (Weather.error || "loading…"); color: Theme.muted; font.family: Theme.font; font.pixelSize: 12 }
-                Row {
-                    visible: Weather.ok; spacing: 10; y: 0
-                    Text { text: Weather.icon(Weather.now.code, Weather.now.day); color: Theme.coral; font.family: Theme.font; font.pixelSize: 28 }
-                    Column { anchors.verticalCenter: parent.verticalCenter; spacing: 0
-                        Text { text: Weather.deg(Weather.now.temp); color: Theme.text; font.family: Theme.font; font.pixelSize: 18; font.bold: true }
-                        Text { text: Weather.words(Weather.now.code); color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
+                    Repeater {   // that day's events, if any
+                        model: dayCard.rows
+                        delegate: Row { required property var modelData; anchors.horizontalCenter: parent.horizontalCenter; spacing: 8
+                            Text { text: modelData.g; color: modelData.c; font.family: Theme.font; font.pixelSize: 11 }
+                            Text { text: modelData.when; visible: modelData.when !== ""; color: modelData.c; font.family: Theme.font; font.pixelSize: 11; font.bold: true }
+                            Text { text: modelData.t; width: Math.min(implicitWidth, dayCard.width - 150); elide: Text.ElideRight; color: Theme.text; font.family: Theme.font; font.pixelSize: 11 }
+                        }
                     }
-                }
-                Row {
-                    visible: Weather.ok; y: parent.height - height; width: parent.width
-                    Repeater {
-                        model: Weather.days.slice(1, 5)
-                        delegate: Column { required property var modelData; width: wxCard.width / 4 - 5; spacing: 0
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: Qt.formatDate(new Date(modelData.date + "T12:00"), "ddd"); color: Theme.muted; font.family: Theme.font; font.pixelSize: 10 }
-                            Text { anchors.horizontalCenter: parent.horizontalCenter; text: Weather.icon(modelData.code, true) + " " + Weather.deg(modelData.max); color: Theme.text; font.family: Theme.font; font.pixelSize: 11 }
+                    Row {   // nothing planned: the next days of weather fill the gap
+                        visible: Weather.ok && dayCard.rows.length < 2
+                        anchors.horizontalCenter: parent.horizontalCenter; spacing: 18
+                        Repeater {
+                            model: Weather.days.slice(1, 5)
+                            delegate: Row { required property var modelData; spacing: 5
+                                Text { text: Qt.formatDate(new Date(modelData.date + "T12:00"), "ddd"); color: Theme.muted; font.family: Theme.font; font.pixelSize: 10 }
+                                Text { text: Weather.icon(modelData.code, true) + " " + Weather.deg(modelData.max); color: Theme.text; font.family: Theme.font; font.pixelSize: 11 }
+                            }
                         }
                     }
                 }
