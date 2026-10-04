@@ -80,8 +80,8 @@ Item {
         ? ((Notifs.current.summary || "") + (Notifs.current.body ? "  " + Notifs.current.body : "")).replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ·  ")
         : ""
     TextMetrics { id: nfMetrics; font.family: Theme.font; font.pixelSize: 12; text: root.notifText }
-    // ... but the notch never gets wider than 60 % of the screen (longer texts end in "…")
-    readonly property int notifExtra: Math.min(Math.max(0, Math.round(maxWidth * 0.6) - restWidth),
+    // ... but the notch never gets wider than 50 % of the screen (longer texts end in "…")
+    readonly property int notifExtra: Math.min(Math.max(0, Math.round(maxWidth * 0.5) - restWidth),
         Math.max(80, Math.min(560, Math.ceil(20 + clockRow.width + 28 + 18 + 10 + nfApp.implicitWidth + 10
         + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth))))
     // centring: the clock and the notification row are placed as ONE group in the notch's target width
