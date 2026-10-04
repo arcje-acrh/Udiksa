@@ -61,7 +61,7 @@ Item {
     transform: Translate { x: (1 - root.opacity) * -60 * root.s }
 
     // soft shadow under the record
-    Rectangle { x: 6 * root.s; y: 10 * root.s; width: root.dia; height: root.dia; radius: root.rad; color: "#000000"; opacity: 0.35 }
+    Rectangle { x: 3 * root.s; y: 5 * root.s; width: root.dia; height: root.dia; radius: root.rad; color: "#000000"; opacity: 0.22 }
 
     // ---- the spinning part ----
     Item {
@@ -200,7 +200,7 @@ Item {
         width: 34 * root.s; height: width; radius: width / 2
         color: pma.containsMouse ? Qt.alpha(root.accent, 0.25) : Qt.alpha("#000000", 0.4)
         border.width: 1; border.color: Qt.alpha(pma.containsMouse ? root.accent : root.fg, pma.containsMouse ? 0.9 : 0.4)
-        Text { anchors.centerIn: parent; text: root.picked ? "󰐃" : "󰝚"; color: pma.containsMouse || root.picked ? root.accent : root.fg
+        Text { anchors.centerIn: parent; text: "󰋋"; color: pma.containsMouse || root.picked ? root.accent : root.fg
                font { family: root.font; pixelSize: 15 * root.s } }
         MouseArea {
             id: pma
