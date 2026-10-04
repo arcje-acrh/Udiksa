@@ -81,39 +81,50 @@ Item {
         ? ((Notifs.current.summary || "") + (Notifs.current.body ? "  " + Notifs.current.body : "")).replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ·  ")
         : ""
     TextMetrics { id: nfMetrics; font.family: Theme.font; font.pixelSize: 12; text: root.notifText }
-    readonly property int notifExtra: Math.max(0, Math.min(200, Math.ceil(20 + 18 + 10 + nfApp.implicitWidth + 10
-        + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth)))
-    // the text's room (the notch at its target width, minus clock, icon, app name, +N) and how many lines it needs there
-    readonly property real nfTextW: Math.max(120, restWidth + notifExtra - 20 - 24 - 18 - nfApp.implicitWidth - (Notifs.unread > 1 ? 50 : 0) - 20)
     readonly property string notifSummary: Notifs.current ? (Notifs.current.summary || "").replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ") : ""
     readonly property string notifBody: Notifs.current ? (Notifs.current.body || "").replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ") : ""
-    Text { id: nfProbe; visible: false; width: root.nfTextW; wrapMode: Text.WordWrap; maximumLineCount: 2; text: root.notifText
-           font.family: Theme.font; font.pixelSize: 12 }
-    // the body, broken into lines by hand so EVERY line can be justified (QML's own AlignJustify leaves the last
-    // line ragged): [{ words: [...], w: natural width of the words, full: justify this line }], at most 2 lines
     FontMetrics { id: nfFm; font.family: Theme.font; font.pixelSize: 12 }
-    readonly property real nfBodyW: nfTextW + nfApp.implicitWidth + 10
-    readonly property var notifLines: {
-        const words = notifBody.split(/\s+/).filter(w => w), space = nfFm.advanceWidth(" "), lines = []
-        let cur = [], w = 0, i = 0
-        for (; i < words.length && lines.length < 2; i++) {
-            const ww = nfFm.advanceWidth(words[i])
-            if (cur.length && w + space + ww > nfBodyW) { lines.push({ words: cur, w: w }); cur = []; w = 0 }
-            if (lines.length >= 2) break
-            w += (cur.length ? space : 0) + ww; cur.push(words[i])
+    readonly property real nfMaxW: restWidth + 200            // the widest the popup may be
+    // tall = icon + app + title + body do not fit on ONE line in that width, and there is a body to put under the title
+    readonly property bool notifTall: notifBody !== "" && 20 + 18 + 10 + nfApp.implicitWidth + 10 + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 > nfMaxW
+    // the body as lines of words, wrapped by hand: [{ words, w }]
+    function wrapLines(words, W) {
+        const space = nfFm.advanceWidth(" "), lines = []
+        let cur = [], w = 0
+        for (const word of words) {
+            const ww = nfFm.advanceWidth(word)
+            if (cur.length && w + space + ww > W) { lines.push({ words: cur, w: w }); cur = []; w = 0 }
+            w += (cur.length ? space : 0) + ww; cur.push(word)
         }
-        if (cur.length && lines.length < 2) { lines.push({ words: cur, w: w }); cur = [] }
-        if (i < words.length && lines.length) {              // more text than 2 lines: end the 2nd with an ellipsis
-            const l = lines[lines.length - 1]
-            while (l.words.length > 1 && l.w + space + nfFm.advanceWidth("…") > nfBodyW) { l.w -= space + nfFm.advanceWidth(l.words[l.words.length - 1]); l.words.pop() }
-            l.words[l.words.length - 1] += "…"; l.w = l.words.reduce((t, x) => t + nfFm.advanceWidth(x), 0) + space * (l.words.length - 1)
-        }
-        // the last line is stretched too, unless it is much shorter than the width (it would look torn apart)
-        lines.forEach((l, k) => l.full = lines.length > 1 && (k < lines.length - 1 || l.w > nfBodyW * 0.85))
+        if (cur.length) lines.push({ words: cur, w: w })
         return lines
     }
-    // tall = it does not fit on one line AND there is a body: title row on top (like a short one), the body under it
-    readonly property bool notifTall: notifBody !== "" && nfProbe.lineCount > 1
+    // a long body: two lines of EQUAL length -- the narrowest width that still wraps it to two lines, and every line
+    // justified to it (the popup is as wide as that width needs); one line = its own width; more than two = the
+    // widest width, the 2nd line ends in an ellipsis
+    readonly property var notifLayout: {
+        if (!notifTall) return { lines: [], w: 0 }
+        const words = notifBody.split(/\s+/).filter(w => w), space = nfFm.advanceWidth(" "), maxW = nfMaxW - 48
+        let lines = wrapLines(words, maxW), W = maxW
+        if (lines.length > 2) {
+            lines = lines.slice(0, 2)
+            const l = lines[1]
+            while (l.words.length > 1 && l.w + space + nfFm.advanceWidth("…") > maxW) { l.w -= space + nfFm.advanceWidth(l.words[l.words.length - 1]); l.words.pop() }
+            l.words[l.words.length - 1] += "…"
+        } else if (lines.length === 2) {
+            let lo = Math.max.apply(null, words.map(x => nfFm.advanceWidth(x))), hi = maxW
+            for (let k = 0; k < 14; k++) { const mid = (lo + hi) / 2; if (wrapLines(words, mid).length <= 2) hi = mid; else lo = mid }
+            W = Math.ceil(hi)
+            lines = wrapLines(words, W)
+            if (lines.length > 2) { lines = wrapLines(words, maxW); W = maxW }
+        } else if (lines.length === 1) W = Math.ceil(lines[0].w)
+        lines.forEach(l => l.full = lines.length > 1)
+        return { lines: lines, w: W }
+    }
+    readonly property var notifLines: notifLayout.lines
+    readonly property real notifBodyW: notifLayout.w
+    readonly property int notifExtra: notifTall ? Math.max(0, Math.min(200, Math.ceil(notifBodyW + 48 - restWidth)))
+        : Math.max(0, Math.min(200, Math.ceil(20 + 18 + 10 + nfApp.implicitWidth + 10 + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth)))
     readonly property int notifH: notifTall ? notifLines.length * 16 + 1 : 0
     width: panel !== "" ? panelW : Math.min(maxWidth, restWidth + (notifShow ? notifExtra : 0))
     // smooth for panels (opening AND closing: `loaded` stays set until the close has finished); the
@@ -419,9 +430,9 @@ Item {
             }
             Column {   // tall notification: the body under the title row; full lines justified, a short last line centred
                 visible: root.notifTall
-                x: 0
+                x: (parent.width - width) / 2
                 y: Theme.stripHeight - 4
-                width: parent.width
+                width: root.notifBodyW
                 Repeater {
                     model: root.notifLines
                     delegate: Row {
