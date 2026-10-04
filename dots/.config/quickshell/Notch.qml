@@ -84,6 +84,12 @@ Item {
     readonly property int notifExtra: Math.min(Math.max(0, Math.round(maxWidth * 0.6) - restWidth),
         Math.max(80, Math.min(560, Math.ceil(20 + clockRow.width + 28 + 18 + 10 + nfApp.implicitWidth + 10
         + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth))))
+    // centring: the clock and the notification row are placed as ONE group in the notch's target width
+    readonly property real nfTextAvail: restWidth + notifExtra - 44 - clockRow.width - 28 - 18 - nfApp.implicitWidth - (Notifs.unread > 1 ? nfMore.width : 0) - (Notifs.unread > 1 ? 3 : 2) * 10
+    readonly property real nfRowW: 18 + nfApp.implicitWidth + Math.min(nfMetrics.advanceWidth, nfTextAvail) + (Notifs.unread > 1 ? nfMore.width : 0) + (Notifs.unread > 1 ? 3 : 2) * 10
+    readonly property real nfOff: notifShow ? Math.max(0, (restWidth + notifExtra - 44 - clockRow.width - 28 - nfRowW) / 2) : 0
+    property real nfOffSmooth: nfOff
+    Behavior on nfOffSmooth { NumberAnimation { duration: Theme.notchAnim; easing.type: Easing.OutCubic } }
     width: panel !== "" ? panelW : Math.min(maxWidth, restWidth + (notifShow ? notifExtra : 0))
     // smooth for panels (opening AND closing: `loaded` stays set until the close has finished); the
     // little overshoot "breath" only for an inline notification
@@ -210,7 +216,7 @@ Item {
             // x itself made the date trail behind and slide after the notch had settled
             property real shift: root.inlineMode ? 1 : 0
             Behavior on shift { NumberAnimation { duration: Theme.notchAnim; easing.type: Easing.OutCubic } }
-            x: 20 * shift + (parent.width - width) / 2 * (1 - shift)
+            x: (20 + root.nfOffSmooth) * shift + (parent.width - width) / 2 * (1 - shift)
             anchors.verticalCenter: parent.verticalCenter
             spacing: 10
             Text {
@@ -316,7 +322,7 @@ Item {
         // Hover (or click) = the notifications panel; the mouse on it keeps it showing.
         Item {
             id: nf
-            x: 20 + clockRow.width + 28
+            x: 20 + root.nfOffSmooth + clockRow.width + 28
             width: parent.width - x - 24
             height: parent.height
             opacity: root.notifShow ? 1 : 0
@@ -336,7 +342,6 @@ Item {
             }
             Row {
                 anchors.verticalCenter: parent.verticalCenter
-                width: parent.width
                 spacing: 10
                 Item {   // app icon, pops in
                     id: nfIcon
@@ -366,7 +371,7 @@ Item {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: parent.width - nfIcon.width - nfApp.width - (nfMore.visible ? nfMore.width + 10 : 0) - 2 * parent.spacing
+                    width: Math.min(implicitWidth, nf.width - nfIcon.width - nfApp.width - (nfMore.visible ? nfMore.width : 0) - (nfMore.visible ? 3 : 2) * parent.spacing)
                     elide: Text.ElideRight
                     maximumLineCount: 1
                     wrapMode: Text.NoWrap
