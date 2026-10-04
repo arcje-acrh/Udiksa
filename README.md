@@ -31,7 +31,7 @@ The notch on hover, tiling, the launcher, live theme switching (open apps recolo
 | **OS** | Arch Linux and Arch-based distributions |
 | **Window manager** | [Hyprland](https://hypr.land) 0.56 (Lua config) |
 | **Shell, bar, launcher, notifications** | one [Quickshell](https://quickshell.org) shell: the notch |
-| **Lock and login screen** | Quickshell, the same design for both (greetd + cage at boot) |
+| **Lock and login screen** | Quickshell, the same design for both (greetd + cage at boot); the lock screen has a spinning-record media player |
 | **Terminal** | kitty, bash, starship, ble.sh |
 | **Font** | Iosevka Nerd Font |
 | **Mouse pointer** | Bibata, recoloured with the theme; grows when you shake it |

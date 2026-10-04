@@ -107,6 +107,16 @@ Item {
         }
     }
 
+    // ---- lock screen only: the turntable (media player), bottom-left ----
+    Loader {
+        active: root.mode === "lock"
+        source: "Turntable.qml"
+        x: 70 * root.s
+        y: root.height - 480 * root.s
+        opacity: root.ui
+        onLoaded: { item.s = Qt.binding(() => root.s); item.fg = Qt.binding(() => root.fg); item.accent = Qt.binding(() => root.accent); item.dimc = Qt.binding(() => root.dimc); item.font = root.font }
+    }
+
     // ---- clock, top-left ----
     Column {
         anchors { left: parent.left; top: parent.top; leftMargin: 70 * root.s; topMargin: 60 * root.s }
@@ -130,7 +140,7 @@ Item {
         }
         Item { width: 1; height: 6 * root.s }
         Text {                                   // battery, then what's playing
-            text: [root.batLine, root.mediaLine].filter(x => x).join("     ")
+            text: root.batLine
             visible: text !== ""
             color: root.fg
             opacity: 0.7
