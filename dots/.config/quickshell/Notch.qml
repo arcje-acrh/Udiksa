@@ -75,57 +75,13 @@ Item {
     // makes the notch "breathe" a little wider while it shows
     // ... but never wider than the screen (a rotated / small screen): the panel's own layout shrinks with it
     readonly property int panelW: loaded === "" || !panelItem || !(panelItem.wantWidth > 0) ? restWidth : Math.min(maxWidth, Math.max(restWidth, panelItem.wantWidth))
-    // inline notification (line breaks -> " · "): the notch is as wide as the text needs, never narrower than at rest, up to 200 px wider and TALLER for a
-    // long text (wraps to at most 3 lines) instead of ever wider
+    // inline notification: one line (line breaks -> " · "); the notch grows to fit it, 80..560 px extra
     readonly property string notifText: Notifs.current
         ? ((Notifs.current.summary || "") + (Notifs.current.body ? "  " + Notifs.current.body : "")).replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ·  ")
         : ""
     TextMetrics { id: nfMetrics; font.family: Theme.font; font.pixelSize: 12; text: root.notifText }
-    readonly property string notifSummary: Notifs.current ? (Notifs.current.summary || "").replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ") : ""
-    readonly property string notifBody: Notifs.current ? (Notifs.current.body || "").replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ") : ""
-    FontMetrics { id: nfFm; font.family: Theme.font; font.pixelSize: 12 }
-    readonly property real nfMaxW: restWidth + 200            // the widest the popup may be
-    // tall = icon + app + title + body do not fit on ONE line in that width, and there is a body to put under the title
-    readonly property bool notifTall: notifBody !== "" && 20 + 18 + 10 + nfApp.implicitWidth + 10 + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 > nfMaxW
-    // the body as lines of words, wrapped by hand: [{ words, w }]
-    function wrapLines(words, W) {
-        const space = nfFm.advanceWidth(" "), lines = []
-        let cur = [], w = 0
-        for (const word of words) {
-            const ww = nfFm.advanceWidth(word)
-            if (cur.length && w + space + ww > W) { lines.push({ words: cur, w: w }); cur = []; w = 0 }
-            w += (cur.length ? space : 0) + ww; cur.push(word)
-        }
-        if (cur.length) lines.push({ words: cur, w: w })
-        return lines
-    }
-    // a long body: two lines of EQUAL length -- the narrowest width that still wraps it to two lines, and every line
-    // justified to it (the popup is as wide as that width needs); one line = its own width; more than two = the
-    // widest width, the 2nd line ends in an ellipsis
-    readonly property var notifLayout: {
-        if (!notifTall) return { lines: [], w: 0 }
-        const words = notifBody.split(/\s+/).filter(w => w), space = nfFm.advanceWidth(" "), maxW = nfMaxW - 48
-        let lines = wrapLines(words, maxW), W = maxW
-        if (lines.length > 2) {
-            lines = lines.slice(0, 2)
-            const l = lines[1]
-            while (l.words.length > 1 && l.w + space + nfFm.advanceWidth("…") > maxW) { l.w -= space + nfFm.advanceWidth(l.words[l.words.length - 1]); l.words.pop() }
-            l.words[l.words.length - 1] += "…"
-        } else if (lines.length === 2) {
-            let lo = Math.max.apply(null, words.map(x => nfFm.advanceWidth(x))), hi = maxW
-            for (let k = 0; k < 14; k++) { const mid = (lo + hi) / 2; if (wrapLines(words, mid).length <= 2) hi = mid; else lo = mid }
-            W = Math.ceil(hi)
-            lines = wrapLines(words, W)
-            if (lines.length > 2) { lines = wrapLines(words, maxW); W = maxW }
-        } else if (lines.length === 1) W = Math.ceil(lines[0].w)
-        lines.forEach(l => l.full = lines.length > 1)
-        return { lines: lines, w: W }
-    }
-    readonly property var notifLines: notifLayout.lines
-    readonly property real notifBodyW: notifLayout.w
-    readonly property int notifExtra: notifTall ? Math.max(0, Math.min(200, Math.ceil(notifBodyW + 48 - restWidth)))
-        : Math.max(0, Math.min(200, Math.ceil(20 + 18 + 10 + nfApp.implicitWidth + 10 + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth)))
-    readonly property int notifH: notifTall ? notifLines.length * 16 + 1 : 0
+    readonly property int notifExtra: Math.max(80, Math.min(560, Math.ceil(20 + clockRow.width + 28 + 18 + 10 + nfApp.implicitWidth + 10
+        + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth)))
     width: panel !== "" ? panelW : Math.min(maxWidth, restWidth + (notifShow ? notifExtra : 0))
     // smooth for panels (opening AND closing: `loaded` stays set until the close has finished); the
     // little overshoot "breath" only for an inline notification
@@ -136,7 +92,7 @@ Item {
             easing.overshoot: 1.4
         }
     }
-    height: panel !== "" ? panelH : Theme.stripHeight + (notifShow ? notifH : 0)
+    height: panel !== "" ? panelH : Theme.stripHeight
     Behavior on height { NumberAnimation { duration: Theme.notchAnim; easing.type: Easing.OutCubic } }
 
     SystemClock { id: clock; precision: SystemClock.Minutes }
@@ -195,7 +151,7 @@ Item {
         // coming back after a panel: only once the notch is back at its resting width (a wide panel
         // shrinks sideways), so the clock and icons never slide or overlap
         readonly property bool settled: Math.abs(root.width - Math.min(root.maxWidth, root.restWidth + (root.notifShow ? root.notifExtra : 0))) < 1.5
-                                         && (root.height < Theme.stripHeight + 1.5 || root.notifShow)
+                                         && root.height < Theme.stripHeight + 1.5
         opacity: root.panel === "" && settled ? 1 : 0
         enabled: root.panel === ""
         Behavior on opacity { NumberAnimation { duration: 180 } }
@@ -250,12 +206,10 @@ Item {
             // only the slide to the left (key feedback / notification) is animated, via `shift`;
             // width changes (panels opening / closing) move it instantly with the notch -- animating
             // x itself made the date trail behind and slide after the notch had settled
-            property real shift: root.feedback ? 1 : 0
+            property real shift: root.inlineMode ? 1 : 0
             Behavior on shift { NumberAnimation { duration: Theme.notchAnim; easing.type: Easing.OutCubic } }
             x: 20 * shift + (parent.width - width) / 2 * (1 - shift)
             anchors.verticalCenter: parent.verticalCenter
-            opacity: root.notifShow ? 0 : 1           // a notification covers the whole row: no time next to it
-            Behavior on opacity { NumberAnimation { duration: 120 } }
             spacing: 10
             Text {
                 text: Qt.formatDateTime(clock.date, "HH:mm")
@@ -360,9 +314,9 @@ Item {
         // Hover (or click) = the notifications panel; the mouse on it keeps it showing.
         Item {
             id: nf
-            x: 20
+            x: 20 + clockRow.width + 28
             width: parent.width - x - 24
-            height: root.height             // taller than the strip when the text wraps
+            height: parent.height
             opacity: root.notifShow ? 1 : 0
             visible: opacity > 0
             Behavior on opacity {
@@ -379,10 +333,8 @@ Item {
                 onClicked: root.open("notifications")
             }
             Row {
-                id: nfRow
-                anchors.top: parent.top
-                anchors.horizontalCenter: parent.horizontalCenter       // icon + app + text, centred in the notch
-                height: Theme.stripHeight          // the title row; a tall body goes under it
+                anchors.verticalCenter: parent.verticalCenter
+                width: parent.width
                 spacing: 10
                 Item {   // app icon, pops in
                     id: nfIcon
@@ -412,12 +364,12 @@ Item {
                 }
                 Text {
                     anchors.verticalCenter: parent.verticalCenter
-                    width: Math.min(implicitWidth, nf.width - nfIcon.width - nfApp.width - (nfMore.visible ? nfMore.width : 0) - (nfMore.visible ? 3 : 2) * nfRow.spacing)
+                    width: parent.width - nfIcon.width - nfApp.width - (nfMore.visible ? nfMore.width + 10 : 0) - 2 * parent.spacing
                     elide: Text.ElideRight
                     maximumLineCount: 1
                     wrapMode: Text.NoWrap
-                    text: root.notifTall ? root.notifSummary : root.notifText
-                    color: Theme.text; font.family: Theme.font; font.pixelSize: 12; font.bold: root.notifTall
+                    text: root.notifText
+                    color: Theme.text; font.family: Theme.font; font.pixelSize: 12
                 }
                 Rectangle {   // "+N" more unread
                     id: nfMore
@@ -426,30 +378,6 @@ Item {
                     width: nfMoreT.implicitWidth + 12; height: 18; radius: 9
                     color: Qt.alpha(Theme.coral, 0.2)
                     Text { id: nfMoreT; anchors.centerIn: parent; text: "+" + (Notifs.unread - 1); color: Theme.coral; font.family: Theme.font; font.pixelSize: 11; font.bold: true }
-                }
-            }
-            Column {   // tall notification: the body under the title row; full lines justified, a short last line centred
-                visible: root.notifTall
-                x: (parent.width - width) / 2
-                y: Theme.stripHeight - 4
-                width: root.notifBodyW
-                Repeater {
-                    model: root.notifLines
-                    delegate: Row {
-                        required property var modelData
-                        height: 16
-                        x: modelData.full ? 0 : (parent.width - width) / 2
-                        spacing: modelData.full && modelData.words.length > 1
-                                 ? Math.max(nfFm.advanceWidth(" "), (parent.width - modelData.words.reduce((t, x) => t + nfFm.advanceWidth(x), 0)) / (modelData.words.length - 1))
-                                 : nfFm.advanceWidth(" ")
-                        Repeater {
-                            model: modelData.words
-                            delegate: Text {
-                                required property string modelData
-                                text: modelData; color: Qt.alpha(Theme.text, 0.8); font.family: Theme.font; font.pixelSize: 12
-                            }
-                        }
-                    }
                 }
             }
         }
