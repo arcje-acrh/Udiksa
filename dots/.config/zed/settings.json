@@ -1,39 +1,29 @@
 // Zed settings. The "Rice" theme is written by rice-theme on every theme change (~/.config/zed/themes/rice.json).
+// Hyprland gives the window the same see-through + blur as every other app, so the theme itself stays solid.
 {
-  "agent": {
-    "threads_sidebar": {
-      "position": "right"
-    },
-    "favorite_models": [],
-    "model_parameters": []
-  },
-  "project_panel": {
-    "dock": "left"
-  },
-  "icon_theme": {
-    "mode": "dark",
-    "light": "Zed (Default)",
-    "dark": "Zed (Default)"
-  },
-  "session": {
-    "trust_all_worktrees": true
-  },
-  "agent_servers": {
-    "claude-acp": {
-      "type": "registry"
-    }
-  },
-  "base_keymap": "JetBrains",
-  "theme": {
-    "mode": "system",
-    "light": "Gruvbox Dark",
-    "dark": "Gruvbox Dark"
-  },
+  "theme": "Rice",
   "ui_font_family": "Iosevka Nerd Font",
   "buffer_font_family": "Iosevka Nerd Font",
   "buffer_font_size": 15,
   "ui_font_size": 15,
+  "buffer_line_height": "comfortable",
+  "cursor_blink": false,
+
+  // quiet chrome: no sign-in, banners, minimap, scrollbars or collaboration buttons
+  "title_bar": { "show_sign_in": false, "show_user_picture": false, "show_onboarding_banner": false, "show_branch_icon": false },
+  "minimap": { "show": "never" },
+  "scrollbar": { "show": "never" },
+  "toolbar": { "quick_actions": false },
+  "tab_bar": { "show_nav_history_buttons": false },
+  "collaboration_panel": { "button": false },
+  "notification_panel": { "button": false },
+  "git": { "inline_blame": { "enabled": false } },
+
+  "terminal": { "font_family": "Iosevka Nerd Font", "blinking": "off", "copy_on_select": true },
+
   "telemetry": { "diagnostics": false, "metrics": false },
   "auto_update": false,
-  "vim_mode": false
+
+  // Lua (Hyprland config) and QML (the shell) are not built into Zed; fetched once on first start
+  "auto_install_extensions": { "lua": true, "qml": true }
 }
