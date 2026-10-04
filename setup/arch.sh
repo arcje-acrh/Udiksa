@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # setup/arch.sh -- PART 1: install Arch Linux itself. Run as root from the Arch USB (UEFI mode, online).
 # Builds the same layout as the reference machine, on ONE disk you choose (Windows disks are never offered):
-#   1 GiB EFI (FAT32, /boot/efi) · 2 GiB /boot (ext4) · rest btrfs with subvolumes @ /, @home, @log, @pkg, @snapshots,
-#   @swap (/swap: a swap file the size of RAM, for hibernation) · zram swap in RAM first (no swap partition) · GRUB · NetworkManager · your user in the wheel group (sudo) · root locked
+#   EFI (FAT32, /boot/efi, 1 GiB) · /boot (ext4, 2 GiB) · btrfs (the rest) -- all three sizes are asked; defaults shown with subvolumes @ /, @home, @log, @pkg, @snapshots,
+#   @swap (/swap: a swap file, asked, default the size of RAM, for hibernation) · zram swap in RAM first (no swap partition) · GRUB · NetworkManager · your user in the wheel group (sudo) · root locked
 # Then it copies this dotfiles folder to /home/<you>/Udiksa. After reboot: log in, `nmtui` for Wi-Fi,
 # then `~/Udiksa/install.sh apps rice`.
 # Usage: setup/arch.sh [--dry-run]     (dry run: shows the disks and every step, changes nothing)
@@ -71,12 +71,30 @@ TZONE="$REGION/$PLACE"
 if ((DRY)); then PASS=dry; else
     while :; do read -rsp "    Password for $USERNAME: " PASS; echo; read -rsp "    Again: " P2; echo; [[ -n $PASS && $PASS == "$P2" ]] && break; warn "empty or not the same, again"; done
 fi
+# partition sizes in GiB (Enter keeps the default). The system partition can be smaller than the rest of the disk: the
+# space left over stays unallocated, for another system or data later.
+RAM_G=$(( ($(awk '/^MemTotal/{print $2}' /proc/meminfo) + 1048575) / 1048576 ))
+DISK_G=$(( $(lsblk -bdno SIZE "$DISK") / 1073741824 ))
+say "Partition sizes on $DISK (${DISK_G} GiB)"
+num() { local v; while :; do v=$(ask "$1" "$2"); [[ $v =~ ^[0-9]+$ ]] && (( v >= $3 )) && { echo "$v"; return; }; warn "a whole number of GiB, at least $3" >&2; done; }
+EFI_G=$(num "EFI partition (GiB)" 1 1)
+BOOT_G=$(num "/boot partition (GiB)" 2 1)
+while :; do
+    ROOT_ANS=$(ask "System partition (GiB, or 'rest' = all that is left)" "rest")
+    if [[ $ROOT_ANS == rest ]]; then ROOT_G=0; break; fi
+    [[ $ROOT_ANS =~ ^[0-9]+$ ]] && (( ROOT_ANS >= 40 && EFI_G + BOOT_G + ROOT_ANS <= DISK_G )) && { ROOT_G=$ROOT_ANS; break; }
+    warn "at least 40 GiB, and EFI + /boot + system must fit in ${DISK_G} GiB"
+done
+SWAP_G=$(num "Swap file for hibernation (GiB; at least your RAM, ${RAM_G} GiB, to hibernate)" "$RAM_G" 1)
+((SWAP_G >= RAM_G)) || warn "smaller than your RAM: hibernation may fail"
+
 WIN=0; for d in "${disks[@]}"; do windows_disk "$d" && WIN=1; done
 
 say "Summary"
 printf '    disk %s (%s) will be ERASED\n    computer %s, user %s (%s), time zone %s%s\n' \
     "$DISK" "$(lsblk -dno SIZE,MODEL "$DISK" | sed 's/  */ /g')" "$HOST" "$USERNAME" "$FULLNAME" "$TZONE" \
     "$( ((WIN)) && echo ', Windows found on another disk: clock kept in local time')"
+printf '    EFI %s GiB, /boot %s GiB, system %s, swap file %s GiB\n' "$EFI_G" "$BOOT_G" "$( ((ROOT_G)) && echo "${ROOT_G} GiB" || echo 'the rest of the disk')" "$SWAP_G"
 if ((DRY)); then warn "dry run: nothing below is executed"; else
     read -rp "    Type the disk name ($(basename "$DISK")) to erase it and install: " c
     [[ $c == "$(basename "$DISK")" ]] || die "not confirmed, nothing changed"
@@ -85,7 +103,7 @@ fi
 # ---------------------------------------------------------------- partitions + btrfs
 say "Partitioning $DISK"
 run sgdisk --zap-all "$DISK"
-run sgdisk -n1:0:+1G -t1:ef00 -c1:EFI -n2:0:+2G -t2:8300 -c2:boot -n3:0:0 -t3:8300 -c3:arch "$DISK"
+run sgdisk -n1:0:+${EFI_G}G -t1:ef00 -c1:EFI -n2:0:+${BOOT_G}G -t2:8300 -c2:boot -n3:0:$( ((ROOT_G)) && echo "+${ROOT_G}G" || echo 0 ) -t3:8300 -c3:arch "$DISK"
 run partprobe "$DISK"; ((DRY)) || sleep 2
 if ((DRY)); then P1=${DISK}p1; P2=${DISK}p2; P3=${DISK}p3; else
     mapfile -t parts < <(lsblk -rpno NAME,TYPE "$DISK" | awk '$2=="part"{print $1}')
@@ -106,8 +124,7 @@ run mount -o "$O,subvol=@pkg" "$P3" /mnt/var/cache/pacman/pkg
 run mount -o "$O,subvol=@snapshots" "$P3" /mnt/.snapshots
 run mount -o "rw,noatime,ssd,discard=async,space_cache=v2,subvol=@swap" "$P3" /mnt/swap
 # hibernation: a swap file the size of RAM (rounded up); the kernel finds it via resume= / resume_offset= below
-RAM_G=$(( ($(awk '/^MemTotal/{print $2}' /proc/meminfo) + 1048575) / 1048576 ))
-run btrfs filesystem mkswapfile --size "${RAM_G}g" --uuid clear /mnt/swap/swapfile
+run btrfs filesystem mkswapfile --size "${SWAP_G}g" --uuid clear /mnt/swap/swapfile
 if ((DRY)); then ROOT_UUID="<uuid>"; RESUME_OFF="<offset>"; else
     ROOT_UUID=$(blkid -s UUID -o value "$P3"); RESUME_OFF=$(btrfs inspect-internal map-swapfile -r /mnt/swap/swapfile)
 fi
