@@ -85,9 +85,16 @@ Item {
         + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth)))
     // the text's room (the notch at its target width, minus clock, icon, app name, +N) and how many lines it needs there
     readonly property real nfTextW: Math.max(120, restWidth + notifExtra - (20 + clockRow.width + 28) - 24 - 18 - nfApp.implicitWidth - (Notifs.unread > 1 ? 50 : 0) - 20)
-    Text { id: nfProbe; visible: false; width: root.nfTextW; wrapMode: Text.WordWrap; maximumLineCount: 3; text: root.notifText
+    readonly property string notifSummary: Notifs.current ? (Notifs.current.summary || "").replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ") : ""
+    readonly property string notifBody: Notifs.current ? (Notifs.current.body || "").replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ") : ""
+    Text { id: nfProbe; visible: false; width: root.nfTextW; wrapMode: Text.WordWrap; maximumLineCount: 2; text: root.notifText
            font.family: Theme.font; font.pixelSize: 12 }
-    readonly property int notifH: nfProbe.lineCount > 1 ? (nfProbe.lineCount - 1) * 16 + 6 : 0
+    // body under the title row, as wide as the notification from the icon's right edge on
+    Text { id: nfBodyProbe; visible: false; width: root.nfTextW + nfApp.implicitWidth + 10; wrapMode: Text.WordWrap; maximumLineCount: 2
+           text: root.notifBody; font.family: Theme.font; font.pixelSize: 12 }
+    // tall = it does not fit on one line AND there is a body: title row on top (like a short one), the body under it
+    readonly property bool notifTall: notifBody !== "" && nfProbe.lineCount > 1
+    readonly property int notifH: notifTall ? nfBodyProbe.lineCount * 16 + 1 : 0
     width: panel !== "" ? panelW : Math.min(maxWidth, restWidth + (notifShow ? notifExtra : 0))
     // smooth for panels (opening AND closing: `loaded` stays set until the close has finished); the
     // little overshoot "breath" only for an inline notification
@@ -339,7 +346,9 @@ Item {
                 onClicked: root.open("notifications")
             }
             Row {
-                anchors.verticalCenter: parent.verticalCenter
+                id: nfRow
+                anchors.top: parent.top
+                height: Theme.stripHeight          // the title row: level with the clock; a tall body goes under it
                 width: parent.width
                 spacing: 10
                 Item {   // app icon, pops in
@@ -372,10 +381,10 @@ Item {
                     anchors.verticalCenter: parent.verticalCenter
                     width: parent.width - nfIcon.width - nfApp.width - (nfMore.visible ? nfMore.width + 10 : 0) - 2 * parent.spacing
                     elide: Text.ElideRight
-                    maximumLineCount: 3
-                    wrapMode: Text.WordWrap
-                    text: root.notifText
-                    color: Theme.text; font.family: Theme.font; font.pixelSize: 12
+                    maximumLineCount: 1
+                    wrapMode: Text.NoWrap
+                    text: root.notifTall ? root.notifSummary : root.notifText
+                    color: Theme.text; font.family: Theme.font; font.pixelSize: 12; font.bold: root.notifTall
                 }
                 Rectangle {   // "+N" more unread
                     id: nfMore
@@ -385,6 +394,15 @@ Item {
                     color: Qt.alpha(Theme.coral, 0.2)
                     Text { id: nfMoreT; anchors.centerIn: parent; text: "+" + (Notifs.unread - 1); color: Theme.coral; font.family: Theme.font; font.pixelSize: 11; font.bold: true }
                 }
+            }
+            Text {   // tall notification: the body, under the title row, left edge = the app name
+                visible: root.notifTall
+                x: nfIcon.width + nfRow.spacing
+                y: Theme.stripHeight - 4
+                width: parent.width - x
+                wrapMode: Text.WordWrap; maximumLineCount: 2; elide: Text.ElideRight
+                text: root.notifBody
+                color: Qt.alpha(Theme.text, 0.8); font.family: Theme.font; font.pixelSize: 12
             }
         }
     }
