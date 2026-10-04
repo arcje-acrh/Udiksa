@@ -108,6 +108,13 @@ hl.bind(mainMod .. " + SHIFT + S", function() -- window to the scratchpad (Right
     end
 end)
 
+-- Laptops without Print Screen: the same modes on the snip key (F6 sends Super + Right Shift + S), mirroring the
+-- Print Screen modifiers: Ctrl = whole screen, Alt = draw on it, Ctrl + Alt = a window. Typed by hand, either Shift works.
+local shotbin = os.getenv("HOME") .. "/.local/bin/rice-shot"
+hl.bind(mainMod .. " + CTRL + SHIFT + S",       hl.dsp.exec_cmd("hyprshot -m output -o " .. programs.screenshots))
+hl.bind(mainMod .. " + ALT + SHIFT + S",        hl.dsp.exec_cmd(shotbin .. " edit"))
+hl.bind(mainMod .. " + CTRL + ALT + SHIFT + S", hl.dsp.exec_cmd("hyprshot -m window -o " .. programs.screenshots))
+
 -- app scratchpads (~/.local/bin/rice-scratch): each app on its own hidden workspace, the key shows / hides it
 -- and starts the app the first time. System monitor = btop; music and chat = the apps picked in
 -- Settings > Apps (music: ncspot + cava when ncspot is installed)
