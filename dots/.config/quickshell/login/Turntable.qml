@@ -1,10 +1,11 @@
-// Turntable.qml -- the lock screen's media player: a record in the theme's colours that spins while the music plays.
-//   * the cover is the record's label
+// Turntable.qml -- the lock screen's media player: a vinyl record that spins while the music plays.
+//   * the cover is the record's label, the title and artist run round the grooves like the print on a sleeve
 //   * a tonearm rests on the record and moves from the outer groove to the inner one as the track plays;
 //     paused or stopped, it swings away. Three round keys on the right edge: previous / play-pause / next
 //     (a click on the label also plays / pauses).
 // Loaded by LoginScreen.qml (lock mode only). s = screen height / 768 like the rest of that file.
 import QtQuick
+import QtQuick.Shapes
 import QtQuick.Effects
 import Quickshell.Services.Mpris
 
@@ -56,16 +57,44 @@ Item {
         rotation: angle
         NumberAnimation on angle { from: 0; to: 360; duration: 11000; loops: Animation.Infinite; running: true; paused: !root.playing }
 
-        Rectangle { anchors.fill: parent; radius: root.rad; color: Qt.darker(root.accent, 5.5); border.width: Math.max(1, root.s); border.color: Qt.alpha(root.accent, 0.55) }
-        Repeater {                                   // a few grooves in the theme colour
-            model: [0.86, 0.72, 0.58]
+        Rectangle { anchors.fill: parent; radius: root.rad; color: "#0c0c0f" }
+        Repeater {                                   // grooves
+            model: 18
             delegate: Rectangle {
-                required property real modelData
-                anchors.centerIn: parent; width: root.dia * modelData; height: width; radius: width / 2
-                color: "transparent"; border.width: Math.max(1, root.s); border.color: Qt.alpha(root.accent, 0.22)
+                required property int index
+                readonly property real d: root.dia * (0.97 - index * 0.028)
+                anchors.centerIn: parent; width: d; height: d; radius: d / 2
+                color: "transparent"; border.width: 1
+                border.color: Qt.alpha(root.fg, index % 5 === 0 ? 0.10 : 0.045)
             }
         }
-        Rectangle { x: parent.width / 2 - width / 2; y: root.rad * 0.14; width: 5 * root.s; height: width; radius: width / 2; color: root.accent }   // a mark, so the turning shows
+        Rectangle { anchors.centerIn: parent; width: root.dia * 0.985; height: width; radius: width / 2; color: "transparent"; border.width: 2; border.color: Qt.alpha(root.fg, 0.12) }
+
+        // title and artist round the groove, one letter at a time
+        Repeater {
+            id: ring
+            readonly property int n: 96
+            readonly property string unit: root.title + (root.artist ? "  ·  " + root.artist : "") + "     ·     "
+            readonly property string text: {
+                const copies = Math.max(1, Math.floor(n / unit.length))
+                const t = unit.repeat(copies)
+                return t.length >= n ? t.slice(0, n - 1) + "…" : t + " ".repeat(n - t.length)
+            }
+            model: n
+            delegate: Item {
+                required property int index
+                width: 0; height: 0
+                anchors.centerIn: parent
+                rotation: index * 360 / ring.n
+                Text {
+                    x: -width / 2; y: -root.rad * 0.80
+                    text: ring.text.charAt(index)
+                    color: root.fg; opacity: 0.62
+                    font { family: root.font; pixelSize: 12 * root.s; letterSpacing: 0 }
+                }
+            }
+        }
+        Rectangle { x: parent.width / 2 - width / 2; y: root.rad * 0.33 - height / 2; width: 5 * root.s; height: width; radius: width / 2; color: root.accent }   // a mark, so the turning shows
 
         // the label: the cover
         Rectangle { anchors.centerIn: parent; width: root.dia * 0.43; height: width; radius: width / 2; color: root.accent }
@@ -82,7 +111,24 @@ Item {
                 layer.enabled: true
                 layer.effect: MultiEffect { maskEnabled: true; maskSource: lmask }
             }
-            Rectangle { anchors.centerIn: parent; width: 9 * root.s; height: width; radius: width / 2; color: Qt.darker(root.accent, 8) }   // spindle
+            Rectangle { anchors.centerIn: parent; width: 9 * root.s; height: width; radius: width / 2; color: "#050506"; border.width: 1; border.color: Qt.alpha(root.fg, 0.4) }   // spindle
+        }
+    }
+    // a fixed sheen, so the record catches the light while it turns
+    Shape {
+        anchors.fill: parent
+        ShapePath {
+            strokeWidth: -1
+            fillGradient: ConicalGradient {
+                centerX: root.rad; centerY: root.rad; angle: 25
+                GradientStop { position: 0.00; color: "#00ffffff" }
+                GradientStop { position: 0.08; color: "#1affffff" }
+                GradientStop { position: 0.17; color: "#00ffffff" }
+                GradientStop { position: 0.50; color: "#00ffffff" }
+                GradientStop { position: 0.58; color: "#14ffffff" }
+                GradientStop { position: 0.67; color: "#00ffffff" }
+            }
+            PathAngleArc { centerX: root.rad; centerY: root.rad; radiusX: root.rad * 0.96; radiusY: root.rad * 0.96; startAngle: 0; sweepAngle: 360 }
         }
     }
     // the label is a button: play / pause
@@ -93,15 +139,17 @@ Item {
     }
 
     // ---- the tonearm: pivot top right; the needle runs from the outer groove to the inner one ----
-    readonly property real armDeg: -40                                    // the line the needle follows, from the centre
-    readonly property real pivotX: rad + rad * 1.18 * Math.cos(-52 * Math.PI / 180)
-    readonly property real pivotY: rad + rad * 1.18 * Math.sin(-52 * Math.PI / 180)
-    property real needleR: playing ? rad * (0.93 - 0.46 * progress) : rad * 1.45
-    Behavior on needleR { NumberAnimation { duration: 800; easing.type: Easing.InOutCubic } }
-    readonly property real tipX: rad + needleR * Math.cos(armDeg * Math.PI / 180)
-    readonly property real tipY: rad + needleR * Math.sin(armDeg * Math.PI / 180)
-    readonly property real armLen: Math.hypot(tipX - pivotX, tipY - pivotY)
-    readonly property real armAng: Math.atan2(tipY - pivotY, tipX - pivotX) * 180 / Math.PI
+    // A real tonearm keeps its length and turns about the pivot: the needle runs along an arc. delta = the angle between the
+    // arm and the line pivot -> record centre; delta(r) is the one that puts the needle r away from the centre (law of cosines).
+    readonly property real pivotDist: rad * 1.18
+    readonly property real pivotX: rad + pivotDist * Math.cos(-52 * Math.PI / 180)
+    readonly property real pivotY: rad + pivotDist * Math.sin(-52 * Math.PI / 180)
+    readonly property real armLen: pivotDist - 0.40 * rad
+    readonly property real baseAng: Math.atan2(rad - pivotY, rad - pivotX)                  // pivot -> centre, radians
+    function deltaFor(r) { return Math.acos(Math.max(-1, Math.min(1, (pivotDist * pivotDist + armLen * armLen - r * r) / (2 * pivotDist * armLen)))) }
+    property real armDelta: playing ? deltaFor(rad * (0.93 - 0.46 * progress)) : 68 * Math.PI / 180      // paused: swung up and away
+    Behavior on armDelta { NumberAnimation { duration: 900; easing.type: Easing.InOutCubic } }
+    readonly property real armAng: (baseAng + armDelta) * 180 / Math.PI
     Item {
         x: root.pivotX; y: root.pivotY; width: 0; height: 0
         rotation: root.armAng
