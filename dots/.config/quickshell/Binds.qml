@@ -1,5 +1,5 @@
 // Binds.qml -- singleton: every keyboard shortcut, for Settings > Shortcuts and the launcher's "> Keybinds" list.
-// Read from ~/.config/hypr/conf/binds.lua (grouped by the comment above each block) plus the ones added in Settings
+// Read from ~/.config/hypr/conf/binds.lua (grouped by the "--- Heading" lines in it) plus the ones added in Settings
 // (~/.config/hypr/local/settings.lua, group "Your shortcuts"). Both files are watched: edits show up at once.
 pragma Singleton
 import QtQuick
@@ -25,7 +25,7 @@ Singleton {
         const out = []; let group = fixed || "General"
         for (const raw of text.split("\n")) {
             const line = raw.trim()
-            if (!fixed && /^--\s*\S/.test(line) && !/^--\s*(https?:|NOTE)/i.test(line)) { group = line.replace(/^--\s*/, "").replace(/\s*\(.*$/, "").replace(/:.*$/, ""); continue }
+            if (!fixed && /^---\s*\S/.test(line)) { group = line.replace(/^---\s*/, "").trim(); continue }   // "--- Heading"; other comments are notes
             let m = line.match(/^hl\.bind\((.+?),\s*(hl\..*)\)\s*$/)
             // a key that runs a Lua function: its action is the comment after `function()`
             const fm = m ? null : line.match(/^hl\.bind\((.+?),\s*function\(\)\s*--\s*(.*)$/)

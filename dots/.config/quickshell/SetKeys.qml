@@ -1,5 +1,5 @@
 // SetKeys.qml -- Settings > Keys: every keyboard shortcut from ~/.config/hypr/conf/binds.lua (parsed in Binds.qml,
-// grouped by the comment above each block), with a search box. To change one: "edit binds.lua" (nano); Hyprland
+// grouped by the "--- Heading" lines in it), with a search box. To change one: "edit binds.lua" (nano); Hyprland
 // reloads by itself when the file is saved.
 import QtQuick
 import Quickshell
