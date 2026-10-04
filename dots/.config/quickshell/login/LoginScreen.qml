@@ -112,7 +112,7 @@ Item {
         active: root.mode === "lock"
         source: "Turntable.qml"
         x: 70 * root.s
-        y: root.height - 500 * root.s
+        y: root.height - 480 * root.s
         opacity: root.ui
         onLoaded: { item.s = Qt.binding(() => root.s); item.fg = Qt.binding(() => root.fg); item.accent = Qt.binding(() => root.accent); item.dimc = Qt.binding(() => root.dimc); item.font = root.font }
     }
