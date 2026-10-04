@@ -19,6 +19,12 @@
   "notification_panel": { "button": false },
   "git": { "inline_blame": { "enabled": false } },
 
+  // JetBrains / VS Code layout: files on the left, the AI agent on the right
+  "project_panel": { "dock": "left", "default_width": 260 },
+  "agent": { "dock": "right", "default_width": 420 },
+  "git_panel": { "dock": "left" },
+  "outline_panel": { "dock": "right" },
+
   "terminal": { "font_family": "Iosevka Nerd Font", "blinking": "off", "copy_on_select": true },
 
   "telemetry": { "diagnostics": false, "metrics": false },
