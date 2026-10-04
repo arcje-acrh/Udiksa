@@ -79,3 +79,4 @@ UsagePanel UsagePanel.qml
 ScreenCorners ScreenCorners.qml
 singleton Corners Corners.qml
 CornerArcs CornerArcs.qml
+singleton Binds Binds.qml

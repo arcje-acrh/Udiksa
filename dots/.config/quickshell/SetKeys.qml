@@ -1,5 +1,5 @@
-// SetKeys.qml -- Settings > Keys: every keyboard shortcut, read from ~/.config/hypr/conf/binds.lua (grouped by
-// the comment above each block), with a search box. To change one: "edit binds.lua" (nano); Hyprland
+// SetKeys.qml -- Settings > Keys: every keyboard shortcut from ~/.config/hypr/conf/binds.lua (parsed in Binds.qml,
+// grouped by the comment above each block), with a search box. To change one: "edit binds.lua" (nano); Hyprland
 // reloads by itself when the file is saved.
 import QtQuick
 import Quickshell
@@ -8,37 +8,9 @@ import Quickshell.Io
 SetPage {
     id: page
     readonly property string file: host ? host.home + "/.config/hypr/conf/binds.lua" : ""
-    property var binds: []            // [{ group, keys, action }]
+    readonly property var binds: Binds.rice       // [{ group, keys, action }] (Binds.qml reads binds.lua)
     property string query: ""
 
-    function human(a) {
-        if (a.startsWith("-- ")) return a.slice(3)
-        a = a.trim().replace(/,\s*\{[^}]*\}\s*$/, "")                  // drop the options table
-        let m = a.match(/^hl\.dsp\.exec_cmd\((.*)\)$/)
-        if (m) return "run  " + m[1].replace(/programs\.(\w+)/g, "$1").replace(/"\s*\.\.\s*|\s*\.\.\s*"/g, "").replace(/"/g, "")
-        return a.replace(/^hl\.dsp\./, "").replace(/\(\)$/, "").replace(/[{}"]/g, "").replace(/\s+/g, " ")
-    }
-    FileView {
-        path: page.file
-        watchChanges: true
-        onFileChanged: reload()
-        onLoaded: {
-            const out = []; let group = "General"
-            for (const raw of text().split("\n")) {
-                const line = raw.trim()
-                if (/^--\s*\S/.test(line) && !/^--\s*(https?:|NOTE)/i.test(line)) { group = line.replace(/^--\s*/, "").replace(/\s*\(.*$/, "").replace(/:.*$/, ""); continue }
-                let m = line.match(/^hl\.bind\((.+?),\s*(hl\..*)\)\s*$/)
-                // a key that runs a Lua function: its action is the comment after `function()`
-                const fm = m ? null : line.match(/^hl\.bind\((.+?),\s*function\(\)\s*--\s*(.*)$/)
-                if (fm) m = [line, fm[1], "-- " + fm[2]]
-                if (!m) continue
-                let keys = m[1].replace(/mainMod\s*\.\.\s*"/, "SUPER").replace(/"\s*\.\.\s*key/, " + 0-9").replace(/"/g, "").replace(/\s*\.\.\s*/g, "")
-                keys = keys.replace(/\s*\+\s*/g, " + ").replace("SUPER + ", "SUPER + ").trim()
-                out.push({ group: group.length > 60 ? group.slice(0, 60) + "…" : group, keys: keys, action: page.human(m[2]) })
-            }
-            page.binds = out
-        }
-    }
     readonly property var shown: query === "" ? binds : binds.filter(b => (b.keys + " " + b.action + " " + b.group).toLowerCase().indexOf(query.toLowerCase()) >= 0)
 
     Process { id: bindProc; onExited: page.host.load() }

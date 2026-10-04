@@ -7,6 +7,7 @@
 //     Clipboard (history; Enter copies it back, Shift+Del removes)   Emoji (grid; Enter copies)
 //     Windows (Enter focuses)   Calculator (qalc; Enter copies)   Scripts (~/.local/share/rice/scripts)
 //     Tools (record the screen, pick a colour, draw on a screenshot, keep awake, game mode, system monitor)
+//     Keybinds (every shortcut, searchable, from Binds.qml; Enter opens Settings > Shortcuts to change one)
 //   (power actions live in the notch's power panel, not here)
 //   ↑↓ select, Enter opens, Backspace on an empty search or Esc goes back, Esc on the main view closes.
 // App usage counts: ~/.local/state/quickshell/launcher.json. Icons are plain white: a standard icon per
@@ -32,6 +33,7 @@ Item {
         { id: "calc", title: "Calculator", sub: "Math, units, percentages", glyph: "󰃬" },
         { id: "scripts", title: "Scripts", sub: "Maintenance: mirrors, updates, cleanup, snapshots, checks", glyph: "󰯁" },
         { id: "tools", title: "Tools", sub: "Record the screen, pick a colour, draw on a screenshot, keep awake, game mode", glyph: "󰦬" },
+        { id: "keys", title: "Keybinds", sub: "Every shortcut at a glance (change them in Settings > Shortcuts)", glyph: "󰌌" },
         { id: "settings", title: "Settings", sub: "Look, devices, system, monitor, keys, software, about (Super+I)", glyph: "󰒓" }
     ]
     function viewInfo(id) { return menu.find(m => m.id === id) }
@@ -196,6 +198,8 @@ Item {
         if (view === "emoji") return emojis.filter(e => score(e.name, s) > 0).slice(0, 120).map(e => ({ kind: "emoji", title: e.ch, sub: e.name }))
         if (view === "tools") return tools.filter(t => Math.max(score(t.title, s), score(t.sub, s) * 0.6) > 0)
             .map(t => ({ kind: "tool", title: t.title, sub: t.sub, glyph: t.glyph, tool: t }))
+        if (view === "keys") return Binds.list.filter(b => Math.max(score(b.keys, s), score(b.action, s), score(b.group, s) * 0.6) > 0)
+            .map(b => ({ kind: "key", title: b.keys, sub: b.action + "  ·  " + b.group, glyph: "󰌌" }))
         if (view === "scripts") return scripts.filter(sc => Math.max(score(sc.title, s), score(sc.desc, s) * 0.6) > 0)
             .map(sc => ({ kind: "script", title: sc.title, sub: sc.desc + (sc.terminal ? "" : "  ·  runs in the background"), glyph: sc.terminal ? "󰆍" : "󰑓", sc: sc }))
         return []
@@ -223,6 +227,7 @@ Item {
         else if (r.kind === "emoji") copy(r.title)
         else if (r.kind === "script") runScript(r.sc)
         else if (r.kind === "tool") runTool(r.tool)
+        else if (r.kind === "key") Quickshell.execDetached(["qs", "ipc", "call", "settings", "open", "keys"])
         root.done()
     }
 
