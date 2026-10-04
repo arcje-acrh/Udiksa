@@ -24,8 +24,11 @@ Item {
     readonly property var all: Mpris.players.values.filter(p => !/playerctld/i.test((p.dbusName || "") + (p.identity || "")))
     property var picked: null                // chosen with the button; null = automatic
     property var followed: null              // automatic: the last player that played
-    readonly property var player: (picked && all.indexOf(picked) >= 0) ? picked
-        : ((followed && all.indexOf(followed) >= 0) ? followed : (all.length ? all[0] : null))
+    readonly property var playingNow: all.find(p => p.isPlaying) || null
+    readonly property var player: (picked && all.indexOf(picked) >= 0) ? picked                       // chosen by hand
+        : ((followed && followed.isPlaying && all.indexOf(followed) >= 0) ? followed                  // the playing one (the one already shown, if several)
+        : (playingNow ? playingNow                                                                    // else any playing one
+        : ((followed && all.indexOf(followed) >= 0) ? followed : (all.length ? all[0] : null))))      // none playing: the last one that played
     function follow() {
         if (followed && all.indexOf(followed) < 0) followed = null
         if (!followed || !followed.isPlaying) { const p = all.find(x => x.isPlaying); if (p) followed = p }
@@ -73,7 +76,7 @@ Item {
         Behavior on dragRot { enabled: !scratch.pressed; NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
         NumberAnimation on angle { from: 0; to: 360; duration: 11000; loops: Animation.Infinite; running: true; paused: !root.playing || scratch.pressed }
 
-        Rectangle { anchors.fill: parent; radius: root.rad; color: "#0c0c0f" }
+        Rectangle { anchors.fill: parent; radius: root.rad; color: Qt.tint("#0c0c0f", Qt.alpha(root.accent, 0.16)); border.width: Math.max(1, root.s); border.color: Qt.alpha(root.accent, 0.35) }
         Repeater {                                   // grooves
             model: 18
             delegate: Rectangle {
@@ -81,10 +84,10 @@ Item {
                 readonly property real d: root.dia * (0.97 - index * 0.028)
                 anchors.centerIn: parent; width: d; height: d; radius: d / 2
                 color: "transparent"; border.width: 1
-                border.color: Qt.alpha(root.fg, index % 5 === 0 ? 0.10 : 0.045)
+                border.color: Qt.alpha(root.accent, index % 5 === 0 ? 0.20 : 0.08)
             }
         }
-        Rectangle { anchors.centerIn: parent; width: root.dia * 0.985; height: width; radius: width / 2; color: "transparent"; border.width: 2; border.color: Qt.alpha(root.fg, 0.12) }
+        Rectangle { anchors.centerIn: parent; width: root.dia * 0.985; height: width; radius: width / 2; color: "transparent"; border.width: 2; border.color: Qt.alpha(root.accent, 0.25) }
 
         // title and artist round the groove, one letter at a time
         Repeater {
@@ -105,7 +108,7 @@ Item {
                 Text {
                     x: -width / 2; y: -root.rad * 0.80
                     text: ring.text.charAt(index)
-                    color: root.fg; opacity: 0.62
+                    color: root.accent; opacity: 0.7
                     font { family: root.font; pixelSize: 12 * root.s; letterSpacing: 0 }
                 }
             }
@@ -138,10 +141,10 @@ Item {
             fillGradient: ConicalGradient {
                 centerX: root.rad; centerY: root.rad; angle: 25
                 GradientStop { position: 0.00; color: "#00ffffff" }
-                GradientStop { position: 0.08; color: "#1affffff" }
+                GradientStop { position: 0.08; color: Qt.alpha(root.accent, 0.16) }
                 GradientStop { position: 0.17; color: "#00ffffff" }
                 GradientStop { position: 0.50; color: "#00ffffff" }
-                GradientStop { position: 0.58; color: "#14ffffff" }
+                GradientStop { position: 0.58; color: Qt.alpha(root.accent, 0.12) }
                 GradientStop { position: 0.67; color: "#00ffffff" }
             }
             PathAngleArc { centerX: root.rad; centerY: root.rad; radiusX: root.rad * 0.96; radiusY: root.rad * 0.96; startAngle: 0; sweepAngle: 360 }
