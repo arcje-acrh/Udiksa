@@ -203,7 +203,8 @@ Afterwards: Wi-Fi passwords, signing in to your apps, and `sudo tailscale up` if
 | <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>R</kbd> (+<kbd>Shift</kbd> area, +<kbd>Ctrl</kbd> with sound) | Record the screen; again = stop |
 | <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>C</kbd> | Colour picker |
 | <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>P</kbd> / <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>\\</kbd> / <kbd>Super</kbd>+<kbd>C</kbd> | Pin window / picture-in-picture / centre |
-| <kbd>Super</kbd>+<kbd>G</kbd> / <kbd>Super</kbd>+<kbd>Tab</kbd> / <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>G</kbd> | Window group (tabs): make or break / next tab / take the window out |
+| <kbd>Super</kbd>+<kbd>G</kbd> / <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>Arrows</kbd> | Window group (tabs): make or break / move the window into the group on that side |
+| <kbd>Super</kbd>+<kbd>Tab</kbd> / <kbd>Super</kbd>+<kbd>Alt</kbd>+<kbd>G</kbd> | Next tab of a group / take the window out of it |
 | <kbd>Super</kbd>+<kbd>PgUp</kbd> / <kbd>PgDn</kbd> | Previous / next workspace |
 | <kbd>Ctrl</kbd>+<kbd>Shift</kbd>+<kbd>Esc</kbd> / <kbd>Super</kbd>+<kbd>M</kbd> / <kbd>Super</kbd>+<kbd>D</kbd> | System monitor / music / chat scratchpad |
 

@@ -53,12 +53,17 @@ hl.bind(mainMod .. " + ALT + backslash", function() -- picture-in-picture: small
     hl.dispatch(hl.dsp.window.pin())
 end)
 
--- window groups = tabs: SUPER + G makes / breaks a group (windows moved next to it join it), SUPER + Tab /
--- SUPER + SHIFT + Tab step through its tabs, SUPER + ALT + G takes the window out, SUPER + CTRL + G locks it
+-- window groups = tabs: SUPER + G makes / breaks a group, SUPER + ALT + arrows move the window INTO the group on that
+-- side (SUPER + SHIFT + arrows only swap places with it), SUPER + Tab / SUPER + SHIFT + Tab step through its tabs,
+-- SUPER + ALT + G takes the window out, SUPER + CTRL + G locks it
 hl.bind(mainMod .. " + G",             hl.dsp.group.toggle())
 hl.bind(mainMod .. " + TAB",           hl.dsp.group.next())
 hl.bind(mainMod .. " + SHIFT + TAB",   hl.dsp.group.prev())
 hl.bind(mainMod .. " + ALT + G",       hl.dsp.window.move({ out_of_group = true }))
+hl.bind(mainMod .. " + ALT + left",    hl.dsp.window.move({ into_group = "l" }))
+hl.bind(mainMod .. " + ALT + right",   hl.dsp.window.move({ into_group = "r" }))
+hl.bind(mainMod .. " + ALT + up",      hl.dsp.window.move({ into_group = "u" }))
+hl.bind(mainMod .. " + ALT + down",    hl.dsp.window.move({ into_group = "d" }))
 hl.bind(mainMod .. " + CTRL + G",      hl.dsp.group.lock_active({ action = "toggle" }))
 
 -- move focus with arrow keys
