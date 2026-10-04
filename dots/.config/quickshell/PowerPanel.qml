@@ -2,7 +2,6 @@
 // (sleep, then hibernate later when Settings > Power says so); Hibernate shows only when it is set up.
 // Lock = the Quickshell lock screen (Lock.qml). Log out / Reboot / Power off need a second
 // click within 3 s (the button turns red and says "Confirm?"). done() closes the notch after an action.
-// Second row: Keep awake and Game mode switches (Modes.qml), LED keys: the LED is lit while on.
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -85,63 +84,5 @@ Item {
                 }
             }
         }
-    }
-
-    // ---------- switches: keep awake, game mode ----------
-    Row {
-        id: modesRow
-        anchors.left: parent.left; anchors.leftMargin: 22
-        anchors.top: row.bottom; anchors.topMargin: 10
-        spacing: 10
-        Repeater {
-            model: [
-                { id: "awake", icon: "󰅶", name: "Keep awake", on: Modes.awake, toggle: () => Modes.setAwake(!Modes.awake) },
-                { id: "game",  icon: "󰊴", name: "Game mode",  on: Modes.game,  toggle: () => Modes.setGame(!Modes.game) }
-            ]
-            delegate: Rectangle {
-                id: sw
-                required property var modelData
-                width: row.btnW; height: 44; radius: 2
-                color: swHover.containsMouse ? Theme.raised : Theme.surface
-                border.width: 1; border.color: modelData.on ? Qt.alpha(Theme.coral, 0.6) : Theme.hover
-                Behavior on color { ColorAnimation { duration: 120 } }
-                KeyEdge { pressed: sw.modelData.on }
-                Row {
-                    anchors.centerIn: parent
-                    spacing: 10
-                    Rectangle {   // the LED
-                        anchors.verticalCenter: parent.verticalCenter
-                        width: 6; height: 6; radius: 1
-                        color: sw.modelData.on ? Theme.coral : Theme.raised
-                        Rectangle { visible: sw.modelData.on; anchors.fill: parent; anchors.margins: -2; radius: 2; z: -1; color: Qt.alpha(Theme.coral, 0.3) }
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: sw.modelData.icon; color: sw.modelData.on ? Theme.coral : Theme.text
-                        font.family: Theme.font; font.pixelSize: 16
-                    }
-                    Text {
-                        anchors.verticalCenter: parent.verticalCenter
-                        text: sw.modelData.name; color: Theme.text
-                        font.family: Theme.font; font.pixelSize: 12; font.bold: true
-                    }
-                }
-                MouseArea {
-                    id: swHover
-                    anchors.fill: parent
-                    hoverEnabled: true
-                    cursorShape: Qt.PointingHandCursor
-                    onClicked: sw.modelData.toggle()
-                }
-            }
-        }
-    }
-    Text {
-        anchors.left: modesRow.right; anchors.leftMargin: 16
-        anchors.right: parent.right; anchors.rightMargin: 22
-        anchors.verticalCenter: modesRow.verticalCenter
-        wrapMode: Text.Wrap
-        text: "Keep awake: no lock, screen off or sleep until you turn it off.  Game mode: animations, blur, shadows and gaps off."
-        color: Theme.dim; font.family: Theme.font; font.pixelSize: 11
     }
 }

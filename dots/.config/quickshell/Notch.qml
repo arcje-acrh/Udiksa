@@ -75,14 +75,13 @@ Item {
     // makes the notch "breathe" a little wider while it shows
     // ... but never wider than the screen (a rotated / small screen): the panel's own layout shrinks with it
     readonly property int panelW: loaded === "" || !panelItem || !(panelItem.wantWidth > 0) ? restWidth : Math.min(maxWidth, Math.max(restWidth, panelItem.wantWidth))
-    // inline notification (line breaks -> " · "): the notch is as wide as the text needs (380 px up to 200 px wider than
-    // at rest) and TALLER for a
+    // inline notification (line breaks -> " · "): the notch is as wide as the text needs, never narrower than at rest, up to 200 px wider and TALLER for a
     // long text (wraps to at most 3 lines) instead of ever wider
     readonly property string notifText: Notifs.current
         ? ((Notifs.current.summary || "") + (Notifs.current.body ? "  " + Notifs.current.body : "")).replace(/<[^>]*>/g, "").replace(/\s*\n+\s*/g, "  ·  ")
         : ""
     TextMetrics { id: nfMetrics; font.family: Theme.font; font.pixelSize: 12; text: root.notifText }
-    readonly property int notifExtra: Math.max(380 - restWidth, Math.min(200, Math.ceil(20 + 18 + 10 + nfApp.implicitWidth + 10
+    readonly property int notifExtra: Math.max(0, Math.min(200, Math.ceil(20 + 18 + 10 + nfApp.implicitWidth + 10
         + nfMetrics.advanceWidth + (Notifs.unread > 1 ? 40 : 0) + 24 - restWidth)))
     // the text's room (the notch at its target width, minus clock, icon, app name, +N) and how many lines it needs there
     readonly property real nfTextW: Math.max(120, restWidth + notifExtra - 20 - 24 - 18 - nfApp.implicitWidth - (Notifs.unread > 1 ? 50 : 0) - 20)
