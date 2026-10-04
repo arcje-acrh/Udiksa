@@ -16,6 +16,7 @@ Card Card.qml
 Seg Seg.qml
 IconKey IconKey.qml
 ClockDemo ClockDemo.qml
+ClockPage ClockPage.qml
 Toggle Toggle.qml
 ListRow ListRow.qml
 LevelSlider LevelSlider.qml

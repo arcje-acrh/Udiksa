@@ -4,6 +4,7 @@
 // Note: Firefox-based browsers (Zen) publish ONE player for the whole browser, which follows the tab
 // that most recently started media; separate tabs/windows do not appear separately.
 import QtQuick
+import QtQuick.Effects
 import Quickshell.Services.Mpris
 
 Item {
@@ -75,12 +76,15 @@ Item {
                 GradientStop { position: 1; color: Theme.accentDeep }
             }
             Text { anchors.centerIn: parent; text: "󰝚"; color: Qt.alpha(Theme.text, 0.6); font.family: Theme.font; font.pixelSize: 36 }   // shows when there is no cover
+            Rectangle { id: artMask; anchors.fill: parent; radius: art.radius; visible: false; layer.enabled: true }   // rounds the cover (clip: only cuts square)
             Image {
                 anchors.fill: parent
                 source: root.player ? root.player.trackArtUrl : ""
                 fillMode: Image.PreserveAspectCrop
                 asynchronous: true
                 sourceSize.width: 220; sourceSize.height: 220
+                layer.enabled: true
+                layer.effect: MultiEffect { maskEnabled: true; maskSource: artMask }
             }
         }
 
