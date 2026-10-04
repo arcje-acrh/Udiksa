@@ -1,8 +1,9 @@
 // LauncherPanel.qml -- the launcher inside the grown notch (Super + R: `qs ipc call notch toggle launcher`),
 // no prefix characters: just type.
-//   Main view: just type. Apps (most used first) and the menu entries below are searched together; a line
-//   that looks like math shows its result on top; the last row runs what you typed as a command.
-//   Menu entries open as their own list (Enter), with a breadcrumb "Menu › …":
+//   Main view: just type. Apps only (most used first); a line that looks like math shows its result on top;
+//   the last row runs what you typed as a command.
+//   ">" shows the menu instead (">rec" searches it and the tools). Entries open as their own list (Enter),
+//   with a breadcrumb "Menu › …":
 //     Clipboard (history; Enter copies it back, Shift+Del removes)   Emoji (grid; Enter copies)
 //     Windows (Enter focuses)   Calculator (qalc; Enter copies)   Scripts (~/.local/share/rice/scripts)
 //     Tools (record the screen, pick a colour, draw on a screenshot, keep awake, game mode, system monitor)
@@ -162,6 +163,13 @@ Item {
     // ---------- results of the current view ----------
     readonly property var results: {
         const s = q
+        if (view === "main" && s.startsWith(">")) {            // ">": the menu (and its tools), nothing else
+            const m = s.slice(1).trim()
+            const menuRows = menu.filter(x => !m || Math.max(score(x.title, m), score(x.sub, m) * 0.6) > 0)
+                .map(x => ({ kind: "menu", title: x.title, sub: x.sub, glyph: x.glyph, target: x.id, more: true }))
+            const toolRows = m ? tools.filter(t => score(t.title, m) > 0).map(t => ({ kind: "tool", title: t.title, sub: t.sub, glyph: t.glyph, tool: t })) : []
+            return menuRows.concat(toolRows)
+        }
         if (view === "main") {
             const use = a => usage[a.id] || 0
             const apps = DesktopEntries.applications.values.filter(a => !a.noDisplay)
@@ -170,13 +178,9 @@ Item {
             apps.sort((x, y) => s ? ((y.sc - x.sc) || (use(y.a) - use(x.a)) || x.a.name.localeCompare(y.a.name))
                                   : ((use(y.a) - use(x.a)) || x.a.name.localeCompare(y.a.name)))
             const appRows = apps.slice(0, 40).map(x => ({ kind: "app", title: x.a.name, sub: x.a.genericName || x.a.comment || "", icon: x.a.icon, glyph: typeGlyph(x.a), entry: x.a }))
-            const menuRows = menu.filter(m => !s || Math.max(score(m.title, s), score(m.sub, s) * 0.6) > 0)
-                .map(m => ({ kind: "menu", title: m.title, sub: m.sub, glyph: m.glyph, target: m.id, more: true }))
             let r = []
             if (looksMath && calcResult && calcFor === s) r.push({ kind: "calc", title: "= " + calcResult, sub: s + "   ·   Enter copies the result", glyph: "󰃬" })
-            // tools also show up straight from the main search ("record", "colour", ...)
-            const toolRows = s ? tools.filter(t => score(t.title, s) > 0).map(t => ({ kind: "tool", title: t.title, sub: t.sub, glyph: t.glyph, tool: t })) : []
-            r = s ? r.concat(appRows, toolRows, menuRows) : r.concat(menuRows, appRows)
+            r = r.concat(appRows)
             if (s) r.push({ kind: "run", title: "Run “" + s + "”", sub: "as a command · Ctrl+Enter: in a terminal", glyph: "󰆍", cmd: s })
             return r
         }
@@ -256,7 +260,7 @@ Item {
                 clip: true
                 Text {
                     visible: !input.text
-                    text: root.view === "main" ? "Search apps, tools, math, or type a command…" : "Search…"
+                    text: root.view === "main" ? "Search apps, math or a command  ·  > for the menu" : "Search…"
                     color: Theme.dim; font: input.font
                 }
                 Keys.onPressed: (e) => {
@@ -398,7 +402,7 @@ Item {
             width: parent.width; height: 18; elide: Text.ElideRight
             text: root.view === "emoji" && root.results[root.sel] ? root.results[root.sel].sub
                 : "↑↓ select · Enter open · " + (root.stack.length ? "Backspace/Esc back" : "Esc close")
-                  + (root.view === "clip" ? " · Shift+Del remove" : "") + (root.view === "main" ? " · Ctrl+Enter runs a command in a terminal" : "")
+                  + (root.view === "clip" ? " · Shift+Del remove" : "") + (root.view === "main" ? " · > menu · Ctrl+Enter runs a command in a terminal" : "")
             color: Theme.dim; font.family: Theme.font; font.pixelSize: 11
         }
     }

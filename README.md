@@ -108,7 +108,7 @@ Rosé Pine Dawn · Solarized Dark · Terafox · Tokyo Night · Vantablack · Whi
 | Launcher (<kbd>Super</kbd>+<kbd>R</kbd>) · Graphite | System · Catppuccin Mocha |
 |:---:|:---:|
 | <img src="docs/screenshots/notch-launcher.webp" alt="Launcher: apps, clipboard, emoji, calculator, scripts"> | <img src="docs/screenshots/notch-system.webp" alt="System panel: performance mode, GPU, screen, fans"> |
-| Apps, clipboard, emoji, calculator, windows, maintenance scripts | Performance mode, GPU, refresh rate, keyboard light, fans |
+| Apps, math, commands; type <kbd>></kbd> for clipboard, emoji, windows, tools and scripts | Performance mode, GPU, refresh rate, keyboard light, fans |
 
 | Calendar and weather · Everforest Light | Sound · Rosé Pine |
 |:---:|:---:|
@@ -235,6 +235,10 @@ Each one comes with what to do about it, or how to make it fit your system.
 - **Shake to find is a Hyprland plugin**, built for your Hyprland version at the first login. After a Hyprland update,
   Update system rebuilds it; if a build ever fails, the pointer simply stops growing and you get a notification.
   You can switch it off in Settings > Mouse & keyboard.
+- **Updates keep the rice's settings.** pacman never overwrites a config file that was changed (the rice changes a few:
+  the login screen, boot splash, GRUB and initramfs settings). When a package brings a new default for one, it is
+  saved next to it as `<file>.pacnew` and nothing else happens. Update system lists any it finds at the end; compare
+  with `diff <file> <file>.pacnew`, take what you want, then delete the `.pacnew`. Leaving it does no harm.
 - **The pointer changes in apps opened afterwards.** Apps that were already open keep the old pointer until you
   restart them.
 - **Extra hardware controls exist for ASUS and hybrid NVIDIA laptops only.** Other laptops get the standard
