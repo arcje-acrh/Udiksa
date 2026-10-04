@@ -1,6 +1,7 @@
 // Turntable.qml -- the lock screen's media player: a vinyl record that spins while the music plays.
 //   * the cover is the record's label, the title and artist run round the grooves like the print on a sleeve
 //   * a round button at the top right picks which player to show (left click = next, right click = automatic);
+//   * scratch to seek: hold the record and turn it (clockwise = ahead, one turn = 30 s); the wheel skips 5 s;
 //   * three round keys on the right edge: previous / play-pause / next (a click on the label also plays / pauses).
 // Loaded by LoginScreen.qml (lock mode only). s = screen height / 768 like the rest of that file.
 import QtQuick
@@ -67,8 +68,10 @@ Item {
         id: spin
         anchors.fill: parent
         property real angle: 0
-        rotation: angle
-        NumberAnimation on angle { from: 0; to: 360; duration: 11000; loops: Animation.Infinite; running: true; paused: !root.playing }
+        property real dragRot: 0                      // extra turn while you hold the record
+        rotation: angle + dragRot
+        Behavior on dragRot { enabled: !scratch.pressed; NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
+        NumberAnimation on angle { from: 0; to: 360; duration: 11000; loops: Animation.Infinite; running: true; paused: !root.playing || scratch.pressed }
 
         Rectangle { anchors.fill: parent; radius: root.rad; color: "#0c0c0f" }
         Repeater {                                   // grooves
@@ -144,6 +147,43 @@ Item {
             PathAngleArc { centerX: root.rad; centerY: root.rad; radiusX: root.rad * 0.96; radiusY: root.rad * 0.96; startAngle: 0; sweepAngle: 360 }
         }
     }
+    // ---- scratch to seek: hold the record and turn it. Clockwise skips ahead, counter-clockwise back; one full turn
+    // = 30 s; the song jumps when you let go. The mouse wheel over the record skips 5 s a notch. ----
+    readonly property bool canScratch: has && player.canSeek && metaLen > 0
+    property real scratchSecs: 0
+    MouseArea {
+        id: scratch
+        anchors.fill: parent
+        enabled: root.canScratch
+        cursorShape: pressed ? Qt.ClosedHandCursor : Qt.OpenHandCursor
+        property real last: 0
+        property real turns: 0
+        function ang(m) { return Math.atan2(m.y - root.rad, m.x - root.rad) }
+        onPressed: (m) => {
+            if (Math.hypot(m.x - root.rad, m.y - root.rad) > root.rad) { m.accepted = false; return }
+            last = ang(m); turns = 0; root.scratchSecs = 0
+        }
+        onPositionChanged: (m) => {
+            if (!pressed) return
+            let d = ang(m) - last
+            if (d > Math.PI) d -= 2 * Math.PI
+            if (d < -Math.PI) d += 2 * Math.PI
+            last = ang(m); turns += d / (2 * Math.PI)
+            spin.dragRot += d * 180 / Math.PI
+            root.scratchSecs = turns * 30
+        }
+        onReleased: {
+            if (root.scratchSecs !== 0) {
+                root.player.position = Math.max(0, Math.min(root.metaLen - 1, root.player.position + root.scratchSecs))
+                root.player.positionChanged()
+            }
+            root.scratchSecs = 0; spin.dragRot = 0
+        }
+        onWheel: (w) => {
+            const t = Math.max(0, Math.min(root.metaLen - 1, root.player.position + (w.angleDelta.y > 0 ? 5 : -5)))
+            root.player.position = t; root.player.positionChanged()
+        }
+    }
     // the label is a button: play / pause
     MouseArea {
         anchors.centerIn: parent; width: root.dia * 0.41; height: width
@@ -162,11 +202,6 @@ Item {
         border.width: 1; border.color: Qt.alpha(pma.containsMouse ? root.accent : root.fg, pma.containsMouse ? 0.9 : 0.4)
         Text { anchors.centerIn: parent; text: root.picked ? "󰐃" : "󰝚"; color: pma.containsMouse || root.picked ? root.accent : root.fg
                font { family: root.font; pixelSize: 15 * root.s } }
-        Text {                                       // whose track this is (+ n/m when there are several)
-            x: parent.width + 10 * root.s; anchors.verticalCenter: parent.verticalCenter
-            text: root.player ? (root.player.identity || "").toUpperCase() + (root.all.length > 1 ? "  " + (root.all.indexOf(root.player) + 1) + "/" + root.all.length : "") : ""
-            color: root.fg; opacity: 0.65; font { family: root.font; pixelSize: 11 * root.s; letterSpacing: 2 * root.s }
-        }
         MouseArea {
             id: pma
             anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
@@ -206,7 +241,10 @@ Item {
         Row {
             spacing: 14 * root.s
             Text { text: root.artist; visible: root.artist !== ""; width: Math.min(implicitWidth, root.dia * 0.6); elide: Text.ElideRight; color: root.accent; font { family: root.font; pixelSize: 12 * root.s; letterSpacing: 1 * root.s } }
-            Text { visible: root.metaLen > 0; text: root.mmss(root.player ? root.player.position : 0) + " / " + root.mmss(root.metaLen); color: root.fg; opacity: 0.5; font { family: root.font; pixelSize: 12 * root.s } }
+            Text { visible: root.metaLen > 0
+                   text: root.scratchSecs !== 0 ? (root.scratchSecs > 0 ? "▶▶ +" : "◀◀ −") + root.mmss(Math.abs(root.scratchSecs)) + "  →  " + root.mmss(Math.max(0, Math.min(root.metaLen, (root.player ? root.player.position : 0) + root.scratchSecs)))
+                                                 : root.mmss(root.player ? root.player.position : 0) + " / " + root.mmss(root.metaLen)
+                   color: root.scratchSecs !== 0 ? root.accent : root.fg; opacity: root.scratchSecs !== 0 ? 1 : 0.5; font { family: root.font; pixelSize: 12 * root.s } }
         }
     }
 }
