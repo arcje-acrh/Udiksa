@@ -20,10 +20,9 @@ and themes that recolour everything, from the boot menu to the mouse pointer and
 
 ## Video
 
-<!-- VIDEO PLACEHOLDER: on github.com, edit this file, delete the "coming soon" line below and drag
-     udiksa-showcase.mp4 into its place. GitHub uploads it and puts a link there that shows as a player. -->
+https://github.com/user-attachments/assets/18d40805-beff-4757-9cb0-9980e1efb9d0
 
-*A short tour (notch, tiling, live theme switching, Settings) is coming soon.*
+The notch on hover, tiling, the launcher, live theme switching (open apps recolour in place) and Settings.
 
 ## Details
 
