@@ -24,7 +24,7 @@ if [[ ! -f /etc/snapper/configs/root ]] && ((!part1)) && ((!YES)); then
 fi
 
 grub=0; command -v grub-mkconfig >/dev/null && [[ -f /etc/default/grub ]] && grub=1
-pkgs=(snapper snap-pac); ((grub)) && pkgs+=(grub-btrfs inotify-tools)
+pkgs=(snapper snap-pac btrfs-assistant); ((grub)) && pkgs+=(grub-btrfs inotify-tools)      # btrfs-assistant = the snapshot window (launcher: "Btrfs Assistant")
 pacman -S --needed --noconfirm "${pkgs[@]}" >/dev/null 2>&1
 say "installed: ${pkgs[*]}"
 
@@ -49,6 +49,16 @@ if [[ ! -f /etc/snapper/configs/root ]]; then
     chmod 750 /.snapshots
     say "snapper config 'root' created"
 else say "snapper config 'root' already there"; fi
+
+# Btrfs Assistant runs as root (pkexec), and root has no Qt settings: link root's qt6ct + Kvantum folders to the user's, so the
+# window wears the rice's colours and follows every theme switch (udiksa theme rewrites those files). Never replaces a real root config.
+if [[ -n ${SUDO_USER:-} && $SUDO_USER != root ]]; then
+    uh=$(getent passwd "$SUDO_USER" | cut -d: -f6); mkdir -p /root/.config
+    for d in qt6ct Kvantum; do
+        [[ -d $uh/.config/$d && ! -e /root/.config/$d && ! -L /root/.config/$d ]] && ln -s "$uh/.config/$d" "/root/.config/$d"
+    done
+    say "Btrfs Assistant themed (root's Qt config follows $SUDO_USER's)"
+fi
 
 systemctl enable --now snapper-timeline.timer snapper-cleanup.timer >/dev/null 2>&1
 ((grub)) && systemctl enable --now grub-btrfsd >/dev/null 2>&1

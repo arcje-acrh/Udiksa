@@ -240,7 +240,7 @@ Each one comes with what to do about it, or how to make it fit your system.
 - **Hibernation is set up fully automatically only with GRUB.** With another boot loader (systemd-boot, rEFInd, ...)
   the installer prints the `resume=` settings for you to add to its boot entry. It needs swap about the size of your
   RAM; the installer offers your existing swap or makes a swap file.
-- **Snapshots need btrfs.** On other file systems that step is skipped; everything else works.
+- **Snapshots need btrfs.** On other file systems that step is skipped; everything else works. On btrfs you also get **Btrfs Assistant** (in the launcher), a window to browse, compare and restore the snapshots, in the rice's colours.
 - **Holidays in the calendar are India's.** To use your country's, put its Google holiday calendar address in
   `icsUrl` in `dots/.config/quickshell/Agenda.qml` (for example `en.usa%23holiday` instead of
   `en.indian%23holiday`).
