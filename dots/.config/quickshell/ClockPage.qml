@@ -59,7 +59,7 @@ Item {
         property string hint: ""
         signal accepted()
         function focusIt() { ti.forceActiveFocus() }
-        height: 30; radius: 4; color: Theme.raised
+        height: 30; radius: 2; color: Theme.raised
         border.width: 1; border.color: ti.activeFocus ? Theme.coral : "transparent"
         TextInput { id: ti; anchors.fill: parent; anchors.leftMargin: 9; anchors.rightMargin: 9; verticalAlignment: TextInput.AlignVCenter; clip: true
                     color: Theme.text; selectionColor: Qt.alpha(Theme.coral, 0.4); font.family: Theme.font; font.pixelSize: 12; onAccepted: bx.accepted()
@@ -69,8 +69,8 @@ Item {
     component Head: Item {
         property string title: ""
         property bool backKey: false
-        width: parent.width; height: 28
-        IconKey { visible: parent.backKey; width: 28; height: 24; glyph: "󰁍"; onClicked: root.back() }
+        width: parent.width; height: 30
+        IconKey { visible: parent.backKey; glyph: "󰁍"; onClicked: root.back() }
         Text { x: parent.backKey ? 36 : 0; anchors.verticalCenter: parent.verticalCenter; text: parent.title.toUpperCase()
                color: Theme.text; font.family: Theme.font; font.pixelSize: 11; font.bold: true; font.letterSpacing: 1 }
         Text { anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter; visible: parent.backKey && root.error !== ""
@@ -98,17 +98,17 @@ Item {
                        color: Agenda.timerPaused ? Theme.amber : (Agenda.timerOn ? Theme.coral : Theme.dim); font.family: Theme.font; font.pixelSize: 38; font.bold: true }
                 Grid {
                     visible: !Agenda.timerOn; anchors.horizontalCenter: parent.horizontalCenter; y: 56
-                    columns: 4; spacing: 6
+                    columns: 4; spacing: 4
                     Repeater {
                         model: [1, 5, 10, 15, 25, 30, 45, 60]
-                        delegate: IconKey { required property int modelData; width: 84; height: 32; glyphSize: 13; glyph: modelData + " min"; onClicked: Agenda.startTimer(modelData * 60, "") }
+                        delegate: IconKey { required property int modelData; width: 84; glyphSize: 13; glyph: modelData + " min"; onClicked: Agenda.startTimer(modelData * 60, "") }
                     }
                 }
                 Row {
-                    visible: Agenda.timerOn; anchors.horizontalCenter: parent.horizontalCenter; y: 62; spacing: 6
-                    IconKey { width: 116; height: 36; glyphSize: 18; glyph: Agenda.timerPaused ? "󰐊" : "󰏤"; onClicked: Agenda.timerPaused ? Agenda.resumeTimer() : Agenda.pauseTimer() }
-                    IconKey { width: 116; height: 36; glyphSize: 18; glyph: "󰓛"; onClicked: Agenda.cancelTimer() }
-                    IconKey { width: 116; height: 36; glyphSize: 13; glyph: "+1 min"; onClicked: Agenda.snooze() }
+                    visible: Agenda.timerOn; anchors.horizontalCenter: parent.horizontalCenter; y: 62; spacing: 4
+                    IconKey { glyphSize: 18; glyph: Agenda.timerPaused ? "󰐊" : "󰏤"; onClicked: Agenda.timerPaused ? Agenda.resumeTimer() : Agenda.pauseTimer() }
+                    IconKey { glyphSize: 18; glyph: "󰓛"; onClicked: Agenda.cancelTimer() }
+                    IconKey { glyphSize: 13; glyph: "+1 min"; onClicked: Agenda.snooze() }
                 }
             }
 
@@ -116,20 +116,20 @@ Item {
             Column {
                 visible: root.kind !== "timer"; width: parent.width; spacing: 10
                 Box { id: txt; width: parent.width; hint: root.kind === "alarm" ? "label (optional)" : "what"; onAccepted: tim.focusIt() }
-                Row { spacing: 6; width: parent.width
+                Row { spacing: 4; width: parent.width
                     Box { id: tim; width: 84; hint: root.kind === "event" ? "all day" : "07:30"; onAccepted: root.submit() }
-                    IconKey { width: 28; height: 30; glyph: "󰅁"; onClicked: root.dayOffset-- }
-                    Rectangle { width: parent.width - 84 - 28 - 28 - 18 - 0; height: 30; radius: 4; color: "transparent"
+                    IconKey { glyph: "󰅁"; onClicked: root.dayOffset-- }
+                    Rectangle { width: parent.width - 84 - 30 - 30 - 12; height: 30; radius: 2; color: "transparent"
                         Text { anchors.centerIn: parent; text: root.dayOffset === 0 ? "Today" : (root.dayOffset === 1 ? "Tomorrow" : Qt.formatDate(root.day, "ddd d MMM")); color: Theme.text; font.family: Theme.font; font.pixelSize: 12 } }
-                    IconKey { width: 28; height: 30; glyph: "󰅂"; onClicked: root.dayOffset++ }
+                    IconKey { glyph: "󰅂"; onClicked: root.dayOffset++ }
                 }
-                Row { spacing: 6; width: parent.width
+                Row { spacing: 4; width: parent.width
                     Repeater {
                         model: ["once", "daily", "yearly"]
                         delegate: IconKey { required property int index; required property string modelData
-                            width: (parent.width - 18 - 78) / 3; height: 32; glyphSize: 12; glyph: modelData; on: root.rep === index; onClicked: root.rep = index }
+                            glyphSize: 12; glyph: modelData; on: root.rep === index; onClicked: root.rep = index }
                     }
-                    IconKey { width: 78; height: 32; glyphSize: 17; glyph: "󰐕"; onClicked: root.submit() }
+                    IconKey { glyphSize: 17; glyph: "󰐕"; onClicked: root.submit() }
                 }
             }
         }
@@ -145,15 +145,15 @@ Item {
             Column {
                 visible: root.kind === "timer"; width: parent.width; spacing: 8
                 Box { id: lab; width: parent.width; hint: "what for (optional)"; onAccepted: mins.focusIt() }
-                Row { spacing: 6; width: parent.width
-                    Box { id: mins; width: parent.width - 6 - 78; hint: "minutes, e.g. 7.5"; onAccepted: root.startCustom() }
-                    IconKey { width: 78; height: 30; glyphSize: 17; glyph: "󰐊"; onClicked: root.startCustom() }
+                Row { spacing: 4; width: parent.width
+                    Box { id: mins; width: parent.width - 4 - 30; hint: "minutes, e.g. 7.5"; onAccepted: root.startCustom() }
+                    IconKey { glyphSize: 17; glyph: "󰐊"; onClicked: root.startCustom() }
                 }
                 Grid {
-                    columns: 2; spacing: 6; width: parent.width
+                    columns: 2; spacing: 4; width: parent.width
                     Repeater {
                         model: [["tea", 3], ["eggs", 8], ["focus", 25], ["break", 5]]
-                        delegate: IconKey { required property var modelData; width: (parent.width - parent.spacing) / 2; height: 30; glyphSize: 12
+                        delegate: IconKey { required property var modelData; width: (parent.width - parent.spacing) / 2; glyphSize: 12
                             glyph: modelData[0] + "  " + modelData[1] + " min"; onClicked: Agenda.startTimer(modelData[1] * 60, modelData[0]) }
                     }
                 }

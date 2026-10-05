@@ -21,10 +21,9 @@ Item {
 
     Row {
         id: row
-        anchors.left: parent.left; anchors.right: parent.right
-        anchors.leftMargin: 22; anchors.rightMargin: 22
+        anchors.horizontalCenter: parent.horizontalCenter
         anchors.top: parent.top; anchors.topMargin: 16
-        spacing: 10
+        spacing: 4
         // Hibernate shows only when it is set up (show only what works); the buttons share the row
         readonly property var buttons: [
                 { id: "lock",     icon: "󰌾", name: "Lock",        confirm: false, enabled: true,  cmd: ["qs", "ipc", "call", "lock", "lock"] },
@@ -34,7 +33,6 @@ Item {
                 { id: "reboot",   icon: "󰜉", name: "Reboot",      confirm: true,  enabled: true,  cmd: ["systemctl", "reboot"] },
                 { id: "poweroff", icon: "󰐥", name: "Power off",   confirm: true,  enabled: true,  cmd: ["systemctl", "poweroff"] }
             ].filter(b => b.enabled)
-        readonly property real btnW: (width - (buttons.length - 1) * spacing) / buttons.length
         Repeater {
             model: row.buttons
             delegate: Rectangle {
@@ -43,17 +41,15 @@ Item {
                 readonly property bool isArmed: root.armed === modelData.id
                 readonly property color fg: !modelData.enabled ? Theme.dim
                                           : (isArmed || (hover.containsMouse && modelData.confirm) ? Theme.warn : Theme.text)
-                width: row.btnW; height: 44; radius: 2
+                width: inner.implicitWidth + 28; height: 40; radius: 2
                 color: !modelData.enabled ? "transparent"
                      : (isArmed ? Qt.alpha(Theme.warn, 0.18) : (hover.containsMouse ? Theme.raised : Theme.surface))
-                border.width: 1
-                border.color: !modelData.enabled ? Theme.raised : (isArmed ? Qt.alpha(Theme.warn, 0.6) : Theme.hover)
                 Behavior on color { ColorAnimation { duration: 120 } }
-                KeyEdge { visible: btn.modelData.enabled; pressed: btn.isArmed }
 
                 Row {
+                    id: inner
                     anchors.centerIn: parent
-                    spacing: 10
+                    spacing: 8
                     Text {
                         anchors.verticalCenter: parent.verticalCenter
                         text: btn.modelData.icon; color: btn.fg

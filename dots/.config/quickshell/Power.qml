@@ -353,7 +353,7 @@ true`]
     property string gpuPower: ""               // runtime state of the dGPU: active / suspended
     readonly property bool gpuError: gpuMode === "Hybrid" && !gpuDriver
     readonly property var gpuLabels: ({ Integrated: "Eco", Hybrid: "Standard", AsusMuxDgpu: "Ultimate" })
-    function refreshGpu() { if (gfx) gpuProc.running = true }
+    function refreshGpu() { if (gfx && !gpuSet.running) gpuProc.running = true }
     Process {
         id: gpuProc
         command: ["sh", "-c",
@@ -378,8 +378,17 @@ true`]
         }
     }
     Timer { interval: 15000; running: root.gfx; repeat: true; onTriggered: root.refreshGpu() }
-    function setGpuMode(m) { run([["supergfxctl", "-m", m]]); Qt.callLater(() => gpuLater.restart()) }
-    Timer { id: gpuLater; interval: 1500; onTriggered: root.refreshGpu() }
+    // supergfxctl -m takes seconds: show the choice at once (queued), run one switch at a time, re-read when it ends
+    property string gpuNext: ""
+    function setGpuMode(m) {
+        gpuQueued = m
+        if (gpuSet.running) { gpuNext = m; return }
+        gpuSet.command = ["supergfxctl", "-m", m]; gpuSet.running = true
+    }
+    Process {
+        id: gpuSet
+        onExited: { if (root.gpuNext !== "") { const m = root.gpuNext; root.gpuNext = ""; root.setGpuMode(m) } else root.refreshGpu() }
+    }
 
     // ---------- live monitor (only while the System panel is open) ----------
     property int watchers: 0

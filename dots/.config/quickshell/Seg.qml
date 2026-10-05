@@ -1,5 +1,5 @@
 // Seg.qml -- a row of retro hardware keys (user pick 2026-09-26, style D), one selected.
-// Each key: small LED + label, bevelled (light top edge); the chosen one is pressed in (dark inset) with a
+// Each key: small LED + label on a flat square key; the chosen one is dark with a
 // lit accent LED. `options` = labels, `current` = index, picked(i) when one is clicked (the owner applies
 // the change and updates `current`). `queued` = index of a choice that takes effect later (amber LED +
 // amber label), e.g. a GPU mode after reboot.
@@ -11,7 +11,7 @@ Row {
     property int current: -1
     property int queued: -1
     signal picked(int index)
-    spacing: 0
+    spacing: 4
     Repeater {
         model: root.options
         delegate: Rectangle {
@@ -21,22 +21,11 @@ Row {
             readonly property bool later: root.queued === index && !on
             width: label.implicitWidth + 28; height: 30; radius: 2
             color: on ? Theme.bg : (ma.containsMouse ? Theme.hover : Theme.raised)
-            border.width: 1; border.color: on ? Theme.dim : Theme.hover
-            Rectangle {   // top light edge (raised key)
-                visible: !parent.on
-                x: 1; y: 1; width: parent.width - 2; height: 1
-                color: Qt.alpha(Theme.text, 0.12)
-            }
-            Rectangle {   // inset shadow (pressed key)
-                visible: parent.on
-                x: 1; y: 1; width: parent.width - 2; height: 2
-                color: Qt.alpha(Theme.shadow, 0.35)
-            }
             Rectangle {   // LED
                 id: led
                 x: 8; anchors.verticalCenter: parent.verticalCenter
                 width: 5; height: 5; radius: 2.5
-                color: parent.on ? Theme.coral : (parent.later ? Theme.amber : Theme.dim)
+                color: parent.on ? Theme.text : (parent.later ? Theme.amber : Theme.dim)
                 Rectangle {   // glow
                     visible: parent.parent.on || parent.parent.later
                     anchors.centerIn: parent; width: 11; height: 11; radius: 5.5; z: -1

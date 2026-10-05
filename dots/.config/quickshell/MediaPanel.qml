@@ -169,30 +169,39 @@ Item {
         Column {
             id: list
             width: 230
-            anchors.top: parent.top          // players list starts at the top (level with the cover)
-            spacing: 2
-            Text {
-                text: "PLAYERS · " + root.players.length
-                color: Theme.muted; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 1
-            }
+            anchors.top: parent.top          // players list = the cover's height: header + two keys (a third scrolls)
+            spacing: 0
+            PanelTitle { title: "Players"; action: "" + root.players.length }
             ScrollList {
                 width: parent.width
-                height: Math.min(contentHeight, 118)
-                spacing: 2
+                height: Math.min(contentHeight, 88)
+                spacing: 4
                 model: root.players
                 delegate: Rectangle {
                     required property var modelData
                     readonly property bool on: root.player === modelData
                     width: ListView.view.width - ListView.view.rightMargin
-                    height: 40; radius: 2; KeyEdge {}
-                    color: on ? Qt.alpha(Theme.coral, 0.16) : (pm.containsMouse ? Theme.raised : "transparent")
+                    height: 42; radius: 2
+                    color: on ? Qt.alpha(Theme.coral, 0.22) : (pm.containsMouse ? Theme.hover : Theme.raised)
+                    Rectangle {   // LED: the player being controlled (same as the choice keys)
+                        x: 10; anchors.verticalCenter: parent.verticalCenter
+                        width: 5; height: 5; radius: 2.5
+                        color: parent.on ? Theme.coral : Theme.dim
+                    }
+                    Text {   // playing / paused
+                        x: 24; anchors.verticalCenter: parent.verticalCenter; width: 16
+                        text: modelData.isPlaying ? "󰐊" : "󰏤"
+                        color: modelData.isPlaying ? Theme.coral : Theme.muted
+                        font.family: Theme.font; font.pixelSize: 15
+                    }
                     Column {
-                        anchors.left: parent.left; anchors.right: parent.right; anchors.margins: 10
+                        x: 46; width: parent.width - 46 - 10
                         anchors.verticalCenter: parent.verticalCenter
+                        spacing: 2
                         Text {
                             width: parent.width; elide: Text.ElideRight
-                            text: (modelData.isPlaying ? "󰐊 " : "󰏤 ") + modelData.identity
-                            color: parent.parent.on ? Theme.coral : Theme.text
+                            text: modelData.identity
+                            color: parent.parent.on ? Theme.text : Theme.muted
                             font.family: Theme.font; font.pixelSize: 12; font.bold: true
                         }
                         Text {

@@ -79,7 +79,7 @@ Item {
                     Rectangle {   // one full charge, then the limit applies again (asusctl battery oneshot)
                         visible: (root.limit > 0 && root.limit < 100) || Power.oneshotRestore > 0
                         anchors.verticalCenter: parent.verticalCenter
-                        width: once.implicitWidth + 16; height: 20; radius: 2; KeyEdge {}
+                        width: once.implicitWidth + 16; height: 22; radius: 2
                         color: om.containsMouse ? Theme.hover : Theme.raised
                         Text { id: once; anchors.centerIn: parent; text: Power.oneshotRestore > 0 ? "100% once · back to " + Power.oneshotRestore + "% · cancel" : "charge to 100% once"; color: Theme.amber; font.family: Theme.font; font.pixelSize: 11; font.bold: true }
                         MouseArea { id: om; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: { if (Power.oneshotRestore === 0) { Power.chargeOnce(root.limit); root.limit = 100 } else { root.limit = Power.oneshotRestore; Power.cancelOnce(true) } } }

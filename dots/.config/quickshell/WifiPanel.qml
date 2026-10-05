@@ -301,8 +301,7 @@ Item {
         property bool primary: false
         property bool danger: false
         signal clicked()
-        width: bt.implicitWidth + 32; height: 34; radius: 2; KeyEdge {}
-        border.width: btn.primary ? 0 : 1; border.color: Theme.hover
+        width: bt.implicitWidth + 28; height: 30; radius: 2
         color: primary ? (bm.containsMouse ? Theme.amber : Theme.coral)
              : (danger ? (bm.containsMouse ? Qt.alpha(Theme.warn, 0.25) : Qt.alpha(Theme.warn, 0.12))
              : (bm.containsMouse ? Theme.hover : Theme.raised))

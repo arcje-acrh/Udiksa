@@ -329,9 +329,9 @@ Item {
                 Text { anchors.horizontalCenter: parent.horizontalCenter; text: Agenda.ringTitle; color: Theme.text; font.family: Theme.font; font.pixelSize: 16; font.bold: true }
                 Text { anchors.horizontalCenter: parent.horizontalCenter; text: Agenda.ringText; color: Theme.muted; font.family: Theme.font; font.pixelSize: 12 }
                 Item { width: 1; height: 4 }
-                Row { anchors.horizontalCenter: parent.horizontalCenter; spacing: 10
-                    IconKey { width: 130; height: 36; glyphSize: 13; glyph: Agenda.ringKind === "timer" ? "+1 min" : "Snooze 5 min"; onClicked: Agenda.snooze() }
-                    IconKey { width: 130; height: 36; glyphSize: 13; glyph: "Stop"; on: true; onClicked: Agenda.stop() }
+                Row { anchors.horizontalCenter: parent.horizontalCenter; spacing: 4
+                    IconKey { glyphSize: 13; glyph: Agenda.ringKind === "timer" ? "+1 min" : "Snooze 5 min"; onClicked: Agenda.snooze() }
+                    IconKey { glyphSize: 13; glyph: "Stop"; on: true; onClicked: Agenda.stop() }
                 }
             }
         }
