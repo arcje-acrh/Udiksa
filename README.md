@@ -53,11 +53,14 @@ The notch on hover, tiling, the launcher, live theme switching (open apps recolo
   animations; displays (resolution, scale, rotation, several monitors); sound per app; mouse, keyboard and touchpad;
   Wi-Fi, Bluetooth, Tailscale; battery, sleep and hibernation; default and startup apps; shortcuts. Every change
   applies live.
+- **One command.** `udiksa` is the front door to all of it: themes and wallpapers, screenshots and recording, the
+  notch panels, update and install, a health check (`udiksa doctor`). Plain `udiksa` shows the status of your install;
+  `udiksa help` lists every command and `udiksa <command> -h` explains its arguments. Bash completion included.
 - **Retro-hardware controls.** LED bars instead of sliders, keys that press in, hairline switches, Iosevka
   everywhere. Rounded screen corners match the windows.
 - **Tools built in.** Screen recording (GPU-encoded, with or without sound), a colour picker, screenshots (area,
   window, screen, or drawn on; a click on the notch's "saved" card opens the picture, and laptops without Print Screen
-  get the same modes on the snip key), keep awake, game mode, a terminal clock (`clock`), a usage panel (CPU per core,
+  get the same modes on the snip key), keep awake, game mode, a terminal clock (`udiksa clock`), a usage panel (CPU per core,
   memory, network, disks, busiest programs), app scratchpads (system monitor, music, chat), clipboard history, emoji,
   a calculator, low-battery warnings.
 - **Yours stays yours.** Everything you change in Settings lives in a personal layer (`~/.config/hypr/local/`),
@@ -174,10 +177,16 @@ cd ~/Udiksa && ./install.sh apps rice
 - **Hardware**: on an ASUS laptop or a hybrid NVIDIA laptop, it offers the matching support (see `hardware/`).
   Something on your machine not supported? [docs/HARDWARE.md](docs/HARDWARE.md) shows how to add it.
 - **Reboot.** The first login sets the theme, desktop settings and default apps.
+- **Then use `udiksa`.** The installer links the `udiksa` command into `~/.local/bin`; from then on `udiksa install rice`
+  re-applies the rice, `udiksa update dots` pulls the repo and relinks, `udiksa update` updates the system, and
+  `udiksa doctor` checks that everything is in place (see [The `udiksa` command](#the-udiksa-command)).
 
 **On a blank machine**: boot the Arch USB, clone the repo there, and run `./install.sh arch` first. It installs Arch on
 the disk you pick (btrfs with snapshots, a swap file for hibernation, GRUB), never on a disk with Windows on it.
 `--dry-run` shows every step first. Then reboot and run `./install.sh apps rice`.
+
+Before the first login `udiksa` does not exist yet, which is why the very first run is `./install.sh`; it is the same
+installer (`udiksa install` just calls it).
 
 Afterwards: Wi-Fi passwords, signing in to your apps, and `sudo tailscale up` if you chose Tailscale.
 
