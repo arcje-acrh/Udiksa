@@ -1,0 +1,237 @@
+# help texts for `udiksa <command> -h` (read by ~/.local/bin/udiksa). Format per command:
+#   [name]  /  first line = one-line description  /  usage: <arguments>  /  "# HEADING" starts a table
+#   "  label  description" = a table row (two spaces between)  /  note: text  /  example: command  explanation
+[theme]
+Themes: a folder of wallpapers is one palette that recolours the whole rice.
+usage: <command> [arguments]
+# COMMANDS
+  next | prev            Next / previous wallpaper of this theme
+  set <name>             A theme by name, any case (--transition grow|wipe|none)
+  random [filter]        A random picture: dark, light, or wallpaper (this theme)
+  apply <picture>        That wallpaper and its theme everywhere (--pos X,Y)
+  names [dark|light]     Theme names, one per line
+  current                The theme and wallpaper in use (JSON)
+  list                   All themes for the switcher (JSON)
+  reapply                Write the current theme again (after editing colors.toml)
+  colors <picture>       Show a picture's main colours
+  import <github link>   A community theme repo with colors.toml and pictures
+  corners                Redo the rounded corners of the lock, login and GRUB screens
+  thumbs                 Remake the previews
+note: A theme is a folder in ~/Pictures/Wallpapers/: new folder = new theme. Its colours come from colors.toml in that folder.
+example: udiksa theme set "Tokyo Night"  switch theme
+example: udiksa theme random dark  a surprise, dark only
+[wallpaper]
+Change the wallpaper (same theme, or a picture of your own).
+usage: next | prev | random | set <picture> | current
+# COMMANDS
+  next | prev            Next / previous wallpaper of the current theme
+  random                 A random wallpaper of the current theme
+  set <picture>          Use this picture (its folder decides the theme)
+  current                Print the path of the wallpaper in use
+example: udiksa wallpaper random  a new look in the same theme
+[cursor]
+The theme-coloured mouse pointers (Udiksa, Udiksa-Modern).
+usage: build [Udiksa|Udiksa-Modern]
+usage: greeter <theme> <size>
+# COMMANDS
+  build [name]           Rebuild the pointer from the theme colours (no name = the one in use)
+  greeter <theme> <size> Copy a pointer to the login screen
+note: A theme change rebuilds the pointer by itself. Choose the pointer in Settings > Mouse & keyboard.
+[shot]
+Screenshots: saved to ~/Pictures/Screenshots, copied, and announced in the notch.
+usage: area | window | screen | edit
+# COMMANDS
+  area                   Drag a rectangle
+  window                 Click a window
+  screen                 The whole screen
+  edit                   Freeze the screen, pick an area, draw on it (arrows, boxes, text, blur)
+note: In the editor Enter saves and copies, Esc throws it away.
+example: udiksa shot area  select a region
+[record]
+Screen recording, encoded by the GPU. Run it again (or `stop`) to stop.
+usage: screen | region | sound | stop
+# COMMANDS
+  screen                 The screen the mouse is on
+  region                 Pick an area first
+  sound                  The screen plus what you hear and the microphone
+  stop                   Stop a running recording
+note: Saved in ~/Videos/Recordings. The notch shows a blinking dot and the time while it runs.
+[pick]
+Colour picker: click anywhere, the hex code is copied and shown in the notch.
+usage: (no arguments)
+note: Esc cancels.
+[toggle]
+Show or hide a notch panel, Settings or the theme switcher.
+usage: <panel>
+# PANELS
+  battery power volume wifi bluetooth media notifications system
+  tailscale launcher usage clock clockTimer clockAlarm clockReminder clockEvent
+# OTHER
+  themes                 The theme switcher
+  settings               The Settings app
+example: udiksa toggle system  open or close the system panel
+[open]
+Open a notch panel (it stays open until you leave it). Close it with `udiksa close`.
+usage: <panel>
+note: Panels are listed in `udiksa toggle -h`.
+[close]
+Close the open notch panel.
+usage: (no arguments)
+[clipboard]
+Clipboard history, in the launcher.
+usage: (no arguments)
+[emoji]
+Emoji picker, in the launcher.
+usage: (no arguments)
+[lock]
+Lock the screen.
+usage: (no arguments)
+[dnd]
+Do not disturb: toggles notification pop-ups on and off.
+usage: (no arguments)
+[osd]
+Show a message in the notch.
+usage: "<icon>" "<text>"
+example: udiksa osd "󰄬" "Backup done"  an icon and a line of text
+[scratch]
+App scratchpads: each app lives on its own hidden workspace that a key shows and hides.
+usage: sysmon | music | chat
+# COMMANDS
+  sysmon                 btop                                    Ctrl+Shift+Esc
+  music                  ncspot + cava, or your own app          Super+M
+  chat                   your chat app                           Super+D
+note: The first press starts the app, later presses show or hide it. Pick the music and chat apps in Settings > Apps.
+[settings]
+The back end of the Settings app: saves your choices and applies them live.
+usage: get | set <key> <value> | reset [section]
+usage: power [<key> <value> | apply]
+usage: monitor set <output> '<json>' | many '<json>' | rm <output>
+usage: anim <key> <value> | cursor [<theme> <size>] | shake on|off
+usage: startup add|rm <command> | bind add <keys> <command> | bind rm <keys>
+# COMMANDS
+  get                    All current values (JSON)
+  set <key> <value>      Save and apply one option
+  reset [section]        Forget saved options (all, look, layout or input)
+  power                  Lock, screen-off and sleep timers, lid and power-button actions
+  monitor                One screen's setup, several at once, or back to automatic
+  anim                   Animation speed, styles and feel
+  cursor                 Mouse pointer theme and size
+  shake on|off           Shake to find the pointer
+  startup add|rm         Your own startup commands
+  bind add|rm            Your own shortcuts, e.g. "SUPER + B" "zen-browser"
+note: Choices are written to ~/.config/hypr/local/ (your personal layer, not in the repo). Use `--full` for every key.
+[shell]
+Start the Quickshell shell at the right physical size for this screen.
+usage: [--restart]
+# COMMANDS
+  (none)                 Start the shell
+  --restart              Stop the running shell and start it again
+[ipc]
+Call any command of the running shell.
+usage: <target> <function> [arguments]
+usage: show
+# COMMANDS
+  show                   List every target and function
+note: Targets include notch, themes, settings, notifications, modes, osd, lock, agenda, record, power.
+example: udiksa ipc notch open media  open the media panel
+[display]
+Screens: cycle or set how an external monitor is used (F9).
+usage: [extend | mirror | external | laptop]
+# COMMANDS
+  (none)                 Next layout: extend, mirror, external only, laptop only
+  extend                 Use both screens side by side
+  mirror                 Show the same picture on both
+  external               External screen only
+  laptop                 Laptop screen only
+note: Without an external screen it just says so.
+[touchpad]
+Switch the laptop touchpad off or on (F10) and show the state in the notch.
+usage: (no arguments)
+[panel-hz]
+Set the refresh rate of the laptop's own panel; resolution, position and scale stay.
+usage: <hz>
+example: udiksa panel-hz 60  save power on battery
+[gpu]
+One-line GPU facts (never wakes the dGPU).
+usage: mode | display | dgpu | all
+# COMMANDS
+  mode                   GPU mode: Integrated, Hybrid or AsusMuxDgpu
+  display                Which GPU drives the laptop panel
+  dgpu                   NVIDIA GPU power state: active or suspended
+  all                    The three above
+[idle]
+Timed actions of hypridle (set the times in Settings > Power).
+usage: off <bat|ac|any> | sleep <bat|ac|any>
+# COMMANDS
+  off <source>           Screen off, only when on that power source
+  sleep <source>         Sleep (then hibernate later, if Settings says so)
+[defaults]
+Set which app opens which kind of file.
+usage: (no arguments)
+note: Safe to run again. Written to ~/.config/mimeapps.list, per category on purpose.
+[flash]
+Write a disk image (.iso, .img, also .xz .gz .zst) to a USB stick or SD card.
+usage: [image]
+note: Lists only removable drives, asks before writing, can verify afterwards.
+[xdpi]
+Set the DPI for X11 apps from the screen scale.
+usage: (no arguments)
+note: Runs at login and after a scale change.
+[clock]
+Open the terminal clock window, in the theme accent.
+usage: (no arguments)
+[kbd]
+ASUS keyboard lighting (does nothing on other machines).
+usage: [set <key> <value>... | apply | theme | lit]
+# COMMANDS
+  (none)                 Saved choices and what this keyboard can do (JSON)
+  set <key> <value>      Save and apply (several pairs are fine)
+  apply                  Apply everything saved
+  theme                  Re-apply when "follow theme" is on
+  lit                    The light was just switched on: send the colour again
+# KEYS
+  brightness             off | low | med | high
+  effect                 static | breathe | rainbow-cycle | rainbow-wave | pulse
+  colour                 rrggbb (colour2 = the second colour of breathe)
+  follow_theme           true | false
+  speed, direction       low|med|high, up|down|left|right
+  boot awake sleep shutdown   true | false (when the light is on at all)
+example: udiksa kbd set colour ff8800 effect breathe  orange, breathing
+[slash]
+ASUS lid light (the Slash bar), where the laptop has one.
+usage: [set <key> <value>... | apply]
+# COMMANDS
+  (none)                 Settings and capabilities (JSON)
+  set <key> <value>      Change one or more (true/false for the switches)
+  apply                  Light or darken the bar for the power source now
+[onlyoffice]
+OnlyOffice, sized for this screen (it is an X11 app).
+usage: [files or --new:word|cell|slide|form]
+[install]
+Run the installer parts.
+usage: [arch] [apps] [rice]
+# COMMANDS
+  arch                   A blank machine only: wipes the disk you pick (from the Arch USB)
+  apps                   Core apps and the optional ones you say yes to
+  rice                   Link the dotfiles, login screen, boot splash, hibernation
+note: `udiksa install rice` alone is safe to repeat.
+[update]
+Update the system, or the dotfiles themselves.
+usage: [system | dots]
+# COMMANDS
+  system                 Official packages, AUR packages, Hyprland plugins (default)
+  dots                   git pull the Udiksa repo, relink, reload and reapply the theme
+[doctor]
+Check that everything the rice needs is in place.
+usage: (no arguments)
+note: Lists missing commands, the Hyprland and shell state, the udiksa commands and dangling links. Exit code 1 if something is missing.
+[firstrun]
+The setup steps that need a running desktop (runs once after install).
+usage: (no arguments)
+note: Safe to run by hand at any time. Log: ~/.cache/rice-firstrun.log.
+[completion]
+Print the bash completion script.
+usage: (no arguments)
+[version]
+The version of this install (the git revision of the Udiksa repo).
+usage: (no arguments)
