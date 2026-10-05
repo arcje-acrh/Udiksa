@@ -20,45 +20,59 @@ script_help() {
 }
 
 help() {
-    cat <<'TXT'
-udiksa -- one command for the Udiksa rice
-
-  look      theme        themes + wallpapers (apply, next, set <name>, random, list, names, import, colors)
-            wallpaper    next | prev | random | set <picture> | current
-            cursor       the theme-coloured mouse pointers
-  capture   shot         screenshots (area, window, screen, edit)
-            record       screen recording (screen, region, sound, stop)
-            pick         colour picker
-  shell     shell        start / --restart the Quickshell shell
-            toggle       toggle a notch panel, Settings or the theme switcher: udiksa toggle system
-            open|close   open a notch panel / close it
-            clipboard    clipboard history in the launcher
-            emoji        emoji picker in the launcher
-            lock         lock the screen
-            dnd          do not disturb on / off
-            osd          show a message in the notch: udiksa osd "icon" "text"
-            ipc          any Quickshell command: udiksa ipc <target> <function> [args]  (udiksa ipc show)
-            scratch      app scratchpads (sysmon, music, chat)
-            settings     the Settings back end (get, set, reset, power, monitor, bind, ...)
-  system    display      extend / mirror / external / laptop screens
-            touchpad     touchpad on / off
-            panel-hz     the laptop panel's refresh rate
-            gpu          GPU mode and power state (mode, display, dgpu, all)
-            idle         timed actions of hypridle (off, sleep)
-            xdpi         X11 apps' DPI
-            defaults     default apps per file type
-            flash        write a disk image to a USB stick
-            clock        the terminal clock window
-  hardware  kbd          ASUS keyboard lighting          slash   ASUS lid light          (only where installed)
-  manage    install      run the installer parts: udiksa install [arch|apps|rice]
-            update       update the system (packages, AUR, Hyprland plugins); `udiksa update dots` = pull + relink the dotfiles
-            doctor       check that everything the rice needs is in place
-            firstrun     the setup steps that need a running desktop
-            completion   print the bash completion script
-            version      version of this install
-
-  udiksa <command> -h   shows that command's usage
-TXT
+    local B="" C="" D="" R=""                      # bold / command colour / dim / reset: only on a terminal (and not with NO_COLOR)
+    [[ -t 1 && -z ${NO_COLOR:-} ]] && { B=$'\e[1m'; C=$'\e[36m'; D=$'\e[2m'; R=$'\e[0m'; }
+    sec() { printf '\n%s%s%s\n' "$B" "$1" "$R"; }
+    row() { printf '  %s%-11s%s %s\n' "$C" "$1" "$R" "$2"; }
+    ex()  { printf '  %s$%s %-32s %s%s%s\n' "$D" "$R" "$1" "$D" "$2" "$R"; }
+    echo "One command for the whole Udiksa rice."
+    sec "USAGE";    echo "  udiksa <command> [arguments]"
+    sec "LOOK"
+    row theme     "Themes: next, set <name>, random, names, apply, import"
+    row wallpaper "Wallpaper: next, prev, random, set <picture>"
+    row cursor    "The theme-coloured mouse pointers"
+    sec "CAPTURE"
+    row shot      "Screenshot: area, window, screen, edit"
+    row record    "Screen recording: screen, region, sound, stop"
+    row pick      "Pick a colour from the screen"
+    sec "SHELL"
+    row toggle    "Show or hide a notch panel, Settings or the theme switcher"
+    row open      "Open a notch panel (close: udiksa close)"
+    row clipboard "Clipboard history in the launcher"
+    row emoji     "Emoji picker in the launcher"
+    row lock      "Lock the screen"
+    row dnd       "Do not disturb on or off"
+    row osd       "Show a message in the notch"
+    row scratch   "App scratchpads: sysmon, music, chat"
+    row settings  "Settings back end: get, set, reset, power, monitor, bind"
+    row shell     "Start or restart the shell (--restart)"
+    row ipc       "Any shell command: ipc <target> <function>, ipc show"
+    sec "SYSTEM"
+    row display   "Screens: extend, mirror, external, laptop"
+    row touchpad  "Touchpad on or off"
+    row panel-hz  "Refresh rate of the laptop panel"
+    row gpu       "GPU mode and power: mode, display, dgpu, all"
+    row idle      "Timed actions of hypridle: off, sleep"
+    row defaults  "Default apps per file type"
+    row flash     "Write a disk image to a USB stick"
+    row xdpi      "DPI for X11 apps"
+    row clock     "The terminal clock window"
+    [[ -x $LIB/kbd ]] && { sec "HARDWARE"; row kbd "ASUS keyboard lighting"; row slash "ASUS lid light"; }
+    sec "MANAGE"
+    row install   "Run installer parts: arch, apps, rice"
+    row update    "Update the system, or: update dots (pull + relink)"
+    row doctor    "Check that everything the rice needs is in place"
+    row firstrun  "Setup steps that need a running desktop"
+    row completion "Print the bash completion script"
+    row version   "Version of this install"
+    sec "EXAMPLES"
+    ex 'udiksa theme set "Tokyo Night"'   "switch theme"
+    ex "udiksa shot area"                 "screenshot a region"
+    ex "udiksa toggle system"             "open the system panel"
+    ex "udiksa wallpaper random"          "a new wallpaper in this theme"
+    sec "LEARN MORE"
+    echo "  udiksa <command> -h    usage of one command"
+    echo "  <Tab>                  completes commands, panels and theme names"
 }
 
 doctor() {
