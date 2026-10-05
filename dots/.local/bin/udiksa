@@ -1,0 +1,133 @@
+#!/usr/bin/env bash
+# udiksa -- the one command for the whole Udiksa rice: `udiksa <command> [args]`, `udiksa help`, `udiksa <command> -h`.
+# The commands themselves are small scripts in ~/.local/lib/udiksa/ (hardware / optional parts add theirs there:
+# `udiksa kbd`, `udiksa slash`, `udiksa onlyoffice`); this file only finds them, plus the built-ins below.
+set -u
+LIB="${UDIKSA_LIB:-$HOME/.local/lib/udiksa}"
+REPO="$(cd "$(dirname "$(readlink -f "$0")")/../../.." 2>/dev/null && pwd)"      # the Udiksa repo (dots/ links point into it)
+PANELS="battery power volume wifi bluetooth media notifications system tailscale launcher usage clock clockTimer clockAlarm clockReminder clockEvent"
+
+die() { echo "udiksa: $*" >&2; exit 1; }
+ipc() { qs ipc call "$@"; }
+
+# header comment of a script (the lines under the shebang, or its docstring) = its --help
+script_help() {
+    awk 'NR==1 { next }
+         NR==2 && /^"""/ { doc = 1; sub(/^"""/, ""); print; if ($0 ~ /"""$/) exit; next }
+         doc { if ($0 ~ /"""/) { sub(/""".*/, ""); if ($0 != "") print; exit } print; next }
+         /^#/ { sub(/^# ?/, ""); print; next }
+         { exit }' "$1"
+}
+
+help() {
+    cat <<'TXT'
+udiksa -- one command for the Udiksa rice
+
+  look      theme        themes + wallpapers (apply, next, set <name>, random, list, names, import, colors)
+            wallpaper    next | prev | random | set <picture> | current
+            cursor       the theme-coloured mouse pointers
+  capture   shot         screenshots (area, window, screen, edit)
+            record       screen recording (screen, region, sound, stop)
+            pick         colour picker
+  shell     shell        start / --restart the Quickshell shell
+            toggle       toggle a notch panel, Settings or the theme switcher: udiksa toggle system
+            open|close   open a notch panel / close it
+            clipboard    clipboard history in the launcher
+            emoji        emoji picker in the launcher
+            lock         lock the screen
+            dnd          do not disturb on / off
+            osd          show a message in the notch: udiksa osd "icon" "text"
+            ipc          any Quickshell command: udiksa ipc <target> <function> [args]  (udiksa ipc show)
+            scratch      app scratchpads (sysmon, music, chat)
+            settings     the Settings back end (get, set, reset, power, monitor, bind, ...)
+  system    display      extend / mirror / external / laptop screens
+            touchpad     touchpad on / off
+            panel-hz     the laptop panel's refresh rate
+            gpu          GPU mode and power state (mode, display, dgpu, all)
+            idle         timed actions of hypridle (off, sleep)
+            xdpi         X11 apps' DPI
+            defaults     default apps per file type
+            flash        write a disk image to a USB stick
+            clock        the terminal clock window
+  hardware  kbd          ASUS keyboard lighting          slash   ASUS lid light          (only where installed)
+  manage    install      run the installer parts: udiksa install [arch|apps|rice]
+            update       update the system (packages, AUR, Hyprland plugins); `udiksa update dots` = pull + relink the dotfiles
+            doctor       check that everything the rice needs is in place
+            firstrun     the setup steps that need a running desktop
+            completion   print the bash completion script
+            version      version of this install
+
+  udiksa <command> -h   shows that command's usage
+TXT
+}
+
+doctor() {
+    local bad=0 c
+    ok()  { printf '  \033[32mok\033[0m   %s\n' "$*"; }
+    no()  { printf '  \033[31mMISSING\033[0m %s\n' "$*"; bad=1; }
+    warn(){ printf '  \033[33mnote\033[0m  %s\n' "$*"; }
+    echo "Commands the rice uses"
+    for c in hyprctl qs awww grim slurp hyprshot satty gpu-screen-recorder hyprpicker wl-copy cliphist playerctl jq stow kitty notify-send brightnessctl; do
+        command -v "$c" >/dev/null && ok "$c" || no "$c (see setup/packages/*.txt)"
+    done
+    echo "Hyprland + shell"
+    local hv; hv=$(hyprctl version -j 2>/dev/null | jq -r .tag 2>/dev/null)
+    [[ -n $hv ]] && ok "Hyprland $hv" || no "Hyprland is not running (or hyprctl cannot reach it)"
+    pgrep -x quickshell >/dev/null && ok "Quickshell shell running" || no "the shell is not running: udiksa shell"
+    [[ -s $HOME/.config/quickshell/colors.json ]] && ok "theme colours written (colors.json)" || no "no colors.json: udiksa theme reapply"
+    echo "udiksa itself"
+    for c in theme shot record pick scratch settings shell idle cursor display touchpad gpu; do
+        [[ -x $LIB/$c ]] && ok "udiksa $c" || no "udiksa $c ($LIB/$c)"
+    done
+    [[ -x $LIB/kbd ]] && ok "udiksa kbd (ASUS)" || warn "udiksa kbd / slash not installed (only ASUS laptops need them)"
+    local dead; dead=$(find "$HOME/.config" "$HOME/.local/bin" "$HOME/.local/lib/udiksa" "$HOME/.local/share/applications" -xtype l -lname '*/Udiksa/*' 2>/dev/null | head -5)
+    [[ -z $dead ]] && ok "no dangling links in ~" || { no "dangling links (run: $REPO/setup/rice.sh home):"; echo "$dead" | sed 's/^/         /'; }
+    command -v supergfxctl >/dev/null && { systemctl is-active --quiet supergfxd && ok "supergfxd (GPU switching)" || warn "supergfxd is installed but not running"; }
+    echo
+    (( bad )) && { echo "Some things need attention (above)."; return 1; } || echo "All good."
+}
+
+update() {
+    case ${1:-system} in
+        system) exec "$HOME/.local/share/rice/scripts/update-system.sh" ;;
+        dots)
+            [[ -d $REPO/.git ]] || die "no git checkout of Udiksa found at $REPO"
+            git -C "$REPO" pull --ff-only || die "pull failed (local changes or a diverged branch): fix in $REPO"
+            "$REPO/setup/rice.sh" home && ipc themes close >/dev/null 2>&1; hyprctl reload >/dev/null 2>&1; "$LIB/theme" reapply
+            ;;
+        *) die "update [system|dots]" ;;
+    esac
+}
+
+cmd=${1:-help}; [[ $# -gt 0 ]] && shift
+case $cmd in
+    help|-h|--help) help ;;
+    version|--version|-V) echo "udiksa $(git -C "$REPO" describe --always --dirty 2>/dev/null || echo unknown)" ;;
+    completion) cat "$HOME/.local/share/bash-completion/completions/udiksa" ;;
+    doctor) doctor ;;
+    install) [[ -x $REPO/install.sh ]] || die "install.sh not found in $REPO"; exec "$REPO/install.sh" "$@" ;;
+    update) update "$@" ;;
+    toggle)
+        [[ -n ${1:-} ]] || { echo "udiksa toggle <panel>   panels: $PANELS | themes | settings"; exit 1; }
+        case $1 in themes|settings) ipc "$1" toggle ;; *) ipc notch toggle "$1" ;; esac ;;
+    open)  [[ -n ${1:-} ]] || die "open <panel>   panels: $PANELS"; ipc notch open "$1" ;;
+    close) ipc notch close ;;
+    clipboard) ipc notch open launcher:clip ;;
+    emoji)     ipc notch open launcher:emoji ;;
+    lock) ipc lock lock ;;
+    dnd)  ipc notifications dnd ;;
+    osd)  [[ $# -ge 2 ]] || die 'osd "<icon>" "<text>"'; ipc osd say "$1" "$2" ;;
+    ipc)  if [[ ${1:-} == show ]]; then qs ipc show; else [[ ${1:-} == call ]] && shift; [[ $# -ge 2 ]] || die "ipc <target> <function> [args]   (udiksa ipc show lists them)"; ipc "$@"; fi ;;
+    wallpaper)
+        case ${1:-} in
+            next|prev) exec "$LIB/theme" "$1" ;;
+            random) exec "$LIB/theme" random wallpaper ;;
+            set) [[ -f ${2:-} ]] || die "wallpaper set <picture>"; exec "$LIB/theme" apply "$2" ;;
+            current|"") "$LIB/theme" current | jq -r .wallpaper ;;
+            *) die "wallpaper [next|prev|random|set <picture>|current]" ;;
+        esac ;;
+    *)
+        [[ -x $LIB/$cmd && $cmd != *[/.]* ]] || die "unknown command '$cmd' (udiksa help)"
+        case ${1:-} in -h|--help) script_help "$LIB/$cmd"; exit 0 ;; esac
+        exec "$LIB/$cmd" "$@" ;;
+esac

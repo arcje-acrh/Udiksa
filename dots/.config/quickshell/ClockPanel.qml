@@ -65,9 +65,9 @@ Item {
         return out
     }
     function capture(kind, mode) {
-        const bin = Quickshell.env("HOME") + "/.local/bin/" + (kind === "rec" ? "rice-record" : "rice-shot")
+        const bin = Quickshell.env("HOME") + "/.local/bin/udiksa"
         root.done()
-        Quickshell.execDetached(["sh", "-c", "sleep 0.5; exec \"$0\" \"$@\"", bin, mode])
+        Quickshell.execDetached(["sh", "-c", "sleep 0.5; exec \"$0\" \"$@\"", bin, kind === "rec" ? "record" : "shot", mode])
     }
 
     readonly property var nextAlarm: upcoming.find(i => i.kind === "alarm") || null

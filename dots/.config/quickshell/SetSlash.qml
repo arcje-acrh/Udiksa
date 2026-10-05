@@ -1,7 +1,7 @@
 // SetSlash.qml -- Settings > Slash lighting: the LED bar on the lid of some ASUS laptops (e.g. Zephyrus G16), via
-// ~/.local/bin/rice-slash (hardware/asus). The section only shows where the bar exists (Power.slash). Animation,
+// ~/.local/bin/udiksa slash (hardware/asus). The section only shows where the bar exists (Power.slash). Animation,
 // brightness etc. are kept by asusd; the on/off switch in ~/.config/udiksa/slash.json, because the bar goes dark on
-// battery unless "Also on battery" is on (rice-slash apply, called by Power.qml on every plug / unplug).
+// battery unless "Also on battery" is on (udiksa slash apply, called by Power.qml on every plug / unplug).
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -12,7 +12,7 @@ SetPage {
     Process {
         id: slGet
         running: true
-        command: [Quickshell.env("HOME") + "/.local/bin/rice-slash"]
+        command: [Quickshell.env("HOME") + "/.local/bin/udiksa", "slash"]
         stdout: StdioCollector { onStreamFinished: { try { page.sl = JSON.parse(text) } catch (e) {} } }
     }
     property var slPending: []
@@ -22,7 +22,7 @@ SetPage {
     }
     Timer {
         id: slTimer; interval: 350
-        onTriggered: { slSet.command = [Quickshell.env("HOME") + "/.local/bin/rice-slash", "set"].concat(page.slPending); page.slPending = []; slSet.running = true }
+        onTriggered: { slSet.command = [Quickshell.env("HOME") + "/.local/bin/udiksa", "slash", "set"].concat(page.slPending); page.slPending = []; slSet.running = true }
     }
     Process { id: slSet; onExited: slGet.running = true }
     readonly property bool slOn: sl.capable === true && sl.enabled === true

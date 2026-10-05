@@ -17,7 +17,7 @@ case ":$PATH:" in *":$HOME/.local/bin:"*) ;; *) export PATH="$HOME/.local/bin:$P
 
 # --- rice: prompt (starship, config: ~/.config/starship.toml) ---
 if command -v starship >/dev/null 2>&1; then
-    # the themed copy rice-theme writes (template: ~/.config/starship.toml)
+    # the themed copy udiksa theme writes (template: ~/.config/starship.toml)
     [[ -f ~/.local/state/rice/starship.toml ]] && export STARSHIP_CONFIG=~/.local/state/rice/starship.toml
     eval "$(starship init bash)"
 fi

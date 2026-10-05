@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# rice-panel-hz <hz> -- set the refresh rate of the laptop's own panel (eDP / LVDS / DSI), keeping its current
+# udiksa panel-hz <hz> -- set the refresh rate of the laptop's own panel (eDP / LVDS / DSI), keeping its current
 # resolution, position and scale. Used by the notch / Settings (Power.qml: 60 Hz on battery, high on the charger).
 # No built-in panel, or that rate not offered by it: does nothing. Only the mode changes (scale and position stay).
-hz=${1:?usage: rice-panel-hz <hz>}
+hz=${1:?usage: udiksa panel-hz <hz>}
 hyprctl monitors -j | jq -r --argjson hz "$hz" '
   .[] | select(.name | test("^(eDP|LVDS|DSI)")) | . as $m |
   select(any($m.availableModes[]; startswith("\($m.width)x\($m.height)@\($hz)"))) |

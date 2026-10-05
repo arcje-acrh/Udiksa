@@ -1,4 +1,4 @@
-# rice: hidden from the launcher (a helper/debug tool pulled in by another package, or a Qt theme tool rice-theme drives)
+# rice: hidden from the launcher (a helper/debug tool pulled in by another package, or a Qt theme tool udiksa theme drives)
 [Desktop Entry]
 NoDisplay=true
 X-Desktop-File-Install-Version=0.11

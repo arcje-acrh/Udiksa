@@ -1,15 +1,15 @@
 #!/usr/bin/env python3
-"""rice-kbd -- keyboard lighting on ASUS laptops (asusctl / asusd). Device-specific: on a machine without asusctl or
+"""udiksa kbd -- keyboard lighting on ASUS laptops (asusctl / asusd). Device-specific: on a machine without asusctl or
 an RGB keyboard every command does nothing (exit 0), so the dotfiles stay the same everywhere.
 
 The choices are kept in ~/.config/udiksa/keyboard.json (yours, not in the repo); asusd also remembers
 the last effect by itself. Single-zone keyboards (e.g. Zephyrus G16 GU605) show one colour for the whole keyboard.
 
-  rice-kbd                      JSON: saved choices + what this keyboard can do
-  rice-kbd set <key> <value>... save + apply (keys below; several pairs at once are fine)
-  rice-kbd apply                apply everything saved (first login)
-  rice-kbd theme                re-apply when "follow theme" is on (rice-theme calls it on every theme switch)
-  rice-kbd lit                  the light was just switched on (Fn keys; the notch's watcher calls it): send the
+  udiksa kbd                      JSON: saved choices + what this keyboard can do
+  udiksa kbd set <key> <value>... save + apply (keys below; several pairs at once are fine)
+  udiksa kbd apply                apply everything saved (first login)
+  udiksa kbd theme                re-apply when "follow theme" is on (udiksa theme calls it on every theme switch)
+  udiksa kbd lit                  the light was just switched on (Fn keys; the notch's watcher calls it): send the
                                 current colour / effect, which could not be sent while it was off
 
   brightness  off|low|med|high

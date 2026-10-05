@@ -1,4 +1,4 @@
-# rice: hidden from the launcher (a helper/debug tool pulled in by another package, or a Qt theme tool rice-theme drives)
+# rice: hidden from the launcher (a helper/debug tool pulled in by another package, or a Qt theme tool udiksa theme drives)
 # should only be used when lstopo is built with Cairo/X11 support
 # so that no terminal is required
 [Desktop Entry]

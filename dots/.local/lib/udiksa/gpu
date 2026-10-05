@@ -1,11 +1,11 @@
 #!/bin/sh
-# gpu-state — one-line GPU facts for fastfetch (and later the Quickshell GPU widget).
+# udiksa gpu — one-line GPU facts for fastfetch (and later the Quickshell GPU widget).
 # Never wakes the dGPU: it only reads sysfs and asks supergfxd over D-Bus.
 #
-#   gpu-state mode     supergfxctl mode: Integrated / Hybrid / AsusMuxDgpu
-#   gpu-state display  which GPU is driving the laptop panel right now
-#   gpu-state dgpu     NVIDIA GPU power state: active / suspended (+ driver)
-#   gpu-state all      the three above on separate lines
+#   udiksa gpu mode     supergfxctl mode: Integrated / Hybrid / AsusMuxDgpu
+#   udiksa gpu display  which GPU is driving the laptop panel right now
+#   udiksa gpu dgpu     NVIDIA GPU power state: active / suspended (+ driver)
+#   udiksa gpu all      the three above on separate lines
 #
 # Vendor ids: 0x8086 = Intel, 0x10de = NVIDIA.
 
@@ -50,5 +50,5 @@ case "${1:-all}" in
     display) display ;;
     dgpu)    dgpu ;;
     all)     echo "mode:    $(mode)"; echo "display: $(display)"; echo "dGPU:    $(dgpu)" ;;
-    *)       echo "usage: gpu-state {mode|display|dgpu|all}" >&2; exit 2 ;;
+    *)       echo "usage: udiksa gpu {mode|display|dgpu|all}" >&2; exit 2 ;;
 esac

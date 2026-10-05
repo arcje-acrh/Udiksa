@@ -70,7 +70,7 @@ cmatrix
 jq
 os-prober
 
-# screen recording (rice-record), colour picker (rice-pick; also hyprshot --freeze), screenshot editor (rice-shot edit) -- 2026-10-02
+# screen recording (udiksa record), colour picker (udiksa pick; also hyprshot --freeze), screenshot editor (udiksa shot edit) -- 2026-10-02
 gpu-screen-recorder
 hyprpicker
 satty
@@ -81,7 +81,7 @@ uv
 # external monitor brightness over the cable (Settings > Display, DDC/CI; mostly desktops) -- 2026-10-02
 ddcutil
 
-# mouse pointer: rice-cursor builds the XCursor files of the Udiksa pointer -- 2026-10-03
+# mouse pointer: udiksa cursor builds the XCursor files of the Udiksa pointer -- 2026-10-03
 xorg-xcursorgen
 # shake to find: Hyprland's plugin manager builds hypr-dynamic-cursors (pulls cmake + meson) -- 2026-10-03
 hyprpm

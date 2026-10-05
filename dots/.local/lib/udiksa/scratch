@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
-# rice-scratch -- app scratchpads: each app lives on its own hidden workspace (special:<name>) that a key shows and
+# udiksa scratch -- app scratchpads: each app lives on its own hidden workspace (special:<name>) that a key shows and
 # hides over whatever you are doing (keys in ~/.config/hypr/conf/binds.lua).
-#   rice-scratch sysmon    btop                                  Ctrl+Shift+Esc
-#   rice-scratch music     ncspot + cava (`music`), or your app  Super+M
-#   rice-scratch chat      your chat app                         Super+D
+#   udiksa scratch sysmon    btop                                  Ctrl+Shift+Esc
+#   udiksa scratch music     ncspot + cava (`music`), or your app  Super+M
+#   udiksa scratch chat      your chat app                         Super+D
 # First press starts the app there; later presses show / hide it. Music and chat apps are picked in
 # Settings > Apps, saved in ~/.config/hypr/local/scratch.json ({"music": "<command>", "chat": "<command>"};
 # personal layer, not in the repo).

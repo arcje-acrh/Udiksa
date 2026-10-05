@@ -28,7 +28,7 @@ has_stage() { [[ " ${STAGES[*]} " == *" $1 "* ]]; }
 # dots/ (and optional/<app>/dots, hardware/<x>/dots) mirror your home: dots/.config/hypr -> ~/.config/hypr, ...
 # These folders are made as REAL folders first, so Stow links what is inside them (one link per app / tool / theme)
 # and never turns a whole ~/.config or ~/Pictures into a link into the repo.
-REAL_DIRS=(.config .local/bin .local/share/applications .local/share/rice .local/share/rice/scripts Pictures/Wallpapers)
+REAL_DIRS=(.config .local/bin .local/lib .local/lib/udiksa .local/share/bash-completion .local/share/bash-completion/completions .local/share/applications .local/share/rice .local/share/rice/scripts Pictures/Wallpapers)
 link_dots() {   # link_dots <a dots/ folder>
     local d=$1 f rel t p part
     for rel in "${REAL_DIRS[@]}"; do [[ -d $d/$rel ]] && mkdir -p "$HOME/$rel"; done
@@ -128,7 +128,7 @@ stage_system() {
     [[ -f /etc/default/grub ]] && command -v grub-mkconfig >/dev/null && GRUB=1
     if ((GRUB)); then
         say "GRUB: the rice theme, quiet boot, other systems (Windows, ...) found automatically"
-        S install -d -o "$USER" -g "$USER" /boot/grub/themes/rice     # rice-theme writes the theme into it
+        S install -d -o "$USER" -g "$USER" /boot/grub/themes/rice     # udiksa theme writes the theme into it
         local F=/usr/share/fonts/TTF
         if [[ -f $F/IosevkaNerdFont-Regular.ttf ]]; then
             run grub-mkfont -n RiceTerm -s 24 -o /boot/grub/themes/rice/term-24.pf2 $F/IosevkaNerdFont-Regular.ttf 2>/dev/null

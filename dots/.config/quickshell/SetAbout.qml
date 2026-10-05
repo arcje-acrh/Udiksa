@@ -23,7 +23,7 @@ echo "Machine|BIOS|$(cat /sys/class/dmi/id/bios_version)  ($(cat /sys/class/dmi/
 echo "Machine|Hostname|$(cat /etc/hostname)"
 echo "Machine|Processor|$(lscpu | sed -n 's/^Model name: *//p')  ·  $(nproc) cores"
 lspci | grep -iE 'vga|3d|display' | sed 's/^[^:]*: [^:]*: //' | while read -r l; do echo "Machine|Graphics|$l"; done
-command -v supergfxctl >/dev/null && echo "Machine|GPU mode|$($HOME/.local/bin/gpu-state mode 2>/dev/null) · dGPU $($HOME/.local/bin/gpu-state dgpu 2>/dev/null)"
+command -v supergfxctl >/dev/null && echo "Machine|GPU mode|$($HOME/.local/bin/udiksa gpu mode 2>/dev/null) · dGPU $($HOME/.local/bin/udiksa gpu dgpu 2>/dev/null)"
 echo "Machine|Memory|$(awk '/MemTotal/{printf "%.1f GiB", $2/1048576}' /proc/meminfo)"
 lsblk -dno MODEL,SIZE -e 7,11 | sed 's/  */ /g' | while read -r l; do echo "Machine|Disk|$l"; done
 hyprctl monitors -j | python3 -c 'import sys,json;[print("Machine|Display|%s %dx%d @ %.0f Hz · scale %.2f" % (m["name"],m["width"],m["height"],m["refreshRate"],m["scale"])) for m in json.load(sys.stdin)]'
@@ -60,7 +60,7 @@ echo "Software|Up since|$(uptime -s)  ($(uptime -p | sed 's/^up //'))"
         ["Performance modes", Power.asus ? "ASUS (asusctl): modes, CPU watts, fan curves" : Power.ppd ? "power-profiles-daemon: modes" : ""],
         ["GPU switching", Power.gfx ? "supergfxctl: " + Power.gfxModes.map(m => Power.gpuLabels[m] || m).join(" / ") : ""],
         ["Laptop screen", Power.panel ? Power.panelName + (Power.panelSwitch ? " · " + Power.hzLow + " / " + Power.hzHigh + " Hz" : "") : ""],
-        ["Keyboard light", Power.kbd ? (Power.asus ? "colours + brightness (rice-kbd)" : "brightness") : ""],
+        ["Keyboard light", Power.kbd ? (Power.asus ? "colours + brightness (udiksa kbd)" : "brightness") : ""],
         ["Touchpad", Power.touchpad ? "yes" : ""],
         ["Battery", Power.battery ? "yes" + (Power.asus ? " · charge limit" : "") : ""],
         ["Lid", Power.lid ? "yes" : ""],

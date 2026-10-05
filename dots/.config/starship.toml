@@ -1,5 +1,5 @@
 # starship prompt (bash) — minimal style: no pills, one accent colour, muted extras.
-# The palettes.rice colours below are placeholders: ~/.local/bin/rice-theme writes a themed copy of this file
+# The palettes.rice colours below are placeholders: ~/.local/bin/udiksa theme writes a themed copy of this file
 # to ~/.local/state/rice/starship.toml on every theme change (.bashrc points STARSHIP_CONFIG at it)
 # (text, accent = the ❯, path = the ~/directory, warn = git changes, danger = errors, muted = branch/time).
 #

@@ -1,7 +1,7 @@
 // SetPower.qml -- Settings > Battery & sleep (user 2026-09-28): battery state + health, charge limit, when
 // the screen locks / turns off / the laptop sleeps (separately on battery and on the charger, like Windows),
 // "hibernate after sleeping for", and what the lid and the power button do.
-// Back end: `rice-settings power <key> <value>` -> ~/.config/hypr/hypridle.conf (timers, via ~/.local/bin/rice-idle)
+// Back end: `udiksa settings power <key> <value>` -> ~/.config/hypr/hypridle.conf (timers, via ~/.local/bin/udiksa idle)
 // and /usr/local/bin/udiksa-power (lid, power button, hibernate delay -> logind / systemd sleep).
 import QtQuick
 import Quickshell

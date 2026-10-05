@@ -1,5 +1,5 @@
 #!/bin/bash
-# music -- ncspot with a cava visualiser below it, both floating on their own scratchpad (special:music, Super+M = rice-scratch music),
+# music -- ncspot with a cava visualiser below it, both floating on their own scratchpad (special:music, Super+M = udiksa scratch music),
 # placed as one centred block by the rice-ncspot / rice-cava rules in ~/.config/hypr/conf/rules.lua.
 # Started by the launcher's ncspot entry (~/.local/share/applications/ncspot.desktop). Closing ncspot closes cava.
 if pgrep -f -- '--class rice-ncspot' >/dev/null; then       # already running: just show the scratchpad

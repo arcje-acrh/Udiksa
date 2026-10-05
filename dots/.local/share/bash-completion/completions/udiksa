@@ -1,0 +1,32 @@
+# bash completion for `udiksa` (~/.local/share/bash-completion/completions/: loaded by bash-completion / ble.sh when you type `udiksa <Tab>`)
+_udiksa() {
+    local cur=${COMP_WORDS[COMP_CWORD]} cmd=${COMP_WORDS[1]} lib="${UDIKSA_LIB:-$HOME/.local/lib/udiksa}" w=""
+    local panels="battery power volume wifi bluetooth media notifications system tailscale launcher usage clock clockTimer clockAlarm clockReminder clockEvent"
+    if (( COMP_CWORD == 1 )); then
+        w="help version completion doctor install update toggle open close clipboard emoji lock dnd osd ipc wallpaper $(ls "$lib" 2>/dev/null)"
+    else
+        case $cmd in
+            theme)      if [[ ${COMP_WORDS[2]} == set && $COMP_CWORD -ge 3 ]]; then
+                            local IFS=$'\n'; COMPREPLY=($(compgen -W "$(udiksa theme names 2>/dev/null)" -- "$cur")); return
+                        fi
+                        w="apply next prev set random names list reapply corners current thumbs colors import" ;;
+            wallpaper)  w="next prev random set current" ;;
+            shot)       w="area window screen edit" ;;
+            record)     w="screen region sound stop" ;;
+            scratch)    w="sysmon music chat" ;;
+            toggle|open) w="$panels themes settings" ;;
+            display)    w="extend mirror external laptop" ;;
+            gpu)        w="mode display dgpu all" ;;
+            idle)       w="off sleep" ;;
+            update)     w="system dots" ;;
+            install)    w="arch apps rice" ;;
+            shell)      w="--restart" ;;
+            ipc)        w="show notch themes settings notifications modes osd lock agenda" ;;
+            settings)   w="get set reset power monitor anim cursor shake startup bind" ;;
+            kbd)        w="set apply theme lit" ;;
+            slash)      w="set apply" ;;
+        esac
+    fi
+    COMPREPLY=($(compgen -W "$w" -- "$cur"))
+}
+complete -F _udiksa udiksa

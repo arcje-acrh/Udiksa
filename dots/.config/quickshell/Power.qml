@@ -9,7 +9,7 @@
 //           NOT use the firmware dgpu_disable switch here, so Eco never affects Windows. With
 //           "always_reboot": true in /etc/supergfxd.conf a change is saved there and applied at the next
 //           boot (its logout detection fails on systemd 261); the panel shows current + queued mode.
-//   screen  any laptop panel: rice-panel-hz switches between 60 Hz and the panel's own top rate
+//   screen  any laptop panel: udiksa panel-hz switches between 60 Hz and the panel's own top rate
 //   auto    on battery: batteryMode (Silent) + 60 Hz; on the charger: acMode + top rate. asusd's own
 //           AC/battery profiles are kept in step so the two never fight.
 // Settings live in ~/.config/udiksa/performance.json (yours, not in the repo; defaults on first run). Everything is re-applied at start.
@@ -29,7 +29,7 @@ Singleton {
     property bool asus: false                  // asusctl: modes, watts, fans, charge limit, panel overdrive, keyboard colours
     property bool gfx: false                   // supergfxctl: GPU modes (hybrid laptops)
     property var gfxModes: []                  // the GPU modes supergfxctl offers here (AsusMuxDgpu only with a MUX switch)
-    property bool slash: false                 // an ASUS Slash LED bar on the lid (~/.local/bin/rice-slash)
+    property bool slash: false                 // an ASUS Slash LED bar on the lid (~/.local/bin/udiksa slash)
     property bool ppd: false                   // power-profiles-daemon: performance modes on any other machine
     property bool overdrive: false             // ASUS panel overdrive (firmware attribute present)
     property bool lid: false                   // a lid switch (laptop)
@@ -61,7 +61,7 @@ Singleton {
         command: ["sh", "-c", `
 command -v asusctl >/dev/null && echo asus
 command -v supergfxctl >/dev/null && { echo gfx; echo "gfxmodes=$(supergfxctl -s 2>/dev/null | tr -d '[] ')"; }
-[ -x "$HOME/.local/bin/rice-slash" ] && "$HOME/.local/bin/rice-slash" | grep -q '"capable": true' && echo slash
+[ -x "$HOME/.local/lib/udiksa/slash" ] && "$HOME/.local/bin/udiksa" slash | grep -q '"capable": true' && echo slash
 systemctl is-active -q power-profiles-daemon && echo ppd
 [ -e /sys/class/firmware-attributes/asus-armoury/attributes/panel_overdrive ] && echo overdrive
 ls /proc/acpi/button/lid/*/state >/dev/null 2>&1 && echo lid
@@ -192,8 +192,8 @@ true`]
     Process { id: runner; onExited: root.next() }
 
     function applyAll() { applyMode(); applyScreen(); if (overdrive) applyOverdrive(); applySlash() }
-    // the Slash lid light: dark on battery unless "Also on battery" (rice-slash decides from the power source)
-    function applySlash() { if (slash) run([[Quickshell.env("HOME") + "/.local/bin/rice-slash", "apply"]]) }
+    // the Slash lid light: dark on battery unless "Also on battery" (udiksa slash decides from the power source)
+    function applySlash() { if (slash) run([[Quickshell.env("HOME") + "/.local/bin/udiksa", "slash", "apply"]]) }
     function applyMode() {
         if (!asus) {                         // any other machine: power-profiles-daemon (no watts, no fan curves)
             if (ppd && fake === "") PowerProfiles.profile = mode === "silent" ? PowerProfile.PowerSaver
@@ -321,8 +321,8 @@ true`]
     // cfg.screen: "low" / "high" / "auto" (older saves: "60" / "240"); low = 60 Hz, high = the panel's top rate
     readonly property string screenSel: cfg.screen === "60" || cfg.screen === "low" ? "low" : cfg.screen === "auto" ? "auto" : "high"
     readonly property int hz: screenSel === "low" ? hzLow : screenSel === "high" ? hzHigh : (unplugged ? hzLow : hzHigh)
-    // the laptop's own panel: ~/.local/bin/rice-panel-hz keeps its resolution / scale and changes only the rate
-    function applyScreen() { if (panelSwitch) run([[Quickshell.env("HOME") + "/.local/bin/rice-panel-hz", String(hz)]]) }
+    // the laptop's own panel: ~/.local/bin/udiksa panel-hz keeps its resolution / scale and changes only the rate
+    function applyScreen() { if (panelSwitch) run([[Quickshell.env("HOME") + "/.local/bin/udiksa", "panel-hz", String(hz)]]) }
     onHzChanged: if (loaded) applyScreen()
     function applyOverdrive() { if (overdrive) run([["asusctl", "armoury", "set", "panel_overdrive", String(cfg.overdrive)]]) }
 
@@ -331,10 +331,10 @@ true`]
     readonly property int kbdSteps: kbd ? Math.min(kbdMax, 3) + 1 : 0
     readonly property var kbdLabels: kbdSteps === 2 ? ["Off", "On"] : kbdSteps === 3 ? ["Off", "Low", "High"] : ["Off", "Low", "Med", "High"]
     property int kbdLevel: -1              // 0..kbdSteps-1, read when the panel opens
-    // ASUS: through rice-kbd so the choice is saved in ~/.config/udiksa/keyboard.json; any other: brightnessctl
+    // ASUS: through udiksa kbd so the choice is saved in ~/.config/udiksa/keyboard.json; any other: brightnessctl
     function setKbd(level) {
         kbdLevel = level
-        if (asus) run([[Quickshell.env("HOME") + "/.local/bin/rice-kbd", "set", "brightness", ["off", "low", "med", "high"][level]]])
+        if (asus) run([[Quickshell.env("HOME") + "/.local/bin/udiksa", "kbd", "set", "brightness", ["off", "low", "med", "high"][level]]])
         else run([["brightnessctl", "-q", "-d", kbdName, "set", String(Math.round(level * kbdMax / (kbdSteps - 1)))]])
     }
     function readKbd() { if (kbd) kbdProc.running = true }
@@ -483,12 +483,12 @@ echo cpu_mhz=$(cat /sys/devices/system/cpu/cpu*/cpufreq/scaling_cur_freq | awk '
     Connections { target: UPower.displayDevice; function onStateChanged() { root.checkOneshot() } }
     Timer { interval: 60000; running: root.oneshotRestore > 0; repeat: true; onTriggered: root.checkOneshot() }
 
-    // `qs ipc call power screen` re-applies the laptop panel's refresh rate (used by ~/.local/bin/display-mode)
+    // `qs ipc call power screen` re-applies the laptop panel's refresh rate (used by ~/.local/bin/udiksa display)
     IpcHandler {
         target: "power"
         function screen(): void { root.applyScreen() }
-        // hypridle after waking (rice-settings write_idle): the charger may have come or gone while asleep, and the
-        // screen is not back yet when that is noticed (rice-panel-hz finds no panel), so put the rate + lid light
+        // hypridle after waking (udiksa settings write_idle): the charger may have come or gone while asleep, and the
+        // screen is not back yet when that is noticed (udiksa panel-hz finds no panel), so put the rate + lid light
         // right a moment later (seen 2026-10-02: unplugged during hibernation -> woke at 240 Hz on battery)
         function resumed(): void { resumeLater.restart() }
     }

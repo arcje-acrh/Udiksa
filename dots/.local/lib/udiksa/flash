@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# rice-flash [image] -- write a disk image (.iso .img, also .xz .gz .zst ...) to a USB stick / SD card with caligula:
+# udiksa flash [image] -- write a disk image (.iso .img, also .xz .gz .zst ...) to a USB stick / SD card with caligula:
 # it lists only removable drives, asks before writing, can verify afterwards, and asks for your password itself.
 # Launcher "Flash disk image" and double-clicking an image in Files open this (rice-flash.desktop).
 if ! command -v caligula >/dev/null; then

@@ -3,7 +3,7 @@
     // grouped-tree style: coloured section headers, nerd-font icon per line).
     // Needs a Nerd Font in the terminal (Iosevka Nerd Font Mono, already set).
     //
-    // COLOURS: this is the TEMPLATE. ~/.local/bin/rice-theme writes config.jsonc from it on every theme
+    // COLOURS: this is the TEMPLATE. ~/.local/bin/udiksa theme writes config.jsonc from it on every theme
     // change, swapping the colour names for the theme's own colours (matching the logo's gradient):
     //     "yellow" = accent2 (logo top)   "cyan" = accent (logo bottom)   "bright_black" = muted
     // Edit this file, not config.jsonc (generated, not in the repo).
@@ -11,7 +11,7 @@
     "$schema": "https://github.com/fastfetch-cli/fastfetch/raw/dev/doc/json_schema.json",
 
     // LOGO: the Arch logo as text (logo.txt: sextant blocks, 32x16 cells = square, as tall as the text block),
-    // made once from logo.svg. Its colours are kitty's slots 23-30 (rice-theme writes them: accent2 -> accent), not
+    // made once from logo.svg. Its colours are kitty's slots 23-30 (udiksa theme writes them: accent2 -> accent), not
     // hex, so a fastfetch already on screen recolours live on a theme switch. padding top 1 = one row down (user's pick).
     "logo": {
         "type": "file",
@@ -24,7 +24,7 @@
     "display": {
         "color": { "separator": "bright_black", "title": "cyan" },
         // usage percentages (memory, disk, ...): low / mid / high = accent / accent2 / the theme's danger colour,
-        // as kitty slots 16 / 17 / 21 (rice-theme writes them), so they follow a theme switch live too
+        // as kitty slots 16 / 17 / 21 (udiksa theme writes them), so they follow a theme switch live too
         "percent": { "color": { "green": "38;5;16", "yellow": "38;5;17", "red": "38;5;21" } },
         // fixed key column so every value lines up (headers and tree keys differ in length)
         "key": { "width": 10 },
@@ -52,9 +52,9 @@
         { "type": "host", "key": "󰌢 SYSTEM", "keyColor": "yellow" },
         { "type": "cpu", "key": "│ ├󰻠", "keyColor": "yellow" },
         { "type": "gpu", "key": "│ ├󰻑", "keyColor": "yellow" },
-        // one line of GPU state from ~/.local/bin/gpu-state (never wakes the dGPU)
+        // one line of GPU state from ~/.local/bin/udiksa gpu (never wakes the dGPU)
         { "type": "command", "key": "│ ├󰘚", "keyColor": "yellow",
-          "text": "g=$HOME/.local/bin/gpu-state; echo \"$($g mode) · screen on $($g display) · dGPU $($g dgpu)\"" },
+          "text": "g=$HOME/.local/bin/udiksa gpu; echo \"$($g mode) · screen on $($g display) · dGPU $($g dgpu)\"" },
         { "type": "memory", "key": "│ ├󰾆", "keyColor": "yellow" },
         { "type": "disk", "key": "│ └󰋊", "keyColor": "yellow" }
     ]

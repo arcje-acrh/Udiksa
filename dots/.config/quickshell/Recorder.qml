@@ -1,4 +1,4 @@
-// Recorder.qml -- singleton: is a screen recording running? ~/.local/bin/rice-record tells it
+// Recorder.qml -- singleton: is a screen recording running? ~/.local/bin/udiksa record tells it
 // (`qs ipc call record started <mode>` / `stopped`); after a shell restart it reads $XDG_RUNTIME_DIR/udiksa-record.
 // The notch (Status.qml) shows a blinking dot + the time while it runs; clicking it stops the recording.
 pragma Singleton
@@ -9,7 +9,7 @@ import Quickshell.Io
 Singleton {
     id: root
     readonly property string rt: Quickshell.env("XDG_RUNTIME_DIR") || "/tmp"
-    readonly property string bin: Quickshell.env("HOME") + "/.local/bin/rice-record"
+    readonly property string bin: Quickshell.env("HOME") + "/.local/lib/udiksa/record"
     property bool on: false
     property string mode: ""
     property real since: 0                     // ms epoch

@@ -1,7 +1,7 @@
 -- Misc. https://wiki.hypr.land/Configuring/Basics/Variables/#misc
 -- (variable frame rate is `debug:vfr` in this version and is already on by
 -- default: only redraws when something changes, which saves battery.)
-local colors = require("conf.colors")  -- the theme's colours (written by rice-theme)
+local colors = require("conf.colors")  -- the theme's colours (written by udiksa theme)
 
 hl.config({
     misc = {

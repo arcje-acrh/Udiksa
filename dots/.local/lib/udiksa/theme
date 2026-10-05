@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""rice-theme -- themes = folders of wallpapers; one palette re-colours the whole rice.
+"""udiksa theme -- themes = folders of wallpapers; one palette re-colours the whole rice.
 
   Themes live in ~/Pictures/Wallpapers/<Theme>/  (drop images in = add; new folder = new theme;
   the folder "Unsorted" is ignored). Where a theme's colours come from, in this order:
@@ -9,23 +9,26 @@
     (nothing)     the palette comes from the chosen wallpaper (matugen, dark, scheme-vibrant).
   matugen results are cached per wallpaper in ~/.cache/rice/palettes/, previews in ~/.cache/rice/thumbs/.
 
-  rice-theme list                          JSON for the switcher: themes, wallpapers, thumbs, swatches, mode
-  rice-theme apply <image> [--pos X,Y] [--transition grow|wipe|none]
+  udiksa theme list                          JSON for the switcher: themes, wallpapers, thumbs, swatches, mode
+  udiksa theme apply <image> [--pos X,Y] [--transition grow|wipe|none]
                                            that wallpaper + its theme's colours everywhere (X,Y = where the
                                            wallpaper grows from, screen pixels from the top-left)
-  rice-theme next | prev                   next / previous wallpaper of the current theme (wipe)
-  rice-theme reapply                       write the current theme again (e.g. after editing this script)
-  rice-theme corners                       redo the rounded screen corners of the lock / login screen and GRUB
+  udiksa theme next | prev                   next / previous wallpaper of the current theme (wipe)
+  udiksa theme reapply                       write the current theme again (e.g. after editing this script)
+  udiksa theme corners                       redo the rounded screen corners of the lock / login screen and GRUB
                                            (Settings runs it after a rounding or border change)
-  rice-theme current                       the current theme + wallpaper
-  rice-theme thumbs                        (re)make the previews
-  rice-theme colors <picture>              show a picture's main colours + the theme colours it would give
-  rice-theme import <github link>          a theme repo from GitHub that has a colors.toml + pictures (many community themes do)
+  udiksa theme current                       the current theme + wallpaper
+  udiksa theme thumbs                        (re)make the previews
+  udiksa theme colors <picture>              show a picture's main colours + the theme colours it would give
+  udiksa theme import <github link>          a theme repo from GitHub that has a colors.toml + pictures (many community themes do)
+  udiksa theme names [dark|light]          the theme names, one per line (optionally only dark or only light ones)
+  udiksa theme set <name> [--transition t] a theme by name (any case), its first picture
+  udiksa theme random [dark|light|wallpaper]  a random picture of a random theme; `wallpaper` = stay in this theme
 
   A THEME = A FOLDER in ~/Pictures/Wallpapers/ with pictures in it. New folder = new theme (it shows up in the
   switcher, Super+T); delete the folder = the theme is gone. The first time, its colours are made from its
   pictures and saved as colors.toml in the folder: edit that file to change them (each line says what it
-  colours), then pick the theme again or run `rice-theme reapply`.
+  colours), then pick the theme again or run `udiksa theme reapply`.
 
   Written on apply (all derived from ONE palette):
     ~/.config/quickshell/colors.json         the notch + switcher (live)
@@ -266,7 +269,7 @@ TOML_KEYS = [
 ]
 TOML_HEAD = """# {name} -- the colours of this theme.
 # HOW TO CHANGE THEM: edit the "#rrggbb" values below and save, then pick the theme again (Super+T) or run
-# `rice-theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
+# `udiksa theme reapply`. Every line says what it colours. Tip: change `accent` first, it is the theme's colour.
 # Delete this file and the colours are made from this folder's pictures again.
 {note}
 """
@@ -356,7 +359,7 @@ def quickshell(p):
     keys = ["bg", "surface", "raised", "hover", "text", "muted", "dim", "accent", "accent2", "warn", "accentDeep", "shadow", "mode"]
     f = os.path.join(HOME, ".config/quickshell/colors.json")
     old = json.load(open(f)) if os.path.exists(f) else {}
-    out = {"_comment": old.get("_comment", "Written by rice-theme.")}
+    out = {"_comment": old.get("_comment", "Written by udiksa theme.")}
     out.update({k: p[k] for k in keys})
     write(f, json.dumps(out, indent=2) + "\n")
 
@@ -365,7 +368,7 @@ def hypr(p, theme):
     a, b = p["accent"].lstrip("#"), p["accent2"].lstrip("#")
     light = p["mode"] == "light"
     write(os.path.join(HOME, ".config/hypr/conf/colors.lua"), f"""-- Palette used by the rest of the config.
--- WRITTEN BY rice-theme (theme: {theme}) -- edits here are overwritten on the next theme change.
+-- WRITTEN BY udiksa theme (theme: {theme}) -- edits here are overwritten on the next theme change.
 -- Colours are Hyprland "rgba(rrggbbaa)" strings, or 0xAARRGGBB integers.
 return {{
     -- window borders: gradient between two accents, dim when unfocused
@@ -402,7 +405,7 @@ def slot(k):
 
 def kitty(p, theme):
     n = p["ansi"]
-    lines = [f"# kitty colour scheme -- WRITTEN BY rice-theme (theme: {theme}); overwritten on theme change.",
+    lines = [f"# kitty colour scheme -- WRITTEN BY udiksa theme (theme: {theme}); overwritten on theme change.",
              "", f"foreground              {p['text']}", f"background              {p['bg']}",
              f"selection_foreground    {on(p['accent'], p['bg'], p['text'])}", f"selection_background    {p['accent']}",
              "# cursor colour also colours the cursor trail (see cursor_trail in kitty.conf)",
@@ -431,7 +434,7 @@ def kitty(p, theme):
     # the Clock (rice-clock.desktop: kitty -c clock.conf, tty-clock -C 4) draws its digits in colour 4 = the accent;
     # kitty re-reads this file on SIGUSR1 too, so the clock recolours live on a theme switch
     write(os.path.join(HOME, ".config/kitty/clock.conf"),
-          f"# WRITTEN BY rice-theme: the Clock's kitty = the normal one, digits in the accent\ninclude kitty.conf\ncolor4 {p['accent']}\n")
+          f"# WRITTEN BY udiksa theme: the Clock's kitty = the normal one, digits in the accent\ninclude kitty.conf\ncolor4 {p['accent']}\n")
 
 
 def starship(p):
@@ -486,7 +489,7 @@ def gtk(p, theme):
         "warning_bg_color": p["yellow"], "warning_fg_color": on(p["yellow"], "#ffffff", "#000000"), "warning_color": p["yellow"],
         "error_bg_color": p["red"], "error_fg_color": on(p["red"], "#ffffff", "#000000"), "error_color": p["red"],
     }
-    head = f"/* WRITTEN BY rice-theme (theme: {theme}) -- overwritten on theme change. */\n"
+    head = f"/* WRITTEN BY udiksa theme (theme: {theme}) -- overwritten on theme change. */\n"
     named = "".join(f"@define-color {k} {v};\n" for k, v in c.items())
     vars_ = ":root {\n" + "".join(f"  --{k.replace('_', '-')}: {v};\n" for k, v in c.items()) + "}\n"
     write(os.path.join(HOME, ".config/gtk-4.0/gtk.css"), head + named + vars_)
@@ -568,7 +571,7 @@ def qt(p, theme):
     kv = re.sub(r"\[GeneralColors\][^\[]*", gen + "\n", kv, count=1)
     d = os.path.join(HOME, ".config/Kvantum/Rice")
     write(os.path.join(d, "Rice.svg"), svg)
-    write(os.path.join(d, "Rice.kvconfig"), f"# WRITTEN BY rice-theme (theme: {theme}, base {base})\n" + kv)
+    write(os.path.join(d, "Rice.kvconfig"), f"# WRITTEN BY udiksa theme (theme: {theme}, base {base})\n" + kv)
     write(os.path.join(HOME, ".config/Kvantum/kvantum.kvconfig"), "[General]\ntheme=Rice\n")
 
 
@@ -652,7 +655,7 @@ def grub(p, theme, img):
             corners += f'\n+ image {{\n    left = {left}\n    top = {top}\n    width = {cr}\n    height = {cr}\n    file = "corner_{name}.png"\n}}\n'
     ver = subprocess.run(["pacman", "-Q", "grub"], capture_output=True, text=True).stdout.split()[-1:] or ["2"]
     ver = ver[0].split(":")[-1].split("-")[0]
-    txt = f"""# rice GRUB theme -- written by rice-theme for "{theme}"; edit rice-theme, not this file.
+    txt = f"""# rice GRUB theme -- written by udiksa theme for "{theme}"; edit udiksa theme, not this file.
 title-text: ""
 desktop-image: "background.png"
 desktop-color: "{dark}"
@@ -764,7 +767,7 @@ def ncspot(p):
     for line in old.splitlines():
         if line.strip().startswith("["):
             skip = line.strip() == "[theme]"
-        if not skip and not line.startswith("# theme: written by rice-theme"):
+        if not skip and not line.startswith("# theme: written by udiksa theme"):
             keep.append(line)
     theme = {
         "background": "terminal", "primary": p["text"], "secondary": p["muted"], "title": p["accent"],
@@ -774,7 +777,7 @@ def ncspot(p):
         "statusbar_bg": p["surface"], "cmdline": p["text"], "cmdline_bg": p["surface"], "search_match": p["accent2"],
     }
     body = "\n".join(keep).rstrip()
-    body = (body + "\n\n" if body else "") + "# theme: written by rice-theme on every theme change (edit rice-theme, not this table)\n[theme]\n"
+    body = (body + "\n\n" if body else "") + "# theme: written by udiksa theme on every theme change (edit udiksa theme, not this table)\n[theme]\n"
     body += "".join(f'{k} = "{v}"\n' for k, v in theme.items())
     write(f, body)
     # a running ncspot reloads its config (and so these colours) on a "reload" sent to its control socket
@@ -791,7 +794,7 @@ def cava(p):
     """cava (audio visualiser under ncspot, ~/.local/bin/music): bars fade from accent2 (top) to accent (bottom)
     on the terminal background. Whole file written here; a running cava reloads it on SIGUSR1."""
     f = os.path.join(HOME, ".config/cava/config")
-    write(f, f"""# cava -- written by rice-theme on every theme change (edit rice-theme, not this file)
+    write(f, f"""# cava -- written by udiksa theme on every theme change (edit udiksa theme, not this file)
 [general]
 framerate = 60
 bar_width = 2
@@ -813,13 +816,13 @@ noise_reduction = 77
 
 
 def satty(p):
-    """satty (the screenshot editor, Alt+Print = ~/.local/bin/rice-shot edit): Iosevka, flat corners, the pen colours
+    """satty (the screenshot editor, Alt+Print = ~/.local/bin/udiksa shot edit): Iosevka, flat corners, the pen colours
     = the theme's accents + its ANSI hues. Whole file written here (not in the repo); read at every start."""
     if not shutil.which("satty"):
         return
     n = p["ansi"]
     pal = [p["accent"], p["accent2"], n[1], n[2], n[3], n[4], n[5], n[6], p["text"], p["bg"]]
-    write(os.path.join(HOME, ".config/satty/config.toml"), f"""# satty -- written by rice-theme on every theme change (edit rice-theme, not this file)
+    write(os.path.join(HOME, ".config/satty/config.toml"), f"""# satty -- written by udiksa theme on every theme change (edit udiksa theme, not this file)
 [general]
 early-exit = true
 corner-roundness = 2
@@ -889,13 +892,13 @@ def zed(p):
 
 
 def cursor(p):
-    """The Udiksa mouse pointer (Bibata Original, ~/.local/bin/rice-cursor): all in the accent, no border, every other
+    """The Udiksa mouse pointer (Bibata Original, ~/.local/bin/udiksa cursor): all in the accent, no border, every other
     colour from the theme; it reads colors.json, written by quickshell(p) just before. Built in the background
     (~1.5 s), so a theme switch is not slowed down; the pointer refreshes when it is done."""
-    rc = os.path.join(HOME, ".local/bin/rice-cursor")
+    rc = os.path.join(HOME, ".local/lib/udiksa/cursor")
     if not os.path.exists(rc) or not shutil.which("hyprcursor-util"):
         return
-    subprocess.Popen([rc, "build"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+    subprocess.Popen([os.path.join(HOME, ".local/bin/udiksa"), "cursor", "build"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
 
 
 def btop(p):
@@ -924,7 +927,7 @@ def btop(p):
         "upload_start": lo, "upload_mid": mid, "upload_end": p["warn"],
         "process_start": p["accent"], "process_mid": p["accent2"], "process_end": p["warn"],
     }
-    write(os.path.join(d, "themes/rice.theme"), "# btop theme -- written by rice-theme on every theme change\n"
+    write(os.path.join(d, "themes/rice.theme"), "# btop theme -- written by udiksa theme on every theme change\n"
           + "".join(f'theme[{k}]="{v}"\n' for k, v in th.items()))
     conf = os.path.join(d, "btop.conf")
     old = open(conf).read() if os.path.exists(conf) else ""
@@ -954,7 +957,7 @@ def viewers(p):
     """File viewers in the theme: zathura (PDF / ePub / comics), imv (pictures), mpv's on-screen bar.
     Read at their next start (zathura: also `:source` inside)."""
     dark = p["mode"] == "dark"
-    write(os.path.join(HOME, ".config/zathura/zathurarc"), f"""# zathura -- written by rice-theme on every theme change (edit rice-theme, not this file)
+    write(os.path.join(HOME, ".config/zathura/zathurarc"), f"""# zathura -- written by udiksa theme on every theme change (edit udiksa theme, not this file)
 set font "Iosevka Nerd Font 11"
 set selection-clipboard clipboard
 set adjust-open width
@@ -987,7 +990,7 @@ set recolor-keephue true
 set recolor-lightcolor "{p['bg']}"
 set recolor-darkcolor "{p['text']}"
 """)
-    write(os.path.join(HOME, ".config/imv/config"), f"""# imv -- written by rice-theme on every theme change (edit rice-theme, not this file)
+    write(os.path.join(HOME, ".config/imv/config"), f"""# imv -- written by udiksa theme on every theme change (edit udiksa theme, not this file)
 [options]
 background = {p['bg'].lstrip('#')}
 overlay_font = Iosevka Nerd Font:12
@@ -1002,7 +1005,7 @@ suppress_default_binds = false
 """)
     def ass(h):                                   # mpv/ASS colours are #RRGGBB here (osc.conf accepts that)
         return h
-    write(os.path.join(HOME, ".config/mpv/script-opts/osc.conf"), f"""# mpv on-screen bar -- written by rice-theme on every theme change
+    write(os.path.join(HOME, ".config/mpv/script-opts/osc.conf"), f"""# mpv on-screen bar -- written by udiksa theme on every theme change
 background_color={ass(p['bg'])}
 buttons_color={ass(p['text'])}
 top_buttons_color={ass(p['text'])}
@@ -1155,9 +1158,9 @@ def cmd_apply(img, pos=None, transition="grow"):
     wallpaper(img, pos, transition)                # starts the animation; colours switch while it runs
     quickshell(p)
     # keyboard light in the new accent right away, if "follow theme" is on (does nothing elsewhere)
-    kbd = os.path.join(HOME, ".local/bin/rice-kbd")          # only on laptops whose device folder has it
+    kbd = os.path.join(HOME, ".local/lib/udiksa/kbd")          # only on laptops whose device folder has it
     if os.path.exists(kbd):
-        subprocess.Popen([kbd, "theme"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        subprocess.Popen([os.path.join(HOME, ".local/bin/udiksa"), "kbd", "theme"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
     hypr(p, theme); kitty(p, theme); starship(p); fastfetch(p); gtk(p, theme); qt(p, theme)
     ncspot(p); cava(p); satty(p); zed(p); cursor(p); btop(p); viewers(p); office(p)
     reload_apps()
@@ -1252,7 +1255,7 @@ def cmd_colors(img):
     names = ["red", "green", "yellow", "blue", "magenta", "cyan"]
     print("\n  TERMINAL COLOURS")
     print("  " + "".join(blk(rgb_255(p["ansi"][i + 1])) for i in range(6)) + "   " + " ".join(names))
-    print("\n  To use a colour: put its #hex into the theme's colors.toml, then `rice-theme reapply`.\n")
+    print("\n  To use a colour: put its #hex into the theme's colors.toml, then `udiksa theme reapply`.\n")
 
 
 def rgb_255(h):
@@ -1293,6 +1296,33 @@ if __name__ == "__main__":
             p = palette_for(w)
             grub(p, os.path.basename(os.path.dirname(w)), w)
             greeter(p, w)
+    elif a[0] == "names":   # one theme per line; optional filter dark | light (mode from the theme's colours)
+        for name, full, imgs in themes():
+            base, _ = base_palette(full)
+            mode = guard(base)["mode"] if base else "dark"
+            if len(a) < 2 or a[1] == mode:
+                print(name)
+    elif a[0] == "set" and len(a) > 1:   # a theme by name (any case): its first picture
+        import itertools
+        want = " ".join(itertools.takewhile(lambda x: not x.startswith("--"), a[1:])).lower()
+        hit = [t for t in themes() if t[0].lower() == want]
+        if not hit:
+            sys.exit(f"no theme called '{want}' (udiksa theme names)")
+        cmd_apply(hit[0][2][0], opt("--pos"), opt("--transition") or "grow")
+    elif a[0] == "random":   # a random picture of a random theme (optional filter dark | light) ; `wallpaper` = same theme
+        import random
+        pool = []
+        for name, full, imgs in themes():
+            if name != state().get("theme") or len(a) < 2 or a[1] == "wallpaper":
+                base, _ = base_palette(full)
+                mode = guard(base)["mode"] if base else "dark"
+                if len(a) < 2 or a[1] in ("wallpaper", mode):
+                    pool += [i for i in imgs if i != state().get("wallpaper")]
+        if len(a) > 1 and a[1] == "wallpaper":
+            pool = [i for i in pool if os.path.dirname(i).endswith("/" + (state().get("theme") or "?"))]
+        if not pool:
+            sys.exit("no picture to choose from")
+        cmd_apply(random.choice(pool), None, "wipe")
     elif a[0] == "current":
         print(json.dumps(state()))
     elif a[0] == "import" and len(a) > 1:

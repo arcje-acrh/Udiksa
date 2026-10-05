@@ -1,6 +1,6 @@
 -- General look: gaps, borders, layouts.
 -- https://wiki.hypr.land/Configuring/Basics/Variables/#general
-local colors = require("conf.colors")  -- the theme's colours (written by rice-theme)
+local colors = require("conf.colors")  -- the theme's colours (written by udiksa theme)
 
 hl.config({
     general = {

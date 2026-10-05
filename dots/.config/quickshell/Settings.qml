@@ -1,7 +1,7 @@
 // Settings.qml -- the Settings app: a floating, centred window (user 2026-09-26; was full screen), sections down the left as retro
 // LED keys, the chosen section on the right. Changes apply at once. Open: Super+I, the launcher's "Settings"
 // entry, or `qs ipc call settings toggle | open <section>`. Keys: Esc close, Ctrl+↑/↓ (or Ctrl+Tab) section.
-// Hyprland options go through ~/.local/bin/rice-settings (saves + writes ~/.config/hypr/conf/settings.lua).
+// Hyprland options go through ~/.local/bin/udiksa settings (saves + writes ~/.config/hypr/conf/settings.lua).
 // Sections are grouped (user 2026-09-28: Personalise / Devices / Network / Power / System); each page is its own file
 // Set<Name>.qml, a section with `tabs` has several (Apps: SetApps + SetSoftware, Advanced: SetFiles + SetScripts).
 // Pages get `host` (this object) to read/write.
@@ -15,7 +15,7 @@ Scope {
     property bool shown: false
     property string section: "themes"
     readonly property string home: Quickshell.env("HOME")
-    readonly property string helper: home + "/.local/bin/rice-settings"
+    readonly property string helper: home + "/.local/lib/udiksa/settings"   // = `udiksa settings`, called directly
     // group = sidebar heading; tabs = a section made of several pages (a switch under the title)
     readonly property var sections: [
         { id: "themes",    group: "Personalise", file: "Themes",      name: "Themes",             icon: "󰸉", desc: "theme, wallpaper, theme colours, mouse pointer" },
@@ -63,15 +63,15 @@ Scope {
     }
     Timer { id: hideTimer; interval: 320; onTriggered: if (!root.open) root.shown = false }
 
-    // ---------- Hyprland options (rice-settings) ----------
-    property var hv: ({})                     // current values from `rice-settings get`
+    // ---------- Hyprland options (udiksa settings) ----------
+    property var hv: ({})                     // current values from `udiksa settings get`
     function load() { getter.running = true }
     Process {
         id: getter
         command: [root.helper, "get"]
         stdout: StdioCollector { onStreamFinished: { try { root.hv = JSON.parse(text) } catch (e) {} } }
     }
-    // set(key, value): shown at once, written by one rice-settings call at a time (latest value per key wins)
+    // set(key, value): shown at once, written by one udiksa settings call at a time (latest value per key wins)
     property var pending: ({})
     function set(key, value) {
         const h = JSON.parse(JSON.stringify(hv)); h[key] = value; hv = h

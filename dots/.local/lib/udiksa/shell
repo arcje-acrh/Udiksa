@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# rice-shell -- start (or --restart) Quickshell at the design's PHYSICAL size on any screen and any scale.
+# udiksa shell -- start (or --restart) Quickshell at the design's PHYSICAL size on any screen and any scale.
 # The design is drawn for a 191 ppi panel at 125 % (2560x1600, 340 mm wide): one design pixel = 1.25 / 191.25 inch. Here the
 # shell (notch, panels, Settings, lock) is scaled by  QT_SCALE_FACTOR = 1.25 / scale x ppi / 191.25  (focused screen),
 # so at 115 % the notch keeps exactly the size it had at 125 %, and a bigger / smaller-dpi screen shows it the same

@@ -8,10 +8,10 @@
 //   * Caps Lock / Num Lock: non-consuming Hyprland binds call `qs ipc call osd caps|num`; the state is read
 //     from the keyboard LEDs in /sys/class/leds
 //   * airplane mode: noticed automatically from `rfkill event` (panel toggle, or anything else)
-//   * touchpad on/off: ~/.local/bin/touchpad-toggle (F10) calls `qs ipc call osd touchpad on|off`
+//   * touchpad on/off: ~/.local/bin/udiksa touchpad (F10) calls `qs ipc call osd touchpad on|off`
 //   * short messages ("toasts", toast()): charger, audio device, keyboard layout, VPN, do not disturb, low battery
 //     (Toasts.qml), keep awake / game mode (Modes.qml), recording (Recorder.qml), a picked colour with its swatch
-//     (`qs ipc call osd colour "#rrggbb"`, ~/.local/bin/rice-pick), any script: `qs ipc call osd say <icon> <text>`
+//     (`qs ipc call osd colour "#rrggbb"`, ~/.local/bin/udiksa pick), any script: `qs ipc call osd say <icon> <text>`
 pragma Singleton
 import QtQuick
 import Quickshell
@@ -110,9 +110,9 @@ while True:
                 if (isNaN(raw)) return
                 root.showKbd(raw, 3)
                 // switched on: the colour chosen / the theme's accent could not be sent while it was off (that would
-                // light it up), so send it now -- only where the laptop's keyboard tool exists (~/.local/bin/rice-kbd)
+                // light it up), so send it now -- only where the laptop's keyboard tool exists (~/.local/bin/udiksa kbd)
                 if (raw > 0 && root.kbdPrev <= 0)
-                    Quickshell.execDetached(["sh", "-c", "[ -x \"$HOME/.local/bin/rice-kbd\" ] && exec \"$HOME/.local/bin/rice-kbd\" lit"])
+                    Quickshell.execDetached(["sh", "-c", "[ -x \"$HOME/.local/lib/udiksa/kbd\" ] && exec \"$HOME/.local/bin/udiksa\" kbd lit"])
                 root.kbdPrev = raw
             }
         }
@@ -178,9 +178,9 @@ while True:
         function brightness(): void { brightProc.running = true }
         function caps(): void { capsProc.running = true }
         function num(): void { numProc.running = true }
-        // display-mode (F9) reports the screen setup it switched to
+        // udiksa display (F9) reports the screen setup it switched to
         function display(label: string): void { root.show("󰍹", 1, label, false, false) }
-        // touchpad-toggle (F10) reports "on" / "off"
+        // udiksa touchpad (F10) reports "on" / "off"
         function colour(hex: string): void { root.toast("󰏘", hex + "  copied", false, hex) }
         function say(icon: string, text: string): void { root.toast(icon, text, false) }
         function touchpad(state: string): void {

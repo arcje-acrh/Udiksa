@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
-# rice-idle -- the timed actions of hypridle (~/.config/hypr/hypridle.conf, written by Settings > Power), and
+# udiksa idle -- the timed actions of hypridle (~/.config/hypr/hypridle.conf, written by Settings > Power), and
 # "sleep" for the notch power menu.
-#   rice-idle off   <bat|ac|any>    screen off, only when on that power source
-#   rice-idle sleep <bat|ac|any>    sleep; with "hibernate after" set (Settings) = sleep, then hibernate later
+#   udiksa idle off   <bat|ac|any>    screen off, only when on that power source
+#   udiksa idle sleep <bat|ac|any>    sleep; with "hibernate after" set (Settings) = sleep, then hibernate later
 # A timer for battery and one for the charger both run; the one for the other power source does nothing.
 set -u
 on_ac=0

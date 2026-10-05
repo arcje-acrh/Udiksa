@@ -24,12 +24,12 @@ hl.bind(mainMod .. " + F",             hl.dsp.window.fullscreen())
 --- Screens
 -- F9 sends SUPER+P (Windows' "Project" key, verified 2026-09-26): switch the screen setup with an external
 -- monitor (Extend / Mirror / External only / Laptop only), shown in the notch. Replaces pseudo-tile.
-hl.bind(mainMod .. " + P",             hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/display-mode"))
+hl.bind(mainMod .. " + P",             hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/udiksa display"))
 --- Themes
 -- themes (user 2026-09-26): SUPER + T = theme + wallpaper switcher (Quickshell sheet at the top),
--- SUPER + SHIFT + T = next wallpaper of the current theme (~/.local/bin/rice-theme)
+-- SUPER + SHIFT + T = next wallpaper of the current theme (~/.local/bin/udiksa theme)
 hl.bind(mainMod .. " + T",             hl.dsp.exec_cmd("qs ipc call themes toggle"))
-hl.bind(mainMod .. " + SHIFT + T",     hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/rice-theme next"))
+hl.bind(mainMod .. " + SHIFT + T",     hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/udiksa theme next"))
 --- Window layout
 hl.bind(mainMod .. " + SHIFT + J",     hl.dsp.layout("togglesplit")) -- dwindle only (moved from SUPER+J, now resize)
 
@@ -116,8 +116,8 @@ hl.bind(mainMod .. " + SHIFT + Page_Up",    hl.dsp.window.move({ workspace = "r-
 --- Scratchpad
 -- scratchpad
 hl.bind(mainMod .. " + S",             hl.dsp.workspace.toggle_special("magic"))
--- every screenshot goes through rice-shot (saves, copies, "Screenshot saved" card; a click opens the picture)
-local shot = os.getenv("HOME") .. "/.local/bin/rice-shot"
+-- every screenshot goes through udiksa shot (saves, copies, "Screenshot saved" card; a click opens the picture)
+local shot = os.getenv("HOME") .. "/.local/bin/udiksa shot"
 
 -- move the window to the scratchpad: SUPER + SHIFT + S.
 -- Laptops' "snip" key (Windows' Win+Shift+S) sends the same keys, but with the RIGHT Shift, all within a
@@ -147,10 +147,10 @@ hl.bind("CTRL + Print",                hl.dsp.exec_cmd(shot .. " screen"))
 hl.bind("ALT + Print",                 hl.dsp.exec_cmd(shot .. " edit"))
 
 --- App scratchpads
--- app scratchpads (~/.local/bin/rice-scratch): each app on its own hidden workspace, the key shows / hides it
+-- app scratchpads (~/.local/bin/udiksa scratch): each app on its own hidden workspace, the key shows / hides it
 -- and starts the app the first time. System monitor = btop; music and chat = the apps picked in
 -- Settings > Apps (music: ncspot + cava when ncspot is installed)
-local scratch = os.getenv("HOME") .. "/.local/bin/rice-scratch"
+local scratch = os.getenv("HOME") .. "/.local/bin/udiksa scratch"
 hl.bind("CTRL + SHIFT + Escape",       hl.dsp.exec_cmd(scratch .. " sysmon"))
 hl.bind(mainMod .. " + M",             hl.dsp.exec_cmd(scratch .. " music"))
 hl.bind(mainMod .. " + D",             hl.dsp.exec_cmd(scratch .. " chat"))
@@ -163,15 +163,15 @@ hl.bind(mainMod .. " + mouse:272",     hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273",     hl.dsp.window.resize(), { mouse = true })
 
 --- Screen recording and colour picker
--- screen recording (~/.local/bin/rice-record): the same keys again stop it (or click the dot in the notch);
+-- screen recording (~/.local/bin/udiksa record): the same keys again stop it (or click the dot in the notch);
 -- saved in ~/Videos/Recordings
-local record = os.getenv("HOME") .. "/.local/bin/rice-record"
+local record = os.getenv("HOME") .. "/.local/bin/udiksa record"
 hl.bind(mainMod .. " + ALT + R",         hl.dsp.exec_cmd(record .. " screen"))
 hl.bind(mainMod .. " + ALT + SHIFT + R", hl.dsp.exec_cmd(record .. " region"))
 hl.bind(mainMod .. " + ALT + CTRL + R",  hl.dsp.exec_cmd(record .. " sound"))
 
 -- colour picker: click anywhere, the hex code is copied and shown in the notch
-hl.bind(mainMod .. " + SHIFT + C",     hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/rice-pick"))
+hl.bind(mainMod .. " + SHIFT + C",     hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/udiksa pick"))
 
 --- Volume and microphone
 -- volume / mic
@@ -206,7 +206,7 @@ hl.bind("XF86WLAN",   hl.dsp.exec_cmd(airplane), { locked = true })
 -- touchpad off / on: F10 arrives as KEY_F21 = the standard touchpad-toggle key
 -- (keysym XF86TouchpadToggle; F21 bound too in case the keymap names it that way)
 -- (full path: Hyprland's PATH does not include ~/.local/bin)
-local touchpad = os.getenv("HOME") .. "/.local/bin/touchpad-toggle"
+local touchpad = os.getenv("HOME") .. "/.local/bin/udiksa touchpad"
 hl.bind("XF86TouchpadToggle", hl.dsp.exec_cmd(touchpad), { locked = true })
 hl.bind("F21",                hl.dsp.exec_cmd(touchpad), { locked = true })
 

@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""rice-slash -- the Slash LED bar on the lid of ASUS laptops that have one (e.g. Zephyrus G16), for Settings >
+"""udiksa slash -- the Slash LED bar on the lid of ASUS laptops that have one (e.g. Zephyrus G16), for Settings >
 Keyboard & touchpad. asusd remembers animation, brightness etc. (/etc/asusd/slash.ron); the main on/off switch is kept
 in ~/.config/udiksa/slash.json, because the bar is switched off and on here depending on the power source: asusd
 applies its own "show on battery" only when the charger is plugged in or out, not when the setting changes.
 Without asusctl or a Slash bar every command prints {"capable": false} / does nothing.
 
-  rice-slash                       JSON: capable, enabled, brightness (0-255), interval (0-5), mode, modes, and when it
+  udiksa slash                       JSON: capable, enabled, brightness (0-255), interval (0-5), mode, modes, and when it
                                    shows: boot, shutdown, sleep, battery, warning
-  rice-slash set <key> <value>...  change one or more (keys as above; true/false for the switches)
-  rice-slash apply                 light or darken the bar for the power source now (the shell calls it on plug / unplug)
+  udiksa slash set <key> <value>...  change one or more (keys as above; true/false for the switches)
+  udiksa slash apply                 light or darken the bar for the power source now (the shell calls it on plug / unplug)
 """
 import glob, json, os, re, subprocess, sys
 

@@ -1,4 +1,4 @@
-// PowerPanel.qml -- power options inside the grown notch: six equal icon-only keys across the full width. Sleep = rice-idle
+// PowerPanel.qml -- power options inside the grown notch: six equal icon-only keys across the full width. Sleep = udiksa idle
 // (sleep, then hibernate later when Settings > Power says so); Hibernate shows only when it is set up.
 // Lock = the Quickshell lock screen (Lock.qml). Log out / Reboot / Power off need a second
 // click within 3 s (the button turns red and says "Confirm?"). done() closes the notch after an action.
@@ -30,7 +30,7 @@ Item {
         readonly property var buttons: [
                 { id: "lock",     icon: "󰌾", name: "Lock",        confirm: false, enabled: true,  cmd: ["qs", "ipc", "call", "lock", "lock"] },
                 { id: "logout",   icon: "󰍃", name: "Log out",     confirm: true,  enabled: true,  cmd: ["hyprctl", "dispatch", "hl.dsp.exit()"] },
-                { id: "suspend",  icon: "󰤄", name: "Sleep",       confirm: false, enabled: true,  cmd: [Quickshell.env("HOME") + "/.local/bin/rice-idle", "sleep", "any"] },
+                { id: "suspend",  icon: "󰤄", name: "Sleep",       confirm: false, enabled: true,  cmd: [Quickshell.env("HOME") + "/.local/bin/udiksa", "idle", "sleep", "any"] },
                 { id: "hibernate", icon: "󰋊", name: "Hibernate",  confirm: false, enabled: root.canHib, cmd: ["systemctl", "hibernate"] },
                 { id: "reboot",   icon: "󰜉", name: "Reboot",      confirm: true,  enabled: true,  cmd: ["systemctl", "reboot"] },
                 { id: "poweroff", icon: "󰐥", name: "Power off",   confirm: true,  enabled: true,  cmd: ["systemctl", "poweroff"] }

@@ -46,7 +46,8 @@ Item {
 
     property int sel: 0
     readonly property string q: input.text.trim()
-    Component.onCompleted: input.forceActiveFocus()
+    property string startView: ""                  // set by the notch (`udiksa clipboard`, `udiksa emoji`)
+    Component.onCompleted: { input.forceActiveFocus(); if (startView && viewInfo(startView)) openView(startView) }
 
     // ---------- fuzzy score: prefix > word start > substring > letters in order ----------
     function score(hay, needle) {
@@ -146,14 +147,14 @@ Item {
     // ---------- tools: the same as their keys (binds.lua); the notch closes first, so it is not in the picture ----------
     readonly property string bin: Quickshell.env("HOME") + "/.local/bin/"
     readonly property var tools: [
-        { title: Recorder.on ? "Stop recording" : "Record the screen", sub: "Super+Alt+R · saved in Videos/Recordings", glyph: "󰑋", cmd: [bin + "rice-record", "screen"] },
-        { title: "Record an area", sub: "Super+Alt+Shift+R · pick the area first", glyph: "󰩭", cmd: [bin + "rice-record", "region"], wait: true },
-        { title: "Record with sound", sub: "Super+Alt+Ctrl+R · what you hear + the microphone", glyph: "󰕾", cmd: [bin + "rice-record", "sound"] },
-        { title: "Pick a colour", sub: "Super+Shift+C · copies the hex code", glyph: "󰏘", cmd: [bin + "rice-pick"], wait: true },
-        { title: "Screenshot to draw on", sub: "Alt+Print · arrows, boxes, text, blur; Enter saves + copies", glyph: "󰏫", cmd: [bin + "rice-shot", "edit"], wait: true },
+        { title: Recorder.on ? "Stop recording" : "Record the screen", sub: "Super+Alt+R · saved in Videos/Recordings", glyph: "󰑋", cmd: [bin + "udiksa", "record", "screen"] },
+        { title: "Record an area", sub: "Super+Alt+Shift+R · pick the area first", glyph: "󰩭", cmd: [bin + "udiksa", "record", "region"], wait: true },
+        { title: "Record with sound", sub: "Super+Alt+Ctrl+R · what you hear + the microphone", glyph: "󰕾", cmd: [bin + "udiksa", "record", "sound"] },
+        { title: "Pick a colour", sub: "Super+Shift+C · copies the hex code", glyph: "󰏘", cmd: [bin + "udiksa", "pick"], wait: true },
+        { title: "Screenshot to draw on", sub: "Alt+Print · arrows, boxes, text, blur; Enter saves + copies", glyph: "󰏫", cmd: [bin + "udiksa", "shot", "edit"], wait: true },
         { title: Modes.awake ? "Keep awake: on" : "Keep awake: off", sub: "No lock, screen off or sleep until you turn it off", glyph: "󰅶", mode: "awake" },
         { title: Modes.game ? "Game mode: on" : "Game mode: off", sub: "Animations, blur, shadows, gaps off", glyph: "󰊴", mode: "game" },
-        { title: "System monitor", sub: "Ctrl+Shift+Esc · btop on its scratchpad", glyph: "󰓅", cmd: [bin + "rice-scratch", "sysmon"] }
+        { title: "System monitor", sub: "Ctrl+Shift+Esc · btop on its scratchpad", glyph: "󰓅", cmd: [bin + "udiksa", "scratch", "sysmon"] }
     ]
     function runTool(t) {
         if (t.mode === "awake") Modes.setAwake(!Modes.awake)

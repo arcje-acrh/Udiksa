@@ -1,6 +1,6 @@
 // SetDisplay.qml -- Settings > Display (split from Devices, 2026-09-28): brightness (same -e2 curve as the keys and
 // the notch), laptop refresh rate + overdrive (Power.qml, shared with the notch System panel), and an external
-// monitor: every screen Hyprland knows, and Extend / Mirror / External only / Laptop only (~/.local/bin/display-mode,
+// monitor: every screen Hyprland knows, and Extend / Mirror / External only / Laptop only (~/.local/bin/udiksa display,
 // the same as F9 / Super+P).
 import QtQuick
 import Quickshell
@@ -37,7 +37,7 @@ SetPage {
     }
     readonly property var external: mons.filter(m => !/^(eDP|LVDS|DSI)/.test(m.name))
     readonly property var modes: ["extend", "mirror", "external", "laptop"]
-    function setMode(m) { Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/display-mode", m]); page.dmode = m }
+    function setMode(m) { Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/udiksa", "display", m]); page.dmode = m }
 
     SetGroup { title: "Laptop screen"; visible: Power.panel }       // a desktop has none: the whole group hides
     SetRow {
@@ -83,7 +83,7 @@ while read -r name bus; do v=$(ddcutil --bus "$bus" getvcp 10 --brief 2>/dev/nul
         }
     }
 
-    // ---- per-screen setup (saved in the personal layer: ~/.config/hypr/local/monitors.lua via rice-settings) ----
+    // ---- per-screen setup (saved in the personal layer: ~/.config/hypr/local/monitors.lua via udiksa settings) ----
     readonly property bool builtin: mons.some(m => /^(eDP|LVDS|DSI)/.test(m.name))
     function internal(m) { return /^(eDP|LVDS|DSI)/.test(m.name) }
     function key(m) { return m.description ? "desc:" + m.description : m.name }
@@ -147,12 +147,12 @@ while read -r name bus; do v=$(ddcutil --bus "$bus" getvcp 10 --brief 2>/dev/nul
         return own ? { mode: r + "@" + hz, scale: z, res: r, zoom: z }
                    : { mode: best(m) + "@" + hz, scale: nearestScale(m, z * parseInt(best(m)) / parseInt(r)), res: r, zoom: z }
     }
-    // Keep after a scale / resolution change: the shell is restarted so the notch keeps its physical size (rice-shell)
+    // Keep after a scale / resolution change: the shell is restarted so the notch keeps its physical size (udiksa shell)
     readonly property bool scaleChanged: pendingUndo !== null && mons.some(m => pendingUndo[key(m)] !== undefined && pendingUndo[key(m)].scale !== m.scale)
     function keep() {
         const restart = page.scaleChanged
         countdown.stop(); page.pendingUndo = null
-        if (restart) Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exec_cmd(\"" + Quickshell.env("HOME") + "/.local/bin/rice-shell --restart\")"])
+        if (restart) Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exec_cmd(\"" + Quickshell.env("HOME") + "/.local/bin/udiksa shell --restart\")"])
     }
     function revert() { countdown.stop(); const u = page.pendingUndo; page.pendingUndo = null; if (u) applyMany(u, false) }
     function reset(m) { monSet.command = [page.host.helper, "monitor", "rm", key(m)]; monSet.running = true }

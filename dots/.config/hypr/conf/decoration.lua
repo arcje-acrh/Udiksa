@@ -1,6 +1,6 @@
 -- Window decoration: rounding, opacity, shadow, blur, dimming.
 -- https://wiki.hypr.land/Configuring/Basics/Variables/#decoration
-local colors = require("conf.colors")  -- the theme's colours (written by rice-theme)
+local colors = require("conf.colors")  -- the theme's colours (written by udiksa theme)
 
 hl.config({
     decoration = {

@@ -254,7 +254,7 @@ top -bn2 -d0.7 -o %CPU -w 200 | awk '/^top -/{n++} n==2 && /^ *[0-9]+ /{c=$12; f
             PanelTitle {
                 title: "Busiest"
                 action: "system monitor ›"
-                onActionClicked: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/rice-scratch", "sysmon"])
+                onActionClicked: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/udiksa", "scratch", "sysmon"])
             }
             Repeater {
                 model: root.busiest

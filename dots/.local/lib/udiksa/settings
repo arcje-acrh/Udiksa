@@ -1,37 +1,37 @@
 #!/usr/bin/env python3
-"""rice-settings -- the back end of the Settings app (~/.config/quickshell/settings/).
+"""udiksa settings -- the back end of the Settings app (~/.config/quickshell/settings/).
 
 Hyprland options changed in Settings are saved in ~/.local/state/rice/settings.json and written to
 ~/.config/hypr/local/settings.lua (the PERSONAL LAYER, not in the Udiksa repo), which hyprland.lua loads last, so
 they override the shipped design without touching it (delete it / use "reset" to go back). Every change is also
 applied live with `hyprctl eval 'hl.config({...})'`.
 
-  rice-settings get                   JSON: current values of every option below (+ idle times)
-  rice-settings set <key> <value>     save + apply one option
-  rice-settings reset [section]       forget saved options (all, or look / layout / input), reload Hyprland
-  rice-settings power                 JSON: lock / screen-off / sleep timers, lid + power-button actions
-  rice-settings power apply           write hypridle.conf + logind from ~/.config/hypr/power.json (first login)
-  rice-settings power <key> <value>   change one (timers rewrite ~/.config/hypr/hypridle.conf; lid, power button and
+  udiksa settings get                   JSON: current values of every option below (+ idle times)
+  udiksa settings set <key> <value>     save + apply one option
+  udiksa settings reset [section]       forget saved options (all, or look / layout / input), reload Hyprland
+  udiksa settings power                 JSON: lock / screen-off / sleep timers, lid + power-button actions
+  udiksa settings power apply           write hypridle.conf + logind from ~/.config/hypr/power.json (first login)
+  udiksa settings power <key> <value>   change one (timers rewrite ~/.config/hypr/hypridle.conf; lid, power button and
                                       "hibernate after" go to logind via `sudo -n /usr/local/bin/udiksa-power`)
-  rice-settings monitor set <output> '<json>'  a screen's setup (Settings > Display): {"mode": "2560x1440@144",
+  udiksa settings monitor set <output> '<json>'  a screen's setup (Settings > Display): {"mode": "2560x1440@144",
                                       "scale": 1.25, "position": "auto-right", "transform": 0, "mirror": "", "disabled": false};
                                       <output> = "desc:<make model serial>" (follows the screen to any port) or a port name
-  rice-settings monitor many '<json>' several at once: {"<output>": {...}, ...} (layouts: extend / mirror / only one);
+  udiksa settings monitor many '<json>' several at once: {"<output>": {...}, ...} (layouts: extend / mirror / only one);
                                       screens that stay on are applied first, so there is always one on
-  rice-settings monitor rm <output>   back to automatic for that screen
+  udiksa settings monitor rm <output>   back to automatic for that screen
       (saved in ~/.config/hypr/local/monitors.json + monitors.lua = personal layer, applied live)
-  rice-settings anim <key> <value>   animations (Settings > Windows > Animations): speed <50-300 %>,
+  udiksa settings anim <key> <value>   animations (Settings > Windows > Animations): speed <50-300 %>,
                                       windows popin|slide|fade|gnomed, workspaces slide|slidevert|fade|slidefade,
                                       feel spring|smooth|crisp; written as hl.animation() lines into settings.lua
-  rice-settings cursor [<theme> <size>]  mouse pointer (Settings > Mouse & keyboard > Pointer): Udiksa / Udiksa-Modern (theme colours) or a
+  udiksa settings cursor [<theme> <size>]  mouse pointer (Settings > Mouse & keyboard > Pointer): Udiksa / Udiksa-Modern (theme colours) or a
                                       Bibata-<Original|Modern>-<Classic|Ice|Amber>, size 16-64; no arguments = apply
                                       the saved one (first login). Live (hyprctl setcursor), GTK (gsettings), X11 apps
-                                      (~/.icons/default), new apps (settings.lua env), login screen (rice-cursor)
-  rice-settings shake on|off          shake to find (the pointer grows while shaken; plugin hypr-dynamic-cursors,
+                                      (~/.icons/default), new apps (settings.lua env), login screen (udiksa cursor)
+  udiksa settings shake on|off          shake to find (the pointer grows while shaken; plugin hypr-dynamic-cursors,
                                       conf/cursor.lua): saved in settings.lua, applied live
-  rice-settings startup add|rm <command>     your own startup commands (run at the next login)
-  rice-settings bind add <keys> <command>    your own shortcut, e.g. "SUPER + B" "zen-browser"
-  rice-settings bind rm <keys>
+  udiksa settings startup add|rm <command>     your own startup commands (run at the next login)
+  udiksa settings bind add <keys> <command>    your own shortcut, e.g. "SUPER + B" "zen-browser"
+  udiksa settings bind rm <keys>
 """
 import json, os, re, subprocess, sys
 
@@ -150,9 +150,9 @@ def lua_str(x):
 def write_lua(d):
     pairs = [(OPTS[k][1], lua_val(k, v)) for k, v in d.items() if k in OPTS]
     body = lua_table(nest(pairs)) if pairs else "{}"
-    txt = ("-- settings.lua -- written by the Settings app (~/.local/bin/rice-settings); loaded LAST by hyprland.lua,\n"
+    txt = ("-- settings.lua -- written by the Settings app (~/.local/bin/udiksa settings); loaded LAST by hyprland.lua,\n"
            "-- so these override the other conf files. Do not edit by hand: change it in Settings, or delete this\n"
-           "-- file (or `rice-settings reset`) to go back to the hand-written values.\n"
+           "-- file (or `udiksa settings reset`) to go back to the hand-written values.\n"
            f"hl.config({body})\n")
     a = dict(ANIM_DEFAULT)
     a.update(d.get("_anim", {}))
@@ -220,7 +220,7 @@ def mon_lua(out, v):
 
 
 def cmd_monitor(op, out, data=None):
-    # a screen chosen here wins over the rate rice-panel-hz last set live (hyprland.lua re-applies that on reloads)
+    # a screen chosen here wins over the rate udiksa panel-hz last set live (hyprland.lua re-applies that on reloads)
     try:
         os.remove(os.path.join(HOME, ".local/state/rice/panel-mode"))
     except OSError:
@@ -240,7 +240,7 @@ def cmd_monitor(op, out, data=None):
     else:
         sys.exit("monitor set|rm")
     for path, txt in ((MON_JSON, json.dumps(d, indent=2) + "\n"),
-                      (MON_LUA, "-- monitors.lua -- written by Settings > Display (~/.local/bin/rice-settings monitor);\n"
+                      (MON_LUA, "-- monitors.lua -- written by Settings > Display (~/.local/bin/udiksa settings monitor);\n"
                                 "-- personal layer, loaded after the shipped monitors.lua. Delete it to go back to automatic.\n"
                                 + "".join(mon_lua(k, v) + "\n" for k, v in d.items()))):
         real = os.path.realpath(path)
@@ -254,7 +254,7 @@ def cmd_monitor(op, out, data=None):
             hypr(["eval", mon_lua(k, many[k])])
     else:
         hypr(["reload"])
-    subprocess.run([os.path.join(HOME, ".local/bin/rice-xdpi")])       # X11 apps follow a new scale
+    subprocess.run([os.path.join(HOME, ".local/bin/udiksa"), "xdpi"])       # X11 apps follow a new scale
     print(json.dumps(d))
 
 
@@ -290,9 +290,9 @@ def power_state():
 
 
 def write_idle(p):
-    """hypridle.conf from the timers; battery / charger timers both run, rice-idle skips the other source's."""
-    ri = "$HOME/.local/bin/rice-idle"
-    out = ["# hypridle -- written by Settings > Power (~/.local/bin/rice-settings power); change the times there.",
+    """hypridle.conf from the timers; battery / charger timers both run, udiksa idle skips the other source's."""
+    ri = "$HOME/.local/bin/udiksa idle"
+    out = ["# hypridle -- written by Settings > Power (~/.local/bin/udiksa settings power); change the times there.",
            "# Locking = the Quickshell lock screen (~/.config/quickshell/Lock.qml), via its IPC call.", "",
            "general {",
            "    lock_cmd = qs ipc call lock lock                                  # loginctl lock-session ends up here",
@@ -462,7 +462,7 @@ def cmd_cursor(theme=None, size=None):
     c = cursor_saved()
     t, sz = c["theme"], str(c["size"])
     if t.startswith("Udiksa"):                                       # theme-coloured: (re)built in the current theme first
-        subprocess.run([os.path.join(HOME, ".local/bin/rice-cursor"), "build", t], capture_output=True)
+        subprocess.run([os.path.join(HOME, ".local/bin/udiksa"), "cursor", "build", t], capture_output=True)
     hypr(["setcursor", t, sz])                                       # Hyprland + apps using the cursor-shape protocol
     for k, v in (("cursor-theme", t), ("cursor-size", sz)):          # GTK apps
         subprocess.run(["gsettings", "set", "org.gnome.desktop.interface", k, v if k == "cursor-size" else t],
@@ -470,7 +470,7 @@ def cmd_cursor(theme=None, size=None):
     idx = os.path.join(HOME, ".icons/default/index.theme")           # X11 apps / toolkits that read the default theme
     os.makedirs(os.path.dirname(idx), exist_ok=True)
     open(idx, "w").write(f"[Icon Theme]\nName=Default\nInherits={t}\n")
-    subprocess.run([os.path.join(HOME, ".local/bin/rice-cursor"), "greeter", t, sz], capture_output=True)  # login screen
+    subprocess.run([os.path.join(HOME, ".local/bin/udiksa"), "cursor", "greeter", t, sz], capture_output=True)  # login screen
     print(json.dumps(c))
 
 
@@ -520,7 +520,7 @@ def cmd_set(key, value):
     hypr(["eval", "hl.config(" + lua_table(nest([(path, lua_val(key, v))])) + ")"])
     if key in ("rounding", "border_size"):           # the shell's rounded screen corners follow (ScreenCorners.qml)
         subprocess.run(["qs", "ipc", "call", "corners", "refresh"], capture_output=True)
-        subprocess.Popen([os.path.join(HOME, ".local/bin/rice-theme"), "corners"],      # lock / login screen + GRUB
+        subprocess.Popen([os.path.join(HOME, ".local/bin/udiksa"), "theme", "corners"],      # lock / login screen + GRUB
                          stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
     print(json.dumps({key: current(opt, typ)}))
 

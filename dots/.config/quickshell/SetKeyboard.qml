@@ -1,7 +1,7 @@
 // SetKeyboard.qml -- Settings > Mouse & keyboard (was Keyboard & touchpad; split from Devices, 2026-09-28): mouse pointer
 // (moved here from Themes 2026-10-03: style, size, shake to find), layout (from a list or typed),
 // key repeat, keyboard light (ASUS: brightness, effect, colour / follow theme, speed, direction, when lit -- via
-// ~/.local/bin/rice-kbd, saved in ~/.config/udiksa/keyboard.json), touchpad. Hyprland options go through rice-settings (settings.lua); the light via Power.qml.
+// ~/.local/bin/udiksa kbd, saved in ~/.config/udiksa/keyboard.json), touchpad. Hyprland options go through udiksa settings (settings.lua); the light via Power.qml.
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -25,7 +25,7 @@ SetPage {
     function setLayout(l, va) { page.set("kb_layout", l); page.set("kb_variant", va) }
     Component.onCompleted: Power.readKbd()
 
-    // ---- mouse pointer (rice-settings cursor): Udiksa = Bibata Original in the theme colours, or a Bibata ----
+    // ---- mouse pointer (udiksa settings cursor): Udiksa = Bibata Original in the theme colours, or a Bibata ----
     SetGroup { title: "Pointer" }
     property var cursor: ({ theme: "Udiksa", size: 25 })
     readonly property var hostCursor: host && host.hv ? host.hv.cursor : undefined
@@ -132,12 +132,12 @@ SetPage {
         SetNum { value: page.v.repeat_delay ?? 300; from: 150; to: 800; step: 25; unit: " ms"; onChanged: (x) => page.set("repeat_delay", x) }
     }
 
-    // ---- keyboard light (ASUS only: ~/.local/bin/rice-kbd; the whole group hides on other machines) ----
+    // ---- keyboard light (ASUS only: ~/.local/bin/udiksa kbd; the whole group hides on other machines) ----
     property var kb: ({})
     Process {
         id: kbGet
         running: true
-        command: [Quickshell.env("HOME") + "/.local/bin/rice-kbd"]
+        command: [Quickshell.env("HOME") + "/.local/bin/udiksa", "kbd"]
         stdout: StdioCollector { onStreamFinished: { try { page.kb = JSON.parse(text) } catch (e) {} } }
     }
     property var kbPending: []
@@ -147,7 +147,7 @@ SetPage {
     }
     Timer {
         id: kbTimer; interval: 350
-        onTriggered: { kbSet.command = [Quickshell.env("HOME") + "/.local/bin/rice-kbd", "set"].concat(page.kbPending); page.kbPending = []; kbSet.running = true }
+        onTriggered: { kbSet.command = [Quickshell.env("HOME") + "/.local/bin/udiksa", "kbd", "set"].concat(page.kbPending); page.kbPending = []; kbSet.running = true }
     }
     Process { id: kbSet; onExited: { kbGet.running = true; Power.readKbd() } }
     readonly property bool kbRgb: kb.rgb === true
@@ -175,7 +175,7 @@ SetPage {
         }
     }
 
-    // ASUS: rice-kbd (colours, effects, saved); any other backlit keyboard: brightness only (Power.qml, brightnessctl)
+    // ASUS: udiksa kbd (colours, effects, saved); any other backlit keyboard: brightness only (Power.qml, brightnessctl)
     readonly property bool plainKbd: page.kb.capable !== true && Power.kbd
     SetGroup { title: "Keyboard light"; visible: page.kb.capable === true || page.plainKbd }
     SetRow {

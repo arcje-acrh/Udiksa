@@ -4,10 +4,10 @@ Add a theme      make a new folder here and put pictures in it (.jpg .png .webp)
                  The first time, its colours are made from its pictures and saved as colors.toml in the folder.
 Remove a theme   delete its folder.
 More wallpapers  drop more pictures into the theme's folder.
-See colours     `rice-theme colors <picture>` in a terminal shows a picture's main colours + the theme colours it gives.
+See colours     `udiksa theme colors <picture>` in a terminal shows a picture's main colours + the theme colours it gives.
 Change colours   open colors.toml in the theme's folder, change the "#rrggbb" values (each line says what it
                  colours; `accent` is the main one), save, then pick the theme again (Super+T) or run
-                 `rice-theme reapply` in a terminal. Delete colors.toml to have the colours made from the pictures again.
+                 `udiksa theme reapply` in a terminal. Delete colors.toml to have the colours made from the pictures again.
 Each picture shifts the colours a little, so every wallpaper of a theme feels slightly different.
 SOURCES.txt in each folder says where the pictures came from.
 
@@ -15,7 +15,7 @@ SOURCES.txt in each folder says where the pictures came from.
 WHAT VALUE GOES WHERE (colors.toml)
 ======================================================================================================
 Think of it as a LADDER from dark to light, plus one "personality" colour (accent) and the terminal colours.
-First look at the picture's colours:  rice-theme colors <picture>
+First look at the picture's colours:  udiksa theme colors <picture>
 
 THE LADDER (dark theme, darkest -> lightest)
   darker_background    deepest shade (rarely seen)                    -> darker than background
@@ -45,7 +45,7 @@ LIGHT THEMES
   mode = "light" flips the ladder: background is the lightest, foreground the darkest, and accent should
   then be fairly DARK.
 
-WORKED EXAMPLE (the Graphite lake picture; `rice-theme colors` showed greys #141617 (28 %) ... #909293 (32 %))
+WORKED EXAMPLE (the Graphite lake picture; `udiksa theme colors` showed greys #141617 (28 %) ... #909293 (32 %))
   background         = "#141617"   # darkest main colour
   lighter_background = "#232426"   # next step up
   selection          = "#333536"   # next step
@@ -59,4 +59,4 @@ RULES OF THUMB
   * The accent is the one colour you would describe the picture by: "the orange sunset", "the teal water".
   * Don't worry about perfect contrast: the theme engine automatically lightens / darkens any value that
     would make text, buttons or icons hard to read.
-  * After editing: save, then `rice-theme reapply` (or pick the theme again with Super+T).
+  * After editing: save, then `udiksa theme reapply` (or pick the theme again with Super+T).

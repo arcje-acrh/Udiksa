@@ -2,7 +2,7 @@
 # cmatrix -- the real /usr/bin/cmatrix, on the terminal's own see-through background.
 # cmatrix paints every cell in ANSI black (ESC[40m), which shows as a darker box over the translucent kitty. Here it
 # runs with a terminal description identical to kitty's except that "black background" means "default background"
-# (ESC[49m), and "green" (its rain colour) means kitty's slot 16 = the theme accent (rice-theme writes it), so the rain
+# (ESC[49m), and "green" (its rain colour) means kitty's slot 16 = the theme accent (udiksa theme writes it), so the rain
 # is in the accent and recolours live on a theme switch. Made once in ~/.local/share/terminfo. Outside kitty, unchanged.
 real=/usr/bin/cmatrix
 [[ -x $real ]] || { echo "cmatrix is not installed (sudo pacman -S cmatrix)"; exit 1; }

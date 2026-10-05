@@ -1,6 +1,6 @@
 // Lock.qml -- the lock screen (Wayland session lock: nothing else is shown or clickable until unlocked).
 // Design = login/LoginScreen.qml (same file as the boot login). Colours + wallpaper come from
-// /var/lib/rice-greeter/ (written by rice-theme), so lock and boot login always look the same.
+// /var/lib/rice-greeter/ (written by udiksa theme), so lock and boot login always look the same.
 // Password check: PAM with pam/password.conf (pam_unix only).
 // Lock with:  qs ipc call lock lock   (key bind, power panel "Lock", hypridle: idle + before sleep)
 import QtQuick

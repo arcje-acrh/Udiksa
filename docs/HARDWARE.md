@@ -14,10 +14,10 @@ This page shows what each part needs, what is covered today, and how to add supp
 |---|---|---|---|
 | Performance modes (Silent / Balanced / Turbo), Auto on battery | **ASUS**: modes + CPU watts + fan curves · **any other machine**: modes | `asusctl` · `power-profiles-daemon` | page and notch section hidden |
 | GPU mode (Eco / Standard / Ultimate) | hybrid NVIDIA laptops (Ultimate only with a MUX switch) | `supergfxctl` (`hardware/nvidia`) | hidden |
-| Laptop screen: 60 Hz / top rate / Auto | any laptop panel with more than one refresh rate | `hyprctl`, `rice-panel-hz` | hidden |
+| Laptop screen: 60 Hz / top rate / Auto | any laptop panel with more than one refresh rate | `hyprctl`, `udiksa panel-hz` | hidden |
 | Panel overdrive | ASUS laptops that have it | `asusctl armoury` | hidden |
-| Keyboard light | **any** backlit keyboard (brightness) · **ASUS**: colours and effects too | `/sys/class/leds/*::kbd_backlight` + `brightnessctl` · `rice-kbd` | hidden |
-| Slash lid light | ASUS laptops with a Slash bar | `rice-slash` | hidden |
+| Keyboard light | **any** backlit keyboard (brightness) · **ASUS**: colours and effects too | `/sys/class/leds/*::kbd_backlight` + `brightnessctl` · `udiksa kbd` | hidden |
+| Slash lid light | ASUS laptops with a Slash bar | `udiksa slash` | hidden |
 | Battery, charge limit | any battery · charge limit: ASUS | UPower · `asusctl` | battery rows hidden; the page becomes *Power & sleep* |
 | Lid actions | laptops | logind | hidden |
 | Touchpad settings | touchpads | Hyprland | hidden; pointer speed stays (under *Mouse*) |
@@ -37,8 +37,8 @@ section *what this machine has*. A short shell probe sets flags such as `asus`, 
 **Test without the hardware.** Start the shell with `UDIKSA_FAKE` to make it act as if parts were missing:
 
 ```sh
-UDIKSA_FAKE="noasus nogfx nopanel nobattery nolid notouchpad nokbd nowifi" setsid -f rice-shell --restart   # roughly a desktop
-setsid -f rice-shell --restart                                                                              # back to normal
+UDIKSA_FAKE="noasus nogfx nopanel nobattery nolid notouchpad nokbd nowifi" setsid -f udiksa shell --restart   # roughly a desktop
+setsid -f udiksa shell --restart                                                                              # back to normal
 ```
 Words: `noasus nogfx noppd nopanel nokbd notouchpad nolid nofans nobattery nowifi nobt`. Only the shell is fooled;
 nothing on the machine changes.

@@ -1,4 +1,4 @@
-// greeter-shell.qml -- the boot login screen. rice-theme copies it to /var/lib/rice-greeter/shell.qml;
+// greeter-shell.qml -- the boot login screen. udiksa theme copies it to /var/lib/rice-greeter/shell.qml;
 // greetd starts it as user "greeter":  cage -s -- qs -p /var/lib/rice-greeter   (/etc/greetd/config.toml)
 // Design: LoginScreen.qml (same file as the lock screen). Users = /etc/passwd (uid 1000-59999 with a real
 // shell), sessions = /usr/share/wayland-sessions/*.desktop, Hyprland first (the default).

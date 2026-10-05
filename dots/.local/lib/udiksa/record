@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# rice-record -- screen recording with gpu-screen-recorder (the GPU encodes: almost no CPU, no dropped frames).
+# udiksa record -- screen recording with gpu-screen-recorder (the GPU encodes: almost no CPU, no dropped frames).
 # Started / stopped by the keys in ~/.config/hypr/conf/binds.lua, the launcher's Tools, or the dot in the notch.
-#   rice-record screen    the screen the mouse is on
-#   rice-record region    pick an area first (slurp)
-#   rice-record sound     the screen + what you hear + the microphone
-#   rice-record stop      (any of the above also stops a running recording)
+#   udiksa record screen    the screen the mouse is on
+#   udiksa record region    pick an area first (slurp)
+#   udiksa record sound     the screen + what you hear + the microphone
+#   udiksa record stop      (any of the above also stops a running recording)
 # Saved as ~/Videos/Recordings/Recording <date>.mp4. The notch shows a blinking dot and the time while it runs
 # (Recorder.qml, told through `qs ipc call record ...`; it reads $XDG_RUNTIME_DIR/udiksa-record after a restart).
 set -u

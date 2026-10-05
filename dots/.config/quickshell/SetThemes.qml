@@ -8,7 +8,7 @@ import Quickshell.Io
 SetPage {
     id: page
     readonly property string walls: host ? host.home + "/Pictures/Wallpapers" : ""
-    readonly property string exe: host ? host.home + "/.local/bin/rice-theme" : ""
+    readonly property string exe: host ? host.home + "/.local/lib/udiksa/theme" : ""
     property var themes: []           // [{ name, wallpapers, current }]
     property string current: ""
     property string wall: ""
@@ -18,7 +18,7 @@ SetPage {
     property bool dirty: false
 
     onHostChanged: if (host) refresh()
-    function refresh() { lister.command = [host.home + "/.local/bin/rice-theme", "list"]; lister.running = true }   // not `exe`: its binding updates after onHostChanged
+    function refresh() { lister.command = [host.home + "/.local/bin/udiksa", "theme", "list"]; lister.running = true }   // not `exe`: its binding updates after onHostChanged
     Process {
         id: lister
         stdout: StdioCollector {

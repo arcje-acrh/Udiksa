@@ -5,9 +5,9 @@
 //   notch   the notch's corners, bottom AND the top ones where it meets the screen edge (Theme.islandRadius): Prefs corners.notch px, or -1 = the same as the windows;
 //           at most half the slim notch (15)
 // Set in Settings > Windows > Corners.
-// Re-read at start, after a Hyprland reload, and on `qs ipc call corners refresh` (rice-settings: rounding / border).
+// Re-read at start, after a Hyprland reload, and on `qs ipc call corners refresh` (udiksa settings: rounding / border).
 // Used by ScreenCorners.qml (the desktop) and ThemeSwitcher.qml; the lock / login screen and GRUB get the same
-// radius in screen pixels from rice-theme (theme.json "corner", GRUB corner images).
+// radius in screen pixels from udiksa theme (theme.json "corner", GRUB corner images).
 pragma Singleton
 import QtQuick
 import Quickshell

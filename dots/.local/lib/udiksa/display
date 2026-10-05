@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
-# display-mode -- F9 (this laptop's F9 sends Super+P = Windows' "Project" key; bound in
+# udiksa display -- F9 (this laptop's F9 sends Super+P = Windows' "Project" key; bound in
 # ~/.config/hypr/conf/binds.lua). With an external monitor connected, each press cycles:
 #   Extend -> Mirror -> External only -> Laptop only -> Extend ...
 # and shows the new setup in the notch. Without one it just says "No external display".
 # The laptop panel's refresh rate is handed back to the System panel (qs ipc call power screen).
-# `display-mode <extend|mirror|external|laptop>` sets that one directly (Settings > Display).
+# `udiksa display <extend|mirror|external|laptop>` sets that one directly (Settings > Display).
 # State: $XDG_RUNTIME_DIR/display-mode (gone after a reboot = back to the normal setup).
 # the built-in screen (eDP / LVDS / DSI) and the first other one; their scale is kept (Settings > Display sets it)
 mons=$(hyprctl monitors all -j)

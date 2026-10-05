@@ -7,7 +7,7 @@ import Quickshell.Io
 
 SetPage {
     id: page
-    // animations (rice-settings anim): a local copy so a change shows at once; the speed waits until you stop
+    // animations (udiksa settings anim): a local copy so a change shows at once; the speed waits until you stop
     property var anim: ({ speed: 100, windows: "popin", workspaces: "slide", feel: "spring" })
     readonly property var hostAnim: host && host.hv ? host.hv.anim : undefined
     onHostAnimChanged: if (hostAnim) anim = JSON.parse(JSON.stringify(hostAnim))
@@ -28,9 +28,9 @@ SetPage {
         }
     }
     Process { id: animProc }
-    // corner radii of the screen / notch (Prefs); the lock + login screen and GRUB follow a moment later (rice-theme)
+    // corner radii of the screen / notch (Prefs); the lock + login screen and GRUB follow a moment later (udiksa theme)
     function setCorner(key, px) { Prefs.set(["corners", key], px); if (key === "screen") cornerLater.restart() }
-    Timer { id: cornerLater; interval: 800; onTriggered: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/rice-theme", "corners"]) }
+    Timer { id: cornerLater; interval: 800; onTriggered: Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/udiksa", "theme", "corners"]) }
     readonly property var v: host ? host.hv : ({})
     function set(k, val) { host.set(k, val) }
     function onoff(b) { return b ? 0 : 1 }
@@ -265,7 +265,7 @@ SetPage {
         SetNum { value: page.v.blur_passes ?? 3; from: 1; to: 6; onChanged: (x) => page.set("blur_passes", x) }
     }
 
-    // ---- animations: on / off (Hyprland option) + speed, styles, feel (rice-settings anim -> settings.lua) ----
+    // ---- animations: on / off (Hyprland option) + speed, styles, feel (udiksa settings anim -> settings.lua) ----
     SetGroup { title: "Animations" }
     SetRow {
         title: "Animations"

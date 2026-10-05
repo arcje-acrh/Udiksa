@@ -1,33 +1,33 @@
 #!/usr/bin/env python3
-"""rice-cursor -- the Udiksa mouse pointers: Bibata Original (pointy, theme "Udiksa") and Bibata Modern (rounded,
+"""udiksa cursor -- the Udiksa mouse pointers: Bibata Original (pointy, theme "Udiksa") and Bibata Modern (rounded,
 "Udiksa-Modern"), recoloured with the theme.
 
-  rice-cursor build [Udiksa|Udiksa-Modern]       build ~/.local/share/icons/<that> from the theme in use; no name =
+  udiksa cursor build [Udiksa|Udiksa-Modern]       build ~/.local/share/icons/<that> from the theme in use; no name =
                                                  the Udiksa pointer in use (nothing when a plain Bibata is picked)
                                                  (~/.config/quickshell/colors.json): the pointer in the accent with a very
                                                  thin dark edge; Bibata's own fixed colours (busy spinner, resize corners, copy,
                                                  no-drop, ...) -> theme colours. A
                                                  hyprcursor theme (what Hyprland draws, sharp at any size) + XCursor files
-                                                 (X11 apps, login). rice-theme runs it on every theme change; the pointer
+                                                 (X11 apps, login). udiksa theme runs it on every theme change; the pointer
                                                  refreshes if it is the one in use (Settings > Mouse & keyboard > Pointer)
-  rice-cursor greeter <theme> <size>             copy that pointer to /var/lib/rice-greeter/icons/pointer (the login
-                                                 screen's, /etc/greetd/config.toml); rice-settings cursor runs it
+  udiksa cursor greeter <theme> <size>             copy that pointer to /var/lib/rice-greeter/icons/pointer (the login
+                                                 screen's, /etc/greetd/config.toml); udiksa settings cursor runs it
 Source drawings: ~/.local/share/rice/cursors/bibata-original and bibata-modern (GPL-3.0, see their README).
 """
 import json, os, re, shutil, subprocess, sys, tempfile
 from concurrent.futures import ThreadPoolExecutor
 
 HOME = os.path.expanduser("~")
-ASSETS = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../share/rice/cursors")   # dots/.local/share/rice/cursors
+ASSETS = os.path.join(os.path.dirname(os.path.realpath(__file__)), "../../share/rice/cursors")   # dots/.local/share/rice/cursors
 VARIANTS = {"Udiksa": ("bibata-original", "Bibata Original"), "Udiksa-Modern": ("bibata-modern", "Bibata Modern")}
 ICONS = os.path.join(HOME, ".local/share/icons")
 BORDER = 0.5                               # outline = this x Bibata's own (17 of 256 -> ~0.8 px at 25 px): very thin
 XSIZES = (20, 24, 25, 28, 32, 38, 50)     # XCursor bitmaps: the Settings sizes + 1.5x / 2x of 25
-GREETER = "/var/lib/rice-greeter"         # owned by the user (rice-theme writes there too), readable by the greeter
+GREETER = "/var/lib/rice-greeter"         # owned by the user (udiksa theme writes there too), readable by the greeter
 
 
 def chosen():
-    """The pointer picked in Settings (rice-settings keeps it in its state file); Udiksa when none."""
+    """The pointer picked in Settings (udiksa settings keeps it in its state file); Udiksa when none."""
     try:
         c = json.load(open(os.path.join(HOME, ".local/state/rice/settings.json"))).get("_cursor", {})
     except (OSError, ValueError):
@@ -133,7 +133,7 @@ def build(variant):
         for f in os.listdir(built):                              # manifest.hl + hyprcursors/*.hlc
             shutil.move(os.path.join(built, f), os.path.join(out, f))
         open(os.path.join(out, "index.theme"), "w").write(
-            f"[Icon Theme]\nName={variant}\nComment={shape} in the Udiksa theme colours (rice-cursor)\n")
+            f"[Icon Theme]\nName={variant}\nComment={shape} in the Udiksa theme colours (udiksa cursor)\n")
         # swap in at once (a half-written theme is never seen)
         os.makedirs(ICONS, exist_ok=True)
         old = dest + ".old"

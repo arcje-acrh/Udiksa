@@ -1,12 +1,12 @@
 -- Environment variables. Applied when Hyprland starts (not on reload).
 -- https://wiki.hypr.land/Configuring/Advanced-and-Cool/Environment-variables/
 
--- the rice's own commands (~/.local/bin: rice-theme, music, rice-onlyoffice, ...) for launchers and key binds
+-- the rice's own commands (~/.local/bin: udiksa theme, music, udiksa onlyoffice, ...) for launchers and key binds
 -- only once: this file runs again on every config reload, and each run would add another copy
 local bin, path = os.getenv("HOME") .. "/.local/bin", os.getenv("PATH") or "/usr/local/bin:/usr/bin"
 if not (":" .. path .. ":"):find(":" .. bin .. ":", 1, true) then hl.env("PATH", bin .. ":" .. path) end  -- add ~/.local/bin to PATH
 
--- mouse pointer: "Udiksa" = Bibata Original in the theme's colours (~/.local/bin/rice-cursor, rebuilt by rice-theme on
+-- mouse pointer: "Udiksa" = Bibata Original in the theme's colours (~/.local/bin/udiksa cursor, rebuilt by udiksa theme on
 -- every theme change). Settings > Mouse & keyboard > Pointer picks another; local/settings.lua (loaded later) then sets these again.
 hl.env("XCURSOR_THEME", "Udiksa")     -- pointer theme for X11 / GTK apps
 hl.env("HYPRCURSOR_THEME", "Udiksa")  -- pointer theme for Hyprland itself
@@ -16,7 +16,7 @@ hl.env("HYPRCURSOR_SIZE", "25")       -- pointer size in px (Hyprland)
 -- prefer native Wayland for toolkits, fall back to X11
 hl.env("GDK_BACKEND", "wayland,x11,*")    -- GTK apps: Wayland first, X11 as a fallback
 hl.env("QT_QPA_PLATFORM", "wayland;xcb")  -- Qt apps: Wayland first, X11 as a fallback
--- Qt apps take their look from qt6ct (style Kvantum "Rice", colours written by ~/.local/bin/rice-theme)
+-- Qt apps take their look from qt6ct (style Kvantum "Rice", colours written by ~/.local/bin/udiksa theme)
 hl.env("QT_QPA_PLATFORMTHEME", "qt6ct")         -- Qt takes its look from qt6ct
 hl.env("MOZ_ENABLE_WAYLAND", "1")               -- Firefox / Zen: use Wayland
 hl.env("ELECTRON_OZONE_PLATFORM_HINT", "auto")  -- Electron apps: use Wayland when they can

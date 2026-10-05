@@ -1,5 +1,5 @@
 # ---- never in the repo ----
-# written by rice-theme on every theme switch (setup/rice.sh runs rice-theme, which recreates them)
+# written by udiksa theme on every theme switch (setup/rice.sh runs udiksa theme, which recreates them)
 dots/.config/hypr/conf/colors.lua
 dots/.config/kitty/colors.conf
 optional/zed/dots/.config/zed/themes/
@@ -15,7 +15,7 @@ dots/.config/mpv/script-opts/
 
 # PERSONAL LAYER: your own choices on this machine (Settings writes them); the repo ships only the design
 dots/.config/hypr/local/
-# generated from the Battery & sleep choices (rice-settings power apply)
+# generated from the Battery & sleep choices (udiksa settings power apply)
 dots/.config/hypr/hypridle.conf
 
 # app state, not configuration

@@ -2,8 +2,8 @@
 // github.com/Darkkal44/qylock). Used twice:
 //   * boot login: /var/lib/rice-greeter/shell.qml (greetd runs it in cage as user "greeter")
 //   * lock screen: ~/.config/quickshell/Lock.qml (inside the running shell)
-// rice-theme copies this folder to /var/lib/rice-greeter/ on every theme change, together with theme.json
-// (colours for a dark scrim) and wallpaper.jpg, so edit it HERE, then run `rice-theme reapply`.
+// udiksa theme copies this folder to /var/lib/rice-greeter/ on every theme change, together with theme.json
+// (colours for a dark scrim) and wallpaper.jpg, so edit it HERE, then run `udiksa theme reapply`.
 //
 // Placement (s = screen height / 768, as in the original): clock top-left, name + password bottom-right,
 // a hairline along the bottom with the session on the left (login only) and Restart / Shut Down on the right.
@@ -334,7 +334,7 @@ Item {
         }
     }
 
-    // rounded screen corners, the same as the desktop's (rice-theme puts the radius in SCREEN pixels into theme.json
+    // rounded screen corners, the same as the desktop's (udiksa theme puts the radius in SCREEN pixels into theme.json
     // "corner"; dividing by the device pixel ratio gives this screen's units, in the greeter and the lock alike)
     Item {
         id: corners

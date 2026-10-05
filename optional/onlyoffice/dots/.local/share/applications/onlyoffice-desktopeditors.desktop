@@ -7,7 +7,7 @@ GenericName[ru]=Редактор документов
 Comment=Edit office documents
 Comment[ru]=Редактировать офисные документы
 Type=Application
-Exec=rice-onlyoffice %F
+Exec=udiksa onlyoffice %F
 Terminal=false
 Icon=onlyoffice-desktopeditors
 Keywords=Text;Document;OpenDocument Text;Microsoft Word;Microsoft Works;odt;doc;docx;rtf;
@@ -59,7 +59,7 @@ Name[ur]=نئی دستاویز
 Name[vi]=Tài liệu mới
 Name[zh_CN]=新建文档
 Name[zh_TW]=新文件
-Exec=rice-onlyoffice --new:word
+Exec=udiksa onlyoffice --new:word
 
 [Desktop Action NewSpreadsheet]
 Name=New spreadsheet
@@ -104,7 +104,7 @@ Name[ur]=نئی اسپریڈشیٹ
 Name[vi]=Bảng tính mới
 Name[zh_CN]=新建表格
 Name[zh_TW]=新試算表
-Exec=rice-onlyoffice --new:cell
+Exec=udiksa onlyoffice --new:cell
 
 [Desktop Action NewPresentation]
 Name=New presentation
@@ -149,7 +149,7 @@ Name[ur]=نئی پیشکش
 Name[vi]=Bản trình chiếu mới
 Name[zh_CN]=新建幻灯片
 Name[zh_TW]=新簡報
-Exec=rice-onlyoffice --new:slide
+Exec=udiksa onlyoffice --new:slide
 
 [Desktop Action NewForm]
 Name=New PDF
@@ -194,4 +194,4 @@ Name[ur]=نیا پی ڈی ایف
 Name[vi]=PDF mới
 Name[zh_CN]=新建 PDF
 Name[zh_TW]=新的 PDF
-Exec=rice-onlyoffice --new:form
+Exec=udiksa onlyoffice --new:form

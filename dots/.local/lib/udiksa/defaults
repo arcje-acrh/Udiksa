@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# rice-defaults -- which app opens which kind of file (writes ~/.config/mimeapps.list via xdg-mime).
+# udiksa defaults -- which app opens which kind of file (writes ~/.config/mimeapps.list via xdg-mime).
 # Set PER CATEGORY on purpose: some apps claim far too much (zathura's comic plugin claims zip / png / folders,
 # OnlyOffice claims pdf / epub / text), so "every type an app lists" is not used. Safe to run again.
 set -uo pipefail

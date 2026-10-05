@@ -82,10 +82,10 @@ A theme is just a folder in `~/Pictures/Wallpapers/`.
 
 - **Add one:** make a folder, put pictures in it (`.jpg`, `.png`, `.webp`). It shows up in the switcher; the first
   time you pick it, its colours are made from its pictures and saved as `colors.toml` in that folder.
-- **From GitHub:** `rice-theme import <link>` fetches a theme repository that has a `colors.toml` and pictures.
+- **From GitHub:** `udiksa theme import <link>` fetches a theme repository that has a `colors.toml` and pictures.
 - **More wallpapers:** drop more pictures into a theme's folder.
 - **Change its colours:** edit `colors.toml` in the folder (every line says what it colours; `accent` is the main
-  one), then run `rice-theme reapply`. `rice-theme colors <picture>` shows the colours a picture would give.
+  one), then run `udiksa theme reapply`. `udiksa theme colors <picture>` shows the colours a picture would give.
   Delete `colors.toml` to have them made from the pictures again.
 - **Remove one:** delete its folder.
 
@@ -259,7 +259,7 @@ Udiksa/
 ├── install.sh          ./install.sh [arch] [apps] [rice]
 ├── dots/               your home, 1:1 -- linked into ~ with GNU Stow
 │   ├── .config/        hypr, quickshell, kitty, fastfetch, starship.toml, ...
-│   ├── .local/bin/     rice-theme, rice-settings, rice-cursor, ...
+│   ├── .local/bin/     udiksa (the one command); its parts are in .local/lib/udiksa/
 │   ├── .local/share/   app entries, maintenance scripts, the pointer drawings
 │   ├── .bashrc …       shell files under their real names
 │   └── Pictures/Wallpapers/<Theme>/
@@ -277,8 +277,22 @@ the scripts. Your screens, timers, layout choices and your own shortcuts live in
 ignores and Hyprland loads last. Configs are symlinks into `~/Udiksa`, so `git pull` updates your desktop, and editing
 a config at its usual path edits the repo.
 
-Command-line tools that come with it: `rice-theme` (themes), `rice-settings` (Settings' back end), `display-mode`,
-`rice-idle`, `rice-defaults`, plus maintenance scripts (update, mirrors, orphans, cache, snapshots) in the launcher.
+## The `udiksa` command
+
+One command for the whole rice (`udiksa help` lists everything, `udiksa <command> -h` shows one command's usage, Tab completes):
+
+| | |
+|---|---|
+| `udiksa theme next \| set <name> \| random [dark\|light] \| names \| apply <picture> \| import <link>` | themes and wallpapers (also `udiksa wallpaper next \| prev \| random`) |
+| `udiksa shot area \| window \| screen \| edit` · `udiksa record screen \| region \| sound \| stop` · `udiksa pick` | screenshots, screen recording, colour picker |
+| `udiksa toggle <panel>` · `udiksa clipboard` · `udiksa emoji` · `udiksa lock` · `udiksa dnd` · `udiksa osd` | the notch, launcher and notifications from a terminal or a script (`udiksa ipc show` lists every shell command) |
+| `udiksa scratch sysmon \| music \| chat` | app scratchpads |
+| `udiksa display` · `udiksa touchpad` · `udiksa panel-hz` · `udiksa gpu` · `udiksa idle` · `udiksa defaults` · `udiksa flash` | screens, touchpad, GPU, idle timers, default apps, USB flasher |
+| `udiksa settings ...` · `udiksa shell` · `udiksa cursor` · `udiksa xdpi` | back ends of the Settings app and the shell |
+| `udiksa kbd` · `udiksa slash` | ASUS keyboard and lid lights (only where installed) |
+| `udiksa install` · `udiksa update [dots]` · `udiksa doctor` | install parts, update the system (or pull and relink the dotfiles), check the setup |
+
+The commands are small scripts in `~/.local/lib/udiksa/`; `~/.local/bin/udiksa` finds them. Maintenance scripts (mirrors, orphans, cache, snapshots) are in the launcher.
 
 ## Credits
 

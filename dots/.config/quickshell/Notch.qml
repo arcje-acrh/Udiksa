@@ -39,7 +39,9 @@ Item {
 
     function hoverIn(id) { if (panel !== "") return; pending = id; openTimer.restart() }
     function hoverOut(id) { if (panel === "" && pending === id) openTimer.stop() }
+    property string startView: ""          // `udiksa clipboard` / `udiksa emoji` = open("launcher:clip"): the launcher starts in that menu
     function open(id) {
+        const part = id.split(":"); id = part[0]; startView = part.length > 1 ? part[1] : ""
         clickOpened = true
         if (Theme.panelHeight[id] === undefined) return
         openTimer.stop(); unloadTimer.stop(); pinned = false; loaded = id; panel = id
@@ -49,7 +51,7 @@ Item {
     Connections {
         target: NotchCtl
         function onOpenRequested(id) { root.open(id); root.pinned = true }
-        function onToggleRequested(id) { if (root.panel === id) root.close(); else { root.open(id); root.pinned = true } }
+        function onToggleRequested(id) { if (root.panel === id.split(":")[0]) root.close(); else { root.open(id); root.pinned = true } }
         function onCloseRequested() { root.close() }
     }
 
@@ -421,5 +423,5 @@ Item {
     Component { id: systemPanel;    SystemPanel { onOpenPanel: (id) => root.open(id) } }
     Component { id: usagePanel;     UsagePanel {} }
     Component { id: tailscalePanel; TailscalePanel {} }
-    Component { id: launcherPanel;  LauncherPanel { onDone: root.close() } }
+    Component { id: launcherPanel;  LauncherPanel { startView: root.startView; onDone: root.close() } }
 }

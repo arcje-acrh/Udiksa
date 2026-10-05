@@ -1,12 +1,12 @@
 // ThemeSwitcher.qml -- the theme + wallpaper switcher, FULL SCREEN (user 2026-09-26: no pop-up sheet).
-// Super+T (`qs ipc call themes toggle`); Super+Shift+T = next wallpaper (rice-theme next).
+// Super+T (`qs ipc call themes toggle`); Super+Shift+T = next wallpaper (udiksa theme next).
 //   A row of tall parallelograms across the middle of the screen, edge to edge (no gaps), the active one large in the
 //   centre with its details (name, colour dots, dark/light, wallpapers, where the colours come from). Behind it:
 //   the highlighted wallpaper, blurred and darkened, cross-fading as you browse.
 //   step 1  themes           step 2  that theme's wallpapers; Enter/click applies: the wallpaper grows out
-//                                    from the centre (awww) while every colour switches (rice-theme apply).
+//                                    from the centre (awww) while every colour switches (udiksa theme apply).
 //   keys    ← → (or wheel) browse, Enter pick, Esc / Backspace back or close, Home = the theme in use
-// Data: `rice-theme list` (themes, wallpapers, 640x400 previews in ~/.cache/rice/thumbs, swatches).
+// Data: `udiksa theme list` (themes, wallpapers, 640x400 previews in ~/.cache/rice/thumbs, swatches).
 import QtQuick
 import QtQuick.Effects
 import QtQuick.Shapes
@@ -23,7 +23,7 @@ Scope {
     property int themeIdx: 0
     property string currentWall: ""
     readonly property var theme: themes.length ? themes[Math.max(0, Math.min(themeIdx, themes.length - 1))] : null
-    readonly property string exe: Quickshell.env("HOME") + "/.local/bin/rice-theme"
+    readonly property string exe: Quickshell.env("HOME") + "/.local/lib/udiksa/theme"
     function toggle() { if (open) close(); else show() }
     function show() { lister.running = true; step = 1; open = true; shown = true }
     function close() { open = false; hideTimer.restart() }

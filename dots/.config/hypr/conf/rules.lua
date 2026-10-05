@@ -165,10 +165,10 @@ hl.layer_rule({
 -- music (~/.local/bin/music): ncspot + cava as ONE centred block on the music scratchpad (special:music, Super+M).
 -- ncspot 968x640 on top, 12 px gap, cava 968x220 below; block height 872 -> top = centre - 436
 -- (+15 for the 30 px bar at the top of the screen).
--- the disk image flasher (~/.local/bin/rice-flash, caligula): floating in the middle
+-- the disk image flasher (~/.local/bin/udiksa flash, caligula): floating in the middle
 hl.window_rule({
     name  = "flash-window",
-    match = { class = "^rice-flash$" },
+    match = { class = "^udiksa-flash$" },
     float = true,
     size  = "1000 640",
     move  = "monitor_w*0.5-500 monitor_h*0.5-320",
@@ -209,7 +209,7 @@ hl.window_rule({
     size   = "1400 860",
 })
 
--- system monitor scratchpad (Ctrl+Shift+Esc = ~/.local/bin/rice-scratch sysmon): btop floating in the middle
+-- system monitor scratchpad (Ctrl+Shift+Esc = ~/.local/bin/udiksa scratch sysmon): btop floating in the middle
 hl.window_rule({
     name   = "sysmon-window",
     match  = { class = "^rice-sysmon$" },
@@ -218,7 +218,7 @@ hl.window_rule({
     size   = "1400 860",
 })
 
--- screenshot editor (Alt+Print = ~/.local/bin/rice-shot edit): floating, centred, most of the screen
+-- screenshot editor (Alt+Print = ~/.local/bin/udiksa shot edit): floating, centred, most of the screen
 hl.window_rule({
     name   = "screenshot-editor",
     match  = { class = "^com\\.gabm\\.satty$" },

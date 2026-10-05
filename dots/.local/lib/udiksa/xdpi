@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# rice-xdpi -- load ~/.Xresources and set Xft.dpi = 96 x the screen scale, so X11 apps (drawn unscaled by Hyprland,
+# udiksa xdpi -- load ~/.Xresources and set Xft.dpi = 96 x the screen scale, so X11 apps (drawn unscaled by Hyprland,
 # misc.lua xwayland.force_zero_scaling) size themselves right on ANY screen. Run at login (autostart.lua) and after
 # a scale change in Settings > Display. Uses the focused screen (or the first one).
 xrdb -merge "$HOME/.Xresources" 2>/dev/null

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# rice-firstrun -- the setup steps that need a running desktop session (Hyprland + D-Bus). Started once by
+# udiksa firstrun -- the setup steps that need a running desktop session (Hyprland + D-Bus). Started once by
 # autostart.lua when ~/.local/state/rice/firstrun exists (setup/rice.sh creates it), then removes that file.
 # Can also be run by hand at any time.
 set -uo pipefail
@@ -13,12 +13,12 @@ gsettings set org.gnome.desktop.wm.preferences button-layout 'appmenu:'   # no c
 theme_img=$(python3 -c 'import json,os;print(json.load(open(os.path.expanduser("~/.local/state/rice/theme.json")))["wallpaper"])' 2>/dev/null)
 [[ -f ${theme_img:-} ]] || theme_img=$(find "$HOME/Pictures/Wallpapers/Everforest Dark" -maxdepth 1 -iregex '.*\.\(jpe?g\|png\|webp\)' 2>/dev/null | sort | head -1)
 [[ -f ${theme_img:-} ]] || theme_img=$(find "$HOME/Pictures/Wallpapers" -mindepth 2 -iregex '.*\.\(jpe?g\|png\|webp\)' | sort | head -1)
-[[ -f ${theme_img:-} ]] && "$HOME/.local/bin/rice-theme" apply "$theme_img" --transition none
+[[ -f ${theme_img:-} ]] && "$HOME/.local/bin/udiksa" theme apply "$theme_img" --transition none
 
-"$HOME/.local/bin/rice-defaults"
+"$HOME/.local/bin/udiksa" defaults
 # Settings > Power (~/.config/hypr/power.json): idle timers (hypridle.conf) + lid / power button / hibernate delay (logind)
-"$HOME/.local/bin/rice-settings" power apply
-"$HOME/.local/bin/rice-settings" cursor          # mouse pointer: GTK, X11 apps, login screen (Udiksa unless picked)
+"$HOME/.local/bin/udiksa" settings power apply
+"$HOME/.local/bin/udiksa" settings cursor          # mouse pointer: GTK, X11 apps, login screen (Udiksa unless picked)
 # shake to find (conf/cursor.lua): build the dynamic-cursors plugin against this Hyprland (a few minutes; needs the
 # running session). Afterwards "Update system" rebuilds it when Hyprland updates.
 if command -v hyprpm >/dev/null && ! hyprpm list 2>/dev/null | grep -q dynamic-cursors; then
