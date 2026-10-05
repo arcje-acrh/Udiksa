@@ -86,7 +86,7 @@ A theme is just a folder in `~/Pictures/Wallpapers/`.
 - **Add one:** make a folder, put pictures in it (`.jpg`, `.png`, `.webp`). It shows up in the switcher; the first
   time you pick it, its colours are made from its pictures and saved as `colors.toml` in that folder.
 - **From GitHub:** `udiksa theme import <link>` fetches a theme repository that has a `colors.toml` and pictures.
-- **More wallpapers:** drop more pictures into a theme's folder.
+- **More wallpapers:** drop more pictures into a theme's folder. Vantablack and Graphite also carry a recoloured copy of Tokyo Night's dark waves (`docs/silk-wallpapers.py`).
 - **Change its colours:** edit `colors.toml` in the folder (every line says what it colours; `accent` is the main
   one), then run `udiksa theme reapply`. `udiksa theme colors <picture>` shows the colours a picture would give.
   Delete `colors.toml` to have them made from the pictures again.

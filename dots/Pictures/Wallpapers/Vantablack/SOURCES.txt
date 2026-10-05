@@ -14,3 +14,4 @@ Wallpapers:
   10-horror-cult.jpg  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/horror_cult.jpg  (MIT)
   11-a-person-playing-a-guitar.png  <-  https://github.com/dharmx/walls/blob/main/monochrome/a_person_playing_a_guitar.png  (no licence stated by the collection; rights stay with the original artist)
   12-mobile-girl.jpg  <-  https://github.com/D3Ext/aesthetic-wallpapers/blob/main/images/mobile-girl.jpg  (MIT)
+  13-silk-waves.jpg  <-  Tokyo Night's 05-dark-waves.jpg recoloured to this theme's colours (docs/silk-wallpapers.py); rights stay with the original artist

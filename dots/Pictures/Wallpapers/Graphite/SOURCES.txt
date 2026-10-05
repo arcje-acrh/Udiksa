@@ -15,3 +15,4 @@ Wallpapers:
   11-a-white-car-parked-on-a-brick-road.png  <-  https://github.com/dharmx/walls/blob/main/unsorted/a_white_car_parked_on_a_brick_road.png  (no licence stated by the collection; rights stay with the original artist)
   12-a-cartoon-of-a-girl-with-long-hair-holdi.jpg  <-  https://github.com/dharmx/walls/blob/main/anime/a_cartoon_of_a_girl_with_long_hair_holding_a_sword.jpg  (no licence stated by the collection; rights stay with the original artist)
   13-a-cartoon-of-a-girl-holding-a-sword.png  <-  https://github.com/dharmx/walls/blob/main/nord/a_cartoon_of_a_girl_holding_a_sword.png  (no licence stated by the collection; rights stay with the original artist)
+  14-silk-waves.jpg  <-  Tokyo Night's 05-dark-waves.jpg recoloured to this theme's colours (docs/silk-wallpapers.py); rights stay with the original artist
