@@ -59,6 +59,7 @@ help() {
     row clock     "The terminal clock window"
     [[ -x $LIB/kbd ]] && { sec "HARDWARE"; row kbd "ASUS keyboard lighting"; row slash "ASUS lid light"; }
     sec "MANAGE"
+    row status    "Version and a quick look at this install (also: just `udiksa`)"
     row install   "Run installer parts: arch, apps, rice"
     row update    "Update the system, or: update dots (pull + relink)"
     row doctor    "Check that everything the rice needs is in place"
@@ -73,6 +74,45 @@ help() {
     sec "LEARN MORE"
     echo "  udiksa <command> -h    usage of one command (--full: everything it documents)"
     echo "  <Tab>                  completes commands, panels and theme names"
+}
+
+# bare `udiksa`: version + a quick look at the state of this install, then the commands by group
+status() {
+    local B="" C="" D="" R="" v
+    [[ -t 1 && -z ${NO_COLOR:-} ]] && { B=$'\e[1m'; C=$'\e[36m'; D=$'\e[2m'; R=$'\e[0m'; }
+    line() { printf '  %s%-9s%s %s\n' "$D" "$1" "$R" "$2"; }
+    printf '%sudiksa%s %s  %s-  one command for the whole rice%s\n\n' "$B" "$R" "$(git -C "$REPO" describe --always --dirty 2>/dev/null || echo unknown)" "$D" "$R"
+    printf '%sSTATUS%s\n' "$B" "$R"
+    v=$(hyprctl version -j 2>/dev/null | jq -r .tag 2>/dev/null)
+    line Hyprland "${v:-not running}$(pgrep -x quickshell >/dev/null && echo '  ·  shell running' || echo '  ·  shell NOT running (udiksa shell)')"
+    v=$("$LIB/theme" current 2>/dev/null | jq -r 'if .theme then "\(.theme)  ·  \(.wallpaper | split("/") | last)" else empty end' 2>/dev/null)
+    line Theme "${v:-none applied yet (udiksa theme set <name>)}"
+    v=$(hyprctl monitors -j 2>/dev/null | jq -r '(map(select(.focused)) + .)[0] | "\(.name)  \(.width)x\(.height) @ \(.refreshRate | round) Hz  ·  scale \(.scale)"' 2>/dev/null)
+    [[ -n $v && $v != null ]] && line Screen "$v"
+    if command -v supergfxctl >/dev/null; then
+        v=$("$LIB/gpu" all 2>/dev/null | awk -F': *' '/^mode/ {m=$2} /^dGPU/ {d=$2} END {if (m) print m "  ·  dGPU " d}')
+        [[ -n $v ]] && line GPU "$v"
+    fi
+    for v in /sys/class/power_supply/BAT*; do
+        [[ -r $v/capacity ]] && { line Battery "$(cat "$v/capacity")%  ·  $(tr 'A-Z' 'a-z' < "$v/status")"; break; }
+    done
+    local m=()
+    [[ -e ${XDG_RUNTIME_DIR:-/tmp}/udiksa-record ]] && m+=("recording")
+    [[ -e ${XDG_RUNTIME_DIR:-/tmp}/udiksa-awake ]] && m+=("keep awake")
+    [[ -e ${XDG_RUNTIME_DIR:-/tmp}/udiksa-gamemode ]] && m+=("game mode")
+    local mm=""; for v in "${m[@]}"; do mm+="${mm:+, }$v"; done
+    line Modes "${mm:-none}"
+    printf '\n%sCOMMANDS%s\n' "$B" "$R"
+    grp() { printf '  %s%-9s%s %s\n' "$D" "$1" "$R" "$2"; }
+    grp look     "theme wallpaper cursor"
+    grp capture  "shot record pick"
+    grp shell    "toggle open clipboard emoji lock dnd osd scratch settings shell ipc"
+    grp system   "display touchpad panel-hz gpu idle defaults flash xdpi clock"
+    [[ -x $LIB/kbd ]] && grp hardware "kbd slash"
+    grp manage   "install update doctor firstrun completion version"
+    printf '\n  %sudiksa help%s            every command with a description\n' "$C" "$R"
+    printf '  %sudiksa <command> -h%s    usage of one command\n' "$C" "$R"
+    printf '  %sudiksa doctor%s          check that everything is in place\n' "$C" "$R"
 }
 
 # `udiksa <command> -h`: the curated text from lib/udiksa/_help in one layout (title, USAGE, tables, NOTES, EXAMPLES)
@@ -169,7 +209,7 @@ update() {
     esac
 }
 
-cmd=${1:-help}; [[ $# -gt 0 ]] && shift
+cmd=${1:-status}; [[ $# -gt 0 ]] && shift
 if [[ $cmd != help && $cmd != -h && $cmd != --help ]]; then
     case ${1:-} in
         -h|--help) cmd_help "$cmd" || { [[ -x $LIB/$cmd ]] && script_help "$LIB/$cmd" || die "unknown command '$cmd' (udiksa help)"; }; exit 0 ;;
@@ -177,6 +217,7 @@ if [[ $cmd != help && $cmd != -h && $cmd != --help ]]; then
     esac
 fi
 case $cmd in
+    status) status ;;
     help|-h|--help) if [[ -n ${1:-} ]]; then cmd_help "$1" || die "no help for '$1' (udiksa help)"; else help; fi ;;
     version|--version|-V) echo "udiksa $(git -C "$REPO" describe --always --dirty 2>/dev/null || echo unknown)" ;;
     completion) cat "$HOME/.local/share/bash-completion/completions/udiksa" ;;

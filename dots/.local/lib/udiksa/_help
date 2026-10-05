@@ -232,6 +232,10 @@ note: Safe to run by hand at any time. Log: ~/.cache/rice-firstrun.log.
 [completion]
 Print the bash completion script.
 usage: (no arguments)
+[status]
+Version and a quick look at this install: Hyprland, shell, theme, screen, GPU, battery and active modes.
+usage: (no arguments)
+note: This is what plain `udiksa` shows.
 [version]
 The version of this install (the git revision of the Udiksa repo).
 usage: (no arguments)

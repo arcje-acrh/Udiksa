@@ -3,7 +3,7 @@ _udiksa() {
     local cur=${COMP_WORDS[COMP_CWORD]} cmd=${COMP_WORDS[1]} lib="${UDIKSA_LIB:-$HOME/.local/lib/udiksa}" w=""
     local panels="battery power volume wifi bluetooth media notifications system tailscale launcher usage clock clockTimer clockAlarm clockReminder clockEvent"
     if (( COMP_CWORD == 1 )); then
-        w="help version completion doctor install update toggle open close clipboard emoji lock dnd osd ipc wallpaper $(ls "$lib" 2>/dev/null | grep -v "^_")"
+        w="help status version completion doctor install update toggle open close clipboard emoji lock dnd osd ipc wallpaper $(ls "$lib" 2>/dev/null | grep -v "^_")"
     else
         case $cmd in
             theme)      if [[ ${COMP_WORDS[2]} == set && $COMP_CWORD -ge 3 ]]; then
