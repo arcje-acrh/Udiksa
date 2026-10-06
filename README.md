@@ -33,7 +33,7 @@ The notch on hover, tiling, the launcher, live theme switching (open apps recolo
 | **Shell, bar, launcher, notifications** | one [Quickshell](https://quickshell.org) shell: the notch |
 | **Lock and login screen** | Quickshell, the same design for both (greetd + cage at boot); the lock screen has a spinning-record media player |
 | **Terminal** | kitty, bash, starship, ble.sh |
-| **Fonts** | Space Grotesk (interface) + Iosevka Nerd Font (terminal and code); pick others in Settings > Fonts |
+| **Font** | Space Grotesk, one font for everything (Space Mono in the terminal); pick any installed font in Settings > Themes |
 | **Mouse pointer** | Bibata, recoloured with the theme; grows when you shake it |
 | **GTK / Qt** | adw-gtk3 / Kvantum, recoloured with the theme |
 | **Themes** | a folder of wallpapers + one colour file each, tinted by every wallpaper (matugen); add your own |
@@ -58,9 +58,11 @@ The notch on hover, tiling, the launcher, live theme switching (open apps recolo
   `udiksa help` lists every command and `udiksa <command> -h` explains its arguments. Bash completion included.
 - **Retro-hardware controls.** LED bars instead of sliders, keys that press in, hairline switches, Iosevka
   in the terminal and code. Rounded screen corners match the windows.
-- **Fonts, like themes.** Settings > Fonts changes the interface font (Space Grotesk by default; Inter, Geist, Outfit,
-  Sora and more are installed) and the monospace font for the whole system at once, live: the shell, GTK and Qt apps,
-  the terminal, Zed, viewers, the browser's default fonts and the login screen. (`udiksa font`)
+- **One font, like a theme.** Settings > Themes > Font changes the system font everywhere at once, live: the shell, GTK
+  and Qt apps, the browser's default fonts, viewers and the login screen. Space Grotesk is the default; every font
+  installed on the machine is found by itself (about 90 come with the rice: Inter, Geist, Outfit, Sora, Jost, Commit
+  Mono, Nerd Fonts, ...). Terminals and Zed use the font too when it is monospace, otherwise its companion
+  (Space Grotesk gets Space Mono). (`udiksa font`)
 - **Comfort lighting.** Settings > Display has an eye comfort shield: warm the screen's colours all day, between two
   times, or from sunset to sunrise, with a warmth slider. (`udiksa comfort`, hyprsunset)
 - **Tools built in.** Screen recording (GPU-encoded, with or without sound), a colour picker, screenshots (area,
@@ -317,7 +319,7 @@ One command for the whole rice (`udiksa help` lists everything, `udiksa <command
 | `udiksa toggle <panel>` · `udiksa clipboard` · `udiksa emoji` · `udiksa lock` · `udiksa dnd` · `udiksa osd` | the notch, launcher and notifications from a terminal or a script (`udiksa ipc show` lists every shell command) |
 | `udiksa scratch sysmon \| music \| chat` | app scratchpads |
 | `udiksa display` · `udiksa touchpad` · `udiksa panel-hz` · `udiksa gpu` · `udiksa idle` · `udiksa defaults` · `udiksa flash` | screens, touchpad, GPU, idle timers, default apps, USB flasher |
-| `udiksa font ui <name>` · `udiksa font mono <name>` · `udiksa comfort on \| off \| temp <K>` | fonts for the whole system, the eye comfort shield |
+| `udiksa font <name> \| list \| reset` · `udiksa comfort on \| off \| temp <K>` | the system font, the eye comfort shield |
 | `udiksa settings ...` · `udiksa shell` · `udiksa cursor` · `udiksa xdpi` | back ends of the Settings app and the shell |
 | `udiksa kbd` · `udiksa slash` | ASUS keyboard and lid lights (only where installed) |
 | `udiksa install` · `udiksa update [dots]` · `udiksa doctor` | install parts, update the system (or pull and relink the dotfiles), check the setup |

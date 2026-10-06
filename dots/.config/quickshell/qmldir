@@ -47,6 +47,7 @@ KeyEdge KeyEdge.qml
 Settings Settings.qml
 SetRow SetRow.qml
 SetNum SetNum.qml
+SetDrop SetDrop.qml
 SetPage SetPage.qml
 SetGroup SetGroup.qml
 SetButton SetButton.qml

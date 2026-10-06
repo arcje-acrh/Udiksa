@@ -75,6 +75,36 @@ SetPage {
         SetButton { text: "Open wallpapers folder"; onClicked: Quickshell.execDetached(["xdg-open", page.walls]) }
     }
 
+    // ---- the system font: ONE font for everything (`udiksa font`); installed fonts are found by themselves ----
+    property var fontList: []
+    property string fontCur: ""
+    property string fontMono: ""
+    readonly property string fontExe: Quickshell.env("HOME") + "/.local/lib/udiksa/font"
+    function fontRefresh() { fontInfo.running = true }
+    Process {
+        id: fontInfo
+        command: [page.fontExe]
+        running: true
+        stdout: StdioCollector {
+            onStreamFinished: {
+                try {
+                    const j = JSON.parse(text)
+                    page.fontList = j.installed.map(f => ({ name: f[0], tag: f[1] ? "mono" : "" }))
+                    page.fontCur = j.font; page.fontMono = j.mono
+                } catch (e) {}
+            }
+        }
+    }
+    Process { id: fontSet; onExited: page.fontRefresh() }
+    function fontPick(name) { fontCur = name; fontSet.command = [fontExe, name]; fontSet.running = true }
+
+    SetGroup { title: "Font"; action: "reset to Space Grotesk"; onActionClicked: { fontSet.command = [page.fontExe, "reset"]; fontSet.running = true } }
+    SetRow {
+        title: "System font"
+        desc: "One font for everything: the notch, Settings, apps, browsers, viewers, the login screen. Applies at once (Qt apps when they next start). In terminals and code it is used too when it is monospace; otherwise they use its companion" + (page.fontMono && page.fontMono !== page.fontCur ? " (" + page.fontMono.replace(/ Nerd Font$/, "") + ")." : ".")
+        SetDrop { options: page.fontList; current: page.fontCur; fontFace: true; onPicked: (n) => page.fontPick(n); onOpened: page.fontRefresh() }
+    }
+
     SetGroup { title: "Theme colours" }
     SetRow {
         title: "Edit colours of"

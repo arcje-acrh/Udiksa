@@ -51,9 +51,12 @@ SetPage {
     }
     Process { id: cfSet; onExited: page.cfRefresh() }
     function cfRun(args) { cfSet.command = [Quickshell.env("HOME") + "/.local/lib/udiksa/comfort"].concat(args); cfSet.running = true }
-    property int cfTemp: 4500            // the slider shows this at once; the file is written after you stop dragging
-    onCfChanged: cfTemp = cf.temp
-    Timer { id: cfLater; interval: 500; onTriggered: page.cfRun(["temp", String(page.cfTemp)]) }
+    property int cfTemp: 4500            // the slider's own number; the system's reading never moves it while you drag
+    onCfChanged: if (!cfSave.running && !cfShow.running) cfTemp = cf.temp
+    Process { id: cfPrev }               // live preview while dragging: no daemon restart, no refresh
+    Timer { id: cfShow; interval: 70; onTriggered: { cfPrev.command = [Quickshell.env("HOME") + "/.local/lib/udiksa/comfort", "preview", String(page.cfTemp)]; cfPrev.running = true } }
+    Timer { id: cfSave; interval: 600; onTriggered: page.cfRun(["temp", String(page.cfTemp)]) }
+    Timer { id: cfEnd; interval: 2500; onTriggered: if (page.cf.mode === "off") page.cfRun(["apply"]) }   // shield off: the preview fades back after a moment
     function cfHour(t) { return parseInt(String(t).split(":")[0]) || 0 }
 
     SetGroup { title: "Comfort lighting" }
@@ -71,7 +74,7 @@ SetPage {
         desc: "Lower = warmer (orange). 6000 K is almost neutral, 4500 K a gentle evening, 3000 K very warm."
         SetNum {
             value: page.cfTemp; from: 2500; to: 6000; step: 100; unit: " K"
-            onChanged: (x) => { page.cfTemp = x; if (page.cf.mode === "off") page.cfRun(["preview", String(x)]); cfLater.restart() }
+            onChanged: (x) => { page.cfTemp = x; cfShow.restart(); cfSave.restart(); cfEnd.restart() }
         }
     }
     SetRow {

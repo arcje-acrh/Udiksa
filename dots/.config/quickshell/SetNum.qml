@@ -15,10 +15,17 @@ Row {
     signal changed(real v)
     spacing: 8
 
+    // `value` is what the owner last READ from the system (often only once a second); `shown` is what you just set.
+    // Steps are taken from `shown`, so quick clicks add up at once instead of all starting from the old reading;
+    // the system's reading takes over again 1.2 s after you stop (and whenever it changes while you are not touching).
+    property real shown: value
+    onValueChanged: if (!hold.running) shown = value
+    Timer { id: hold; interval: 1200; onTriggered: root.shown = root.value }       // (not onRunningChanged: restart() flips it for a moment)
+
     function set(v) {
         v = Math.max(from, Math.min(to, Math.round(v / step) * step))
         v = Number(v.toFixed(Math.max(decimals, 0) + 2))
-        if (v !== value) changed(v)          // the owner updates `value` (so it stays bound to the live value)
+        if (v !== shown) { shown = v; hold.restart(); changed(v) }
     }
 
     Repeater {
@@ -31,7 +38,7 @@ Row {
         LedBar {
             anchors.verticalCenter: parent.verticalCenter
             width: parent.width; segH: 14
-            frac: (root.value - root.from) / Math.max(0.0001, root.to - root.from)
+            frac: (root.shown - root.from) / Math.max(0.0001, root.to - root.from)
         }
         MouseArea {
             anchors.fill: parent
@@ -39,7 +46,7 @@ Row {
             function at(x) { root.set(root.from + Math.max(0, Math.min(1, x / width)) * (root.to - root.from)) }
             onPressed: (m) => at(m.x)
             onPositionChanged: (m) => { if (pressed) at(m.x) }
-            onWheel: (w) => root.set(root.value + (w.angleDelta.y > 0 ? root.step : -root.step))
+            onWheel: (w) => root.set(root.shown + (w.angleDelta.y > 0 ? root.step : -root.step))
         }
     }
     Repeater {
@@ -49,7 +56,7 @@ Row {
     Text {
         anchors.verticalCenter: parent.verticalCenter
         width: 64
-        text: root.labels.length ? (root.labels[Math.round(root.value)] ?? "") : root.value.toFixed(root.decimals) + root.unit
+        text: root.labels.length ? (root.labels[Math.round(root.shown)] ?? "") : root.shown.toFixed(root.decimals) + root.unit
         color: Theme.text; font.family: Theme.font; font.pixelSize: 13; font.bold: true
         horizontalAlignment: Text.AlignRight
     }
@@ -66,11 +73,11 @@ Row {
             Text { anchors.centerIn: parent; text: modelData.t; color: Theme.text; font.family: Theme.font; font.pixelSize: 14; font.bold: true }
             MouseArea {
                 id: km; anchors.fill: parent; hoverEnabled: true; cursorShape: Qt.PointingHandCursor
-                onClicked: root.set(root.value + modelData.d * root.step)
+                onClicked: root.set(root.shown + modelData.d * root.step)
                 onPressAndHold: rep.start()
                 onReleased: rep.stop()
             }
-            Timer { id: rep; interval: 90; repeat: true; onTriggered: root.set(root.value + modelData.d * root.step) }
+            Timer { id: rep; interval: 90; repeat: true; onTriggered: root.set(root.shown + modelData.d * root.step) }
         }
     }
 }

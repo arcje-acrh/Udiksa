@@ -262,20 +262,19 @@ note: DPI = 96 x scale, so X11 apps size themselves right on any screen. Runs at
 Open the terminal clock window, in the theme accent.
 usage: (no arguments)
 [font]
-System fonts: one interface font and one monospace font, changed everywhere at once.
-usage: [ui|mono <name> | list | reset | apply]
+The system font: ONE font for everything, changed everywhere at once.
+usage: [<name> | list | reset | apply]
 # COMMANDS
-  (none)                 The two fonts in use and the installed choices (JSON)
-  list                   Installed choices, one per line (ui or mono, then the name)
-  ui <name>              The interface font (shell, GTK / Qt apps, browser sans-serif, viewers, login screen)
-  mono <name>            The monospace font (kitty, Zed, the default monospace)
-  reset                  Space Grotesk + Iosevka Nerd Font
+  (none)                 The font in use, its terminal companion and every installed font (JSON)
+  <name>                 Use this font everywhere (shell, apps, browsers, viewers, login screen)
+  list                   Installed fonts, one per line (name, then sans or mono)
+  reset                  Back to Space Grotesk
   apply                  Write every app's config again (a theme change does it too)
 # ARGUMENTS
-  <name>                 A font family, any case, as `list` prints it ("Space Grotesk", "JetBrainsMono Nerd Font")
-note: The shell and GTK apps change at once, kitty reloads itself, Qt apps pick it up when they next start. GRUB keeps its own font. Choose in Settings > Fonts too.
-example: udiksa font ui Inter  the interface in Inter
-example: udiksa font mono "JetBrainsMono Nerd Font"  terminal and code
+  <name>                 A font family, any case, as `list` prints it ("Space Grotesk", "Inter")
+note: Fonts are found by themselves: install one (pacman, AUR, ~/.local/share/fonts) and it is listed. Terminals, Zed and "monospace" need letters that line up: they use the font itself when it is monospace, otherwise its companion (Space Grotesk > Space Mono, Geist > Geist Mono, else JetBrains Mono). The shell and GTK apps change at once, kitty reloads, Qt apps pick it up when they next start. GRUB keeps its own font. Choose it in Settings > Themes > Font too.
+example: udiksa font "Space Grotesk"  everything in Space Grotesk
+example: udiksa font list  what can be chosen
 [comfort]
 Comfort lighting (eye comfort shield): warm screen colours, less blue light.
 usage: [on | off | toggle | temp <K> | mode <mode> | schedule <from> <to> | preview <K> | apply]

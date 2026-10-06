@@ -31,7 +31,7 @@ help() {
     row theme     "Themes: next, set <name>, random, names, apply, import"
     row wallpaper "Wallpaper: next, prev, random, set <picture>"
     row cursor    "The theme-coloured mouse pointers"
-    row font      "Interface and monospace fonts, changed everywhere"
+    row font      "The system font, changed everywhere at once"
     sec "CAPTURE"
     row shot      "Screenshot: area, window, screen, edit"
     row record    "Screen recording: screen, region, sound, stop"

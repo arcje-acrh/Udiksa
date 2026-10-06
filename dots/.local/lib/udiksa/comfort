@@ -117,9 +117,13 @@ def main(a):
         save(d); apply()
     elif cmd == "temp" and len(a) > 1:
         d["temp"] = max(2500, min(6000, int(float(a[1])))); save(d)
-        if d["mode"] == "off":      # moving the slider with the shield off: show it, as a preview
+        if d["mode"] == "off":      # the shield is off: only remember the number
             return
-        apply()
+        write_conf(d)
+        if d["mode"] == "always" and running():
+            subprocess.run(["hyprctl", "hyprsunset", "temperature", str(d["temp"])], capture_output=True)   # live, no restart
+        else:
+            apply()                 # a schedule reads its profiles at start
     elif cmd == "mode" and len(a) > 1 and a[1] in ("off", "always", "schedule", "sunset"):
         d["mode"] = a[1]; save(d); apply()
     elif cmd == "schedule" and len(a) > 2:

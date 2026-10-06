@@ -1,47 +1,84 @@
 #!/usr/bin/env python3
-"""udiksa font -- the system fonts: ONE interface font (shell, GTK / Qt apps, browsers' default sans, viewers, login screen) and ONE
-monospace font (terminal, Zed, the monospace default), changed everywhere at once, live, like a theme (Settings > Fonts).
+"""udiksa font -- ONE system font, changed everywhere at once, live, like a theme (Settings > Themes > Font).
 
-  udiksa font                  the two fonts in use (JSON) + what is installed
-  udiksa font list             installed choices, one per line:  ui|mono <TAB> name
-  udiksa font ui <name>        interface font, e.g. "Space Grotesk"
-  udiksa font mono <name>      monospace font, e.g. "Iosevka Nerd Font"  (Nerd Fonts keep their icons; others get them from a fallback)
-  udiksa font reset            back to Space Grotesk + Iosevka Nerd Font
+  udiksa font                  the font in use (JSON) + every installed font
+  udiksa font list             installed fonts, one per line:  <name> <TAB> sans|mono
+  udiksa font <name>           use this font everywhere, e.g. udiksa font "Space Grotesk"
+  udiksa font reset            back to Space Grotesk
   udiksa font apply            write everything again (also done by every theme change)
 
-The choice is kept in ~/.local/state/rice/fonts.json. What follows it: the notch / Settings / lock (Quickshell, live), kitty (reloaded),
-GTK apps (gsettings, live), Qt apps (qt6ct, next start), the default sans-serif / monospace of fontconfig, Zed, mpv, zathura, imv, satty,
-Hyprland's tab strip and the login screen. The boot menu (GRUB) keeps its own font."""
+The font is used by the shell (notch, Settings, lock), GTK / Qt apps, browsers' default fonts, viewers and the login screen.
+Terminals and code need letters that line up in columns: if the font is monospace it is used there too; if not, the terminal /
+Zed / "monospace" use its companion (Space Grotesk -> Space Mono, Geist -> Geist Mono, ...), else JetBrains Mono. The fonts are
+found by themselves: install any font (pacman, AUR, ~/.local/share/fonts) and it shows up. The choice is kept in
+~/.local/state/rice/fonts.json. The boot menu (GRUB) keeps its own font."""
 import json, os, re, subprocess, sys
 
 HOME = os.path.expanduser("~")
 FONTS = os.path.join(HOME, ".local/state/rice/fonts.json")
-DEFAULTS = {"ui": "Space Grotesk", "mono": "Iosevka Nerd Font"}
+DEFAULT = "Space Grotesk"
 THEME = os.path.join(HOME, ".local/lib/udiksa/theme")
-# the choices shown in Settings: (label, fontconfig family). Only the installed ones are offered.
-UI = ["Space Grotesk", "Inter", "Geist", "Outfit", "Sora", "Plus Jakarta Sans", "Instrument Sans", "Iosevka Nerd Font"]
-MONO = ["Iosevka Nerd Font", "JetBrainsMono Nerd Font", "SpaceMono Nerd Font", "GeistMono Nerd Font", "MartianMono Nerd Font",
-        "VictorMono Nerd Font", "FantasqueSansM Nerd Font", "0xProto Nerd Font"]
+# companions for terminals: a proportional font -> the monospace sibling that matches it (first installed wins)
+PAIRS = {"space grotesk": "SpaceMono", "space mono": "SpaceMono", "geist": "GeistMono", "ibm plex sans": "BlexMono",
+         "source sans": "SauceCodePro", "fira sans": "FiraCode", "ubuntu": "UbuntuMono", "roboto": "RobotoMono",
+         "cascadia": "CaskaydiaCove", "hanken grotesk": "JetBrainsMono", "commit mono": "CommitMono"}
+FALLBACK_MONO = ["JetBrainsMono Nerd Font", "Iosevka Nerd Font", "DejaVu Sans Mono"]
+NOTO_KEEP = {"Noto Sans", "Noto Serif", "Noto Sans Mono", "Noto Sans Display", "Noto Serif Display"}
+VARIANT_WORDS = {"Arabic", "Devanagari", "Hebrew", "JP", "KR", "TC", "SC", "Thai", "Looped", "Condensed", "SemiCondensed", "ExtraCondensed",
+                 "Compressed", "Heavy", "Caption", "SmText", "Subhead", "Pro", "Unicase", "Upright", "Infant", "Variable", "Mono", "Propo", "Display", "Text", "Math", "TeX", "Gyre"}
 
 
-def families():
-    out = subprocess.run(["fc-list", ":", "family"], capture_output=True, text=True).stdout
-    return {n.strip() for line in out.splitlines() for n in line.split(",")}
+def installed():
+    """{family: is_mono} of the usable fonts: TrueType / OpenType only, no script-specific Noto, no width / script / Nerd
+    "Mono" or "Propo" twins of a family that is listed anyway (Iosevka Nerd Font Mono -> Iosevka Nerd Font)"""
+    out = subprocess.run(["fc-list", "-f", "%{family[0]}\t%{spacing}\t%{fontformat}\n"], capture_output=True, text=True).stdout
+    fams = {}
+    for line in out.splitlines():
+        name, spacing, fmt = (line.split("\t") + ["", ""])[:3]
+        if not name or fmt not in ("TrueType", "CFF"):
+            continue
+        fams[name] = fams.get(name, False) or spacing in ("100", "110")
+    keep = {}
+    for n, mono in fams.items():
+        if n.startswith("Symbols") or "Emoji" in n or n == "mtx":
+            continue
+        if n.startswith("Noto ") and n not in NOTO_KEEP:
+            continue
+        parts = n.split(" ")
+        # a longer name whose extra words are only variants of a shorter listed family (IBM Plex Sans Arabic, Cormorant SC, ...)
+        def twin(i):
+            base, extra = " ".join(parts[:i]), set(parts[i:])
+            return base in fams and extra <= VARIANT_WORDS and (not extra & {"Mono", "Propo"} or base.endswith("Nerd Font"))
+        if any(twin(i) for i in range(1, len(parts))):
+            continue
+        keep[n] = mono or (n.endswith("Nerd Font") and fams.get(n + " Mono", False))     # Nerd Fonts: the plain name is monospace when its "Mono" twin is
+    return dict(sorted(keep.items(), key=lambda kv: kv[0].lower()))
 
 
-def load():
-    d = dict(DEFAULTS)
+def companion(font, fams):
+    """the monospace family the terminal uses for this system font"""
+    if fams.get(font):
+        return font
+    key = next((k for k in PAIRS if font.lower().startswith(k)), None)
+    if key:
+        hit = next((n for n in fams if fams[n] and n.startswith(PAIRS[key]) and n.endswith("Nerd Font")), None)
+        if hit:
+            return hit
+    return next((m for m in FALLBACK_MONO if fams.get(m)), next((n for n, m in fams.items() if m), font))
+
+
+def current():
     try:
-        d.update({k: v for k, v in json.load(open(FONTS)).items() if k in d and v})
+        d = json.load(open(FONTS))
+        return d.get("font") or d.get("ui") or DEFAULT          # the older two-font file: its interface font
     except (OSError, ValueError):
-        pass
-    return d
+        return DEFAULT
 
 
-def save(d):
+def save(font, fams):
     os.makedirs(os.path.dirname(FONTS), exist_ok=True)
     with open(FONTS, "w") as f:
-        json.dump(d, f, indent=2); f.write("\n")
+        json.dump({"font": font, "ui": font, "mono": companion(font, fams)}, f, indent=2); f.write("\n")
 
 
 def apply():
@@ -49,27 +86,26 @@ def apply():
 
 
 def main(a):
-    fam = families()
+    fams = installed()
     if not a:
-        print(json.dumps({**load(), "ui_installed": [f for f in UI if f in fam], "mono_installed": [f for f in MONO if f in fam]}))
+        font = current()
+        print(json.dumps({"font": font, "mono": companion(font, fams), "installed": [[n, m] for n, m in fams.items()]}))
     elif a[0] == "list":
-        for f in UI:
-            if f in fam: print(f"ui\t{f}")
-        for f in MONO:
-            if f in fam: print(f"mono\t{f}")
-    elif a[0] in ("ui", "mono") and len(a) > 1:
-        name = " ".join(a[1:])
-        match = next((f for f in fam if f.lower() == name.lower()), None)
+        for n, m in fams.items():
+            print(f"{n}\t{'mono' if m else 'sans'}")
+    elif a[0] == "reset":
+        save(DEFAULT, fams); apply(); print(f"font: {DEFAULT} (terminal: {companion(DEFAULT, fams)})")
+    elif a[0] == "apply":
+        save(current(), fams); apply()
+    elif a[0] in ("-h", "--help", "help"):
+        print(__doc__)
+    else:
+        name = " ".join(a)
+        match = next((n for n in fams if n.lower() == name.lower()), None)
         if not match:
             sys.exit(f"font '{name}' is not installed (udiksa font list)")
-        d = load(); d[a[0]] = match; save(d); apply()
-        print(f"{a[0]} font: {match}")
-    elif a[0] == "reset":
-        save(dict(DEFAULTS)); apply(); print("fonts: Space Grotesk + Iosevka Nerd Font")
-    elif a[0] == "apply":
-        save(load()); apply()
-    else:
-        print(__doc__)
+        save(match, fams); apply()
+        print(f"font: {match} (terminal: {companion(match, fams)})")
 
 
 if __name__ == "__main__":

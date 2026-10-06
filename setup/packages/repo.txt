@@ -86,9 +86,24 @@ xorg-xcursorgen
 # shake to find: Hyprland's plugin manager builds hypr-dynamic-cursors (pulls cmake + meson) -- 2026-10-03
 hyprpm
 
-# fonts to choose from in Settings > Fonts (udiksa font): interface fonts + monospace Nerd Fonts; the symbols font gives icons to the non-Nerd interface fonts -- 2026-10-07
+# fonts to choose from in Settings > Themes > Font (udiksa font; every installed font is found by itself): sans + serif families and monospace Nerd Fonts;
+# the symbols font gives icons to the non-Nerd fonts -- 2026-10-07
 inter-font
 ttf-nerd-fonts-symbols
+ttf-roboto
+ttf-opensans
+ttf-lato
+ttf-montserrat
+ttf-nunito
+ttf-ubuntu-font-family
+ttf-ibm-plex
+ttf-fira-sans
+cantarell-fonts
+adobe-source-sans-fonts
+adobe-source-serif-fonts
+ttf-atkinson-hyperlegible
+ttf-crimson-pro
+ttf-cormorant
 ttf-jetbrains-mono-nerd
 ttf-space-mono-nerd
 otf-geist-mono-nerd
@@ -96,5 +111,16 @@ ttf-martian-mono-nerd
 ttf-victor-mono-nerd
 ttf-fantasque-nerd
 ttf-0xproto-nerd
+ttf-cascadia-code-nerd
+ttf-firacode-nerd
+ttf-hack-nerd
+ttf-ibmplex-mono-nerd
+ttf-lilex-nerd
+ttf-recursive-nerd
+ttf-sourcecodepro-nerd
+ttf-mononoki-nerd
+ttf-roboto-mono-nerd
+ttf-ubuntu-nerd
+ttf-monaspace-variable
 # eye comfort shield (Settings > Display > Comfort lighting; udiksa comfort) -- 2026-10-07
 hyprsunset
