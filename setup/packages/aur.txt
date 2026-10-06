@@ -5,3 +5,10 @@ quickshell-git
 bibata-cursor-theme-bin
 # terminal clock: launcher > Clock (dots/.local/share/applications/rice-clock.desktop) -- 2026-10-03
 tty-clock
+# interface fonts: Space Grotesk is the default interface font (Settings > Fonts); the others are choices there -- 2026-10-07
+otf-space-grotesk
+ttf-geist
+ttf-outfit
+ttf-sora
+ttf-plus-jakarta-sans
+ttf-instrument-sans

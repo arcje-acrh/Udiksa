@@ -85,3 +85,16 @@ ddcutil
 xorg-xcursorgen
 # shake to find: Hyprland's plugin manager builds hypr-dynamic-cursors (pulls cmake + meson) -- 2026-10-03
 hyprpm
+
+# fonts to choose from in Settings > Fonts (udiksa font): interface fonts + monospace Nerd Fonts; the symbols font gives icons to the non-Nerd interface fonts -- 2026-10-07
+inter-font
+ttf-nerd-fonts-symbols
+ttf-jetbrains-mono-nerd
+ttf-space-mono-nerd
+otf-geist-mono-nerd
+ttf-martian-mono-nerd
+ttf-victor-mono-nerd
+ttf-fantasque-nerd
+ttf-0xproto-nerd
+# eye comfort shield (Settings > Display > Comfort lighting; udiksa comfort) -- 2026-10-07
+hyprsunset

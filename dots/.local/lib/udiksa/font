@@ -1,0 +1,76 @@
+#!/usr/bin/env python3
+"""udiksa font -- the system fonts: ONE interface font (shell, GTK / Qt apps, browsers' default sans, viewers, login screen) and ONE
+monospace font (terminal, Zed, the monospace default), changed everywhere at once, live, like a theme (Settings > Fonts).
+
+  udiksa font                  the two fonts in use (JSON) + what is installed
+  udiksa font list             installed choices, one per line:  ui|mono <TAB> name
+  udiksa font ui <name>        interface font, e.g. "Space Grotesk"
+  udiksa font mono <name>      monospace font, e.g. "Iosevka Nerd Font"  (Nerd Fonts keep their icons; others get them from a fallback)
+  udiksa font reset            back to Space Grotesk + Iosevka Nerd Font
+  udiksa font apply            write everything again (also done by every theme change)
+
+The choice is kept in ~/.local/state/rice/fonts.json. What follows it: the notch / Settings / lock (Quickshell, live), kitty (reloaded),
+GTK apps (gsettings, live), Qt apps (qt6ct, next start), the default sans-serif / monospace of fontconfig, Zed, mpv, zathura, imv, satty,
+Hyprland's tab strip and the login screen. The boot menu (GRUB) keeps its own font."""
+import json, os, re, subprocess, sys
+
+HOME = os.path.expanduser("~")
+FONTS = os.path.join(HOME, ".local/state/rice/fonts.json")
+DEFAULTS = {"ui": "Space Grotesk", "mono": "Iosevka Nerd Font"}
+THEME = os.path.join(HOME, ".local/lib/udiksa/theme")
+# the choices shown in Settings: (label, fontconfig family). Only the installed ones are offered.
+UI = ["Space Grotesk", "Inter", "Geist", "Outfit", "Sora", "Plus Jakarta Sans", "Instrument Sans", "Iosevka Nerd Font"]
+MONO = ["Iosevka Nerd Font", "JetBrainsMono Nerd Font", "SpaceMono Nerd Font", "GeistMono Nerd Font", "MartianMono Nerd Font",
+        "VictorMono Nerd Font", "FantasqueSansM Nerd Font", "0xProto Nerd Font"]
+
+
+def families():
+    out = subprocess.run(["fc-list", ":", "family"], capture_output=True, text=True).stdout
+    return {n.strip() for line in out.splitlines() for n in line.split(",")}
+
+
+def load():
+    d = dict(DEFAULTS)
+    try:
+        d.update({k: v for k, v in json.load(open(FONTS)).items() if k in d and v})
+    except (OSError, ValueError):
+        pass
+    return d
+
+
+def save(d):
+    os.makedirs(os.path.dirname(FONTS), exist_ok=True)
+    with open(FONTS, "w") as f:
+        json.dump(d, f, indent=2); f.write("\n")
+
+
+def apply():
+    subprocess.run([THEME, "fonts"])
+
+
+def main(a):
+    fam = families()
+    if not a:
+        print(json.dumps({**load(), "ui_installed": [f for f in UI if f in fam], "mono_installed": [f for f in MONO if f in fam]}))
+    elif a[0] == "list":
+        for f in UI:
+            if f in fam: print(f"ui\t{f}")
+        for f in MONO:
+            if f in fam: print(f"mono\t{f}")
+    elif a[0] in ("ui", "mono") and len(a) > 1:
+        name = " ".join(a[1:])
+        match = next((f for f in fam if f.lower() == name.lower()), None)
+        if not match:
+            sys.exit(f"font '{name}' is not installed (udiksa font list)")
+        d = load(); d[a[0]] = match; save(d); apply()
+        print(f"{a[0]} font: {match}")
+    elif a[0] == "reset":
+        save(dict(DEFAULTS)); apply(); print("fonts: Space Grotesk + Iosevka Nerd Font")
+    elif a[0] == "apply":
+        save(load()); apply()
+    else:
+        print(__doc__)
+
+
+if __name__ == "__main__":
+    main(sys.argv[1:])

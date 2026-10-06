@@ -1,6 +1,8 @@
 -- General look: gaps, borders, layouts.
 -- https://wiki.hypr.land/Configuring/Basics/Variables/#general
 local colors = require("conf.colors")  -- the theme's colours (written by udiksa theme)
+local ok_fonts, fonts = pcall(require, "conf.fonts")   -- written by udiksa font; not there yet = the shipped default
+if not ok_fonts then fonts = { ui = "Space Grotesk", mono = "Iosevka Nerd Font" } end
 
 hl.config({
     general = {
@@ -44,7 +46,7 @@ hl.config({
             border_locked_inactive = colors.group_inactive or colors.inactive_border,  -- other tabs' border when locked
         },
         groupbar = {
-            font_family         = "Iosevka Nerd Font",                      -- tab strip font
+            font_family         = fonts.ui,                                 -- tab strip font (Settings > Fonts)
             font_size           = 11,                                       -- tab strip text size
             font_weight_active  = "bold",                                   -- the selected tab's text is bold
             height              = 16,                                       -- tab strip height (px)

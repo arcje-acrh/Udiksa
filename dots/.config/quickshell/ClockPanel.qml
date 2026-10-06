@@ -212,8 +212,16 @@ Item {
                         Column { anchors.verticalCenter: parent.verticalCenter; spacing: 2
                             Text { text: Qt.formatDate(root.selected, "dddd").toUpperCase(); color: Theme.muted; font.family: Theme.font; font.pixelSize: 10; font.letterSpacing: 2 }
                             Text { text: Qt.formatDate(root.selected, "MMMM") + (root.selected.getFullYear() !== root.now.getFullYear() ? " " + root.selected.getFullYear() : ""); color: Theme.text; font.family: Theme.font; font.pixelSize: 16; font.bold: true }
-                            Text { text: dateCard.isToday ? "󰥔 " + Qt.formatTime(root.now, "HH:mm:ss") : (root.selected < root.now ? "past" : "in " + Math.max(1, Math.round((root.selected - root.now) / 86400000)) + " days")
-                                   color: dateCard.isToday ? Theme.muted : Theme.amber; font.family: Theme.font; font.pixelSize: 12 }
+                            Row {   // the icon and the time are separate items: a proportional interface font gives the icon a different width
+                                spacing: 6
+                                Text { visible: dateCard.isToday; anchors.verticalCenter: parent.verticalCenter; text: "󰥔"; color: Theme.muted; font.family: Theme.mono; font.pixelSize: 12 }
+                                Text {
+                                    anchors.verticalCenter: parent.verticalCenter
+                                    text: dateCard.isToday ? Qt.formatTime(root.now, "HH:mm:ss") : (root.selected < root.now ? "past" : "in " + Math.max(1, Math.round((root.selected - root.now) / 86400000)) + " days")
+                                    color: dateCard.isToday ? Theme.muted : Theme.amber
+                                    font.family: dateCard.isToday ? Theme.mono : Theme.font; font.pixelSize: 12   // digits that do not change width every second
+                                }
+                            }
                         }
                     }
                     Repeater {

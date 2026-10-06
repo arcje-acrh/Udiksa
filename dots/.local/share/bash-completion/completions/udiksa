@@ -23,6 +23,8 @@ _udiksa() {
             shell)      w="--restart" ;;
             ipc)        w="show notch themes settings notifications modes osd lock agenda" ;;
             settings)   w="get set reset power monitor anim cursor shake startup bind" ;;
+            font)       if [[ ${COMP_WORDS[2]} == ui || ${COMP_WORDS[2]} == mono ]]; then local IFS=$'\n'; COMPREPLY=($(compgen -W "$(udiksa font list 2>/dev/null | cut -f2)" -- "$cur")); return; fi; w="ui mono list reset apply" ;;
+            comfort)    w="on off toggle temp mode schedule preview apply" ;;
             kbd)        w="set apply theme lit" ;;
             slash)      w="set apply" ;;
         esac

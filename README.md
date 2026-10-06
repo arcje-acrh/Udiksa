@@ -33,7 +33,7 @@ The notch on hover, tiling, the launcher, live theme switching (open apps recolo
 | **Shell, bar, launcher, notifications** | one [Quickshell](https://quickshell.org) shell: the notch |
 | **Lock and login screen** | Quickshell, the same design for both (greetd + cage at boot); the lock screen has a spinning-record media player |
 | **Terminal** | kitty, bash, starship, ble.sh |
-| **Font** | Iosevka Nerd Font |
+| **Fonts** | Space Grotesk (interface) + Iosevka Nerd Font (terminal and code); pick others in Settings > Fonts |
 | **Mouse pointer** | Bibata, recoloured with the theme; grows when you shake it |
 | **GTK / Qt** | adw-gtk3 / Kvantum, recoloured with the theme |
 | **Themes** | a folder of wallpapers + one colour file each, tinted by every wallpaper (matugen); add your own |
@@ -57,7 +57,12 @@ The notch on hover, tiling, the launcher, live theme switching (open apps recolo
   notch panels, update and install, a health check (`udiksa doctor`). Plain `udiksa` shows the status of your install;
   `udiksa help` lists every command and `udiksa <command> -h` explains its arguments. Bash completion included.
 - **Retro-hardware controls.** LED bars instead of sliders, keys that press in, hairline switches, Iosevka
-  everywhere. Rounded screen corners match the windows.
+  in the terminal and code. Rounded screen corners match the windows.
+- **Fonts, like themes.** Settings > Fonts changes the interface font (Space Grotesk by default; Inter, Geist, Outfit,
+  Sora and more are installed) and the monospace font for the whole system at once, live: the shell, GTK and Qt apps,
+  the terminal, Zed, viewers, the browser's default fonts and the login screen. (`udiksa font`)
+- **Comfort lighting.** Settings > Display has an eye comfort shield: warm the screen's colours all day, between two
+  times, or from sunset to sunrise, with a warmth slider. (`udiksa comfort`, hyprsunset)
 - **Tools built in.** Screen recording (GPU-encoded, with or without sound), a colour picker, screenshots (area,
   window, screen, or drawn on; a click on the notch's "saved" card opens the picture, and laptops without Print Screen
   get the same modes on the snip key), keep awake, game mode, a terminal clock (`udiksa clock`), a usage panel (CPU per core,
@@ -312,6 +317,7 @@ One command for the whole rice (`udiksa help` lists everything, `udiksa <command
 | `udiksa toggle <panel>` · `udiksa clipboard` · `udiksa emoji` · `udiksa lock` · `udiksa dnd` · `udiksa osd` | the notch, launcher and notifications from a terminal or a script (`udiksa ipc show` lists every shell command) |
 | `udiksa scratch sysmon \| music \| chat` | app scratchpads |
 | `udiksa display` · `udiksa touchpad` · `udiksa panel-hz` · `udiksa gpu` · `udiksa idle` · `udiksa defaults` · `udiksa flash` | screens, touchpad, GPU, idle timers, default apps, USB flasher |
+| `udiksa font ui <name>` · `udiksa font mono <name>` · `udiksa comfort on \| off \| temp <K>` | fonts for the whole system, the eye comfort shield |
 | `udiksa settings ...` · `udiksa shell` · `udiksa cursor` · `udiksa xdpi` | back ends of the Settings app and the shell |
 | `udiksa kbd` · `udiksa slash` | ASUS keyboard and lid lights (only where installed) |
 | `udiksa install` · `udiksa update [dots]` · `udiksa doctor` | install parts, update the system (or pull and relink the dotfiles), check the setup |
@@ -338,7 +344,8 @@ Udiksa stands on a lot of other people's work. Thank you all.
 **Tools and plugins the rice uses**
 - Theming: [matugen](https://github.com/InioX/matugen) (colours from wallpapers), [awww](https://codeberg.org/LGFae/awww)
   (wallpapers), [adw-gtk3](https://github.com/lassekongo83/adw-gtk3), [Kvantum](https://github.com/tsujan/Kvantum),
-  [Iosevka](https://github.com/be5invis/Iosevka) + [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts)
+  [Space Grotesk](https://github.com/floriankarsten/space-grotesk), [Iosevka](https://github.com/be5invis/Iosevka) + [Nerd Fonts](https://github.com/ryanoasis/nerd-fonts)
+- Comfort lighting: [hyprsunset](https://github.com/hyprwm/hyprsunset)
 - Shake to find: [hypr-dynamic-cursors](https://github.com/VirtCode/hypr-dynamic-cursors) by VirtCode
 - Capture: [hyprshot](https://github.com/Gustash/Hyprshot), [Satty](https://github.com/Satty-org/Satty),
   [hyprpicker](https://github.com/hyprwm/hyprpicker), [gpu-screen-recorder](https://git.dec05eba.com/gpu-screen-recorder)

@@ -6,7 +6,7 @@ set -uo pipefail
 log="$HOME/.cache/rice-firstrun.log"; exec >>"$log" 2>&1; echo "== $(date)"
 sleep 3                                              # let awww-daemon and Quickshell start
 
-gsettings set org.gnome.desktop.interface monospace-font-name 'Iosevka Nerd Font Mono 11'
+# fonts (GTK, Qt, kitty, ...) are written by `udiksa theme` below (udiksa font)
 gsettings set org.gnome.desktop.wm.preferences button-layout 'appmenu:'   # no close / minimise buttons in GTK title bars
 
 # a theme: the one saved before, else Everforest Dark, else the first there is

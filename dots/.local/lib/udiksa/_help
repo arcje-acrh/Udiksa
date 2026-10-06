@@ -261,6 +261,39 @@ note: DPI = 96 x scale, so X11 apps size themselves right on any screen. Runs at
 [clock]
 Open the terminal clock window, in the theme accent.
 usage: (no arguments)
+[font]
+System fonts: one interface font and one monospace font, changed everywhere at once.
+usage: [ui|mono <name> | list | reset | apply]
+# COMMANDS
+  (none)                 The two fonts in use and the installed choices (JSON)
+  list                   Installed choices, one per line (ui or mono, then the name)
+  ui <name>              The interface font (shell, GTK / Qt apps, browser sans-serif, viewers, login screen)
+  mono <name>            The monospace font (kitty, Zed, the default monospace)
+  reset                  Space Grotesk + Iosevka Nerd Font
+  apply                  Write every app's config again (a theme change does it too)
+# ARGUMENTS
+  <name>                 A font family, any case, as `list` prints it ("Space Grotesk", "JetBrainsMono Nerd Font")
+note: The shell and GTK apps change at once, kitty reloads itself, Qt apps pick it up when they next start. GRUB keeps its own font. Choose in Settings > Fonts too.
+example: udiksa font ui Inter  the interface in Inter
+example: udiksa font mono "JetBrainsMono Nerd Font"  terminal and code
+[comfort]
+Comfort lighting (eye comfort shield): warm screen colours, less blue light.
+usage: [on | off | toggle | temp <K> | mode <mode> | schedule <from> <to> | preview <K> | apply]
+# COMMANDS
+  (none)                 The saved choice and whether the filter is running (JSON)
+  on | off | toggle      Warm the screen now (mode always) / back to normal
+  temp <K>               Colour temperature, 2500 (very warm) to 6000 (almost neutral)
+  mode <mode>            off, always, schedule or sunset
+  schedule <from> <to>   Warm between two times, e.g. 20:00 07:00
+  preview <K>            Show a temperature without saving it
+  apply                  Write the hyprsunset config and (re)start it (login does this)
+# ARGUMENTS
+  always                 Warm all day
+  schedule               Warm between the two times you set
+  sunset                 From local sunset to sunrise (your weather location; 18:30 to 06:30 without one)
+note: Needs hyprsunset. The choice is kept in ~/.local/state/rice/comfort.json; set it in Settings > Display too.
+example: udiksa comfort schedule 21:00 06:30  evenings only
+example: udiksa comfort temp 3800  warmer
 [kbd]
 ASUS keyboard lighting (does nothing on other machines).
 usage: [set <key> <value>... | apply | theme | lit]

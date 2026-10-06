@@ -231,7 +231,7 @@ Item {
                 anchors.verticalCenter: parent.verticalCenter
                 property real tick: Date.now()
                 Timer { interval: 1000; repeat: true; running: Agenda.timerOn && !Agenda.timerPaused; onTriggered: parent.tick = Date.now() }
-                text: "󱎫 " + Agenda.fmt(Agenda.timerPaused ? Agenda.timerLeft : Agenda.timerEnd - tick)
+                text: "󱎫  " + Agenda.fmt(Agenda.timerPaused ? Agenda.timerLeft : Agenda.timerEnd - tick)
                 color: Agenda.timerPaused ? Theme.amber : Theme.coral
                 font.family: Theme.font; font.pixelSize: 12; font.bold: true
             }

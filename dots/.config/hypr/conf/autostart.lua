@@ -8,6 +8,7 @@ hl.on("hyprland.start", function()
 
     -- X11 apps: ~/.Xresources + Xft.dpi from the real screen scale (Hyprland draws them unscaled = sharp)
     hl.exec_cmd(os.getenv("HOME") .. "/.local/bin/udiksa xdpi")
+    hl.exec_cmd(os.getenv("HOME") .. "/.local/bin/udiksa comfort apply")   -- eye comfort shield (Settings > Display), when switched on
 
     -- polkit (password) prompts + notifications: handled by Quickshell itself
     -- (~/.config/quickshell/PolkitDialog.qml, Notifications.qml); hyprpolkitagent is no longer started

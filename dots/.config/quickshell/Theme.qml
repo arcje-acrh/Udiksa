@@ -57,8 +57,16 @@ Singleton {
     readonly property real notchFraction: 0.405  // notch width as a fraction of the screen width (user 2026-09-25: 10% narrower than 0.45)
     readonly property real islandRadius: Corners.notch   // the notch's bottom corners: Settings > Windows > Corners (default = the windows')
 
-    // ---- fonts ----
-    readonly property string font:    "Iosevka Nerd Font"
+    // ---- FONTS (from fonts.json, written by `udiksa font`: Settings > Fonts). Watched like colors.json: a change shows at once. ----
+    property var fonts: ({})
+    FileView {
+        path: Qt.resolvedUrl("fonts.json").toString().replace(/^file:\/\//, "")
+        watchChanges: true
+        onFileChanged: reload()
+        onLoaded: { try { theme.fonts = JSON.parse(text()) } catch (e) { console.warn("fonts.json:", e) } }
+    }
+    readonly property string font:    fonts.ui   ? fonts.ui   : "Space Grotesk"        // every text in the shell
+    readonly property string mono:    fonts.mono ? fonts.mono : "Iosevka Nerd Font"   // fixed-width text (code, terminal-like)
     readonly property string fontCjk: "Noto Sans CJK JP"
     readonly property int fontSize: 13
 }

@@ -30,3 +30,9 @@ dev/
 # ---- graphify (local knowledge graph of the repo; rebuilt, never committed) ----
 graphify-out/
 .graphifyignore
+# written by udiksa font / udiksa theme (Settings > Fonts); the choice itself is in ~/.local/state/rice/fonts.json
+dots/.config/hypr/conf/fonts.lua
+dots/.config/quickshell/fonts.json
+dots/.config/kitty/fonts.conf
+dots/.config/mpv/fonts.conf
+dots/.config/fontconfig/conf.d/

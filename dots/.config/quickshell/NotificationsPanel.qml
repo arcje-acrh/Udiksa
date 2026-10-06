@@ -21,7 +21,7 @@ Item {
             anchors.right: parent.right; anchors.verticalCenter: parent.verticalCenter
             spacing: 18
             Text {
-                text: (Notifs.dnd ? "󰂛 " : "󰂚 ") + "Do not disturb"
+                text: (Notifs.dnd ? "󰂛  " : "󰂚  ") + "Do not disturb"
                 color: Notifs.dnd ? Theme.coral : (dm.containsMouse ? Theme.amber : Theme.muted)
                 font.family: Theme.font; font.pixelSize: 12; font.bold: Notifs.dnd
                 MouseArea { id: dm; anchors.fill: parent; anchors.margins: -4; hoverEnabled: true; cursorShape: Qt.PointingHandCursor; onClicked: Notifs.dnd = !Notifs.dnd }

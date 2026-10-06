@@ -51,6 +51,8 @@ WALLS = os.path.join(HOME, "Pictures/Wallpapers")
 CACHE = os.path.join(HOME, ".cache/rice/palettes")
 THUMBS = os.path.join(HOME, ".cache/rice/thumbs")
 STATE = os.path.join(HOME, ".local/state/rice/theme.json")
+FONTS = os.path.join(HOME, ".local/state/rice/fonts.json")      # the two font choices (udiksa font): ui + mono
+FONT_DEFAULTS = {"ui": "Space Grotesk", "mono": "Iosevka Nerd Font"}
 IMG = (".png", ".jpg", ".jpeg", ".webp")
 SKIP = {"Unsorted"}
 
@@ -346,6 +348,19 @@ def palette_for(img):
 
 
 # ---------------- writing targets ----------------
+def fonts():
+    """The two font choices every writer uses: ui (shell, GTK / Qt, viewers, login) and mono (terminal, editors).
+    term = the mono family's "... Mono" cut (single-width icons, what terminals want) when it has one."""
+    f = dict(FONT_DEFAULTS)
+    try:
+        f.update({k: v for k, v in json.load(open(FONTS)).items() if k in f and v})
+    except (OSError, ValueError):
+        pass
+    fams = {x.split(",")[0].strip() for x in subprocess.run(["fc-list", ":", "family"], capture_output=True, text=True).stdout.splitlines()}
+    f["term"] = f["mono"] + " Mono" if f["mono"] + " Mono" in fams else f["mono"]
+    return f
+
+
 def write(path, text):
     path = os.path.realpath(path)          # write THROUGH symlinks (dotfiles are stowed into ~/Udiksa)
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -541,7 +556,9 @@ def qt(p, theme):
     s = setk(s, "Appearance", "style", "kvantum")
     s = setk(s, "Appearance", "custom_palette", "true")
     s = setk(s, "Appearance", "color_scheme_path", os.path.join(HOME, ".config/qt6ct/colors/rice.conf"))
-    s = setk(s, "Fonts", "general", '"Iosevka Nerd Font,11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"')
+    ft = fonts()
+    s = setk(s, "Fonts", "general", f'"{ft["ui"]},11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"')
+    s = setk(s, "Fonts", "fixed", f'"{ft["mono"]},11,-1,5,400,0,0,0,0,0,0,0,0,0,0,1"')
     write(conf, s.lstrip("\n"))
     # Kvantum: recolour the flat base theme's SVG + colours. Greys map by lightness onto the theme's
     # bg..text ramp; coloured parts (the base's blue) become the accent at the same lightness.
@@ -742,6 +759,7 @@ def greeter(p, img):
         except (OSError, ValueError):
             cr = 0
     cols["corner"] = cr
+    cols["font"] = fonts()["ui"]                     # LoginScreen / Turntable read it
     write(os.path.join(GREETER, "theme.json"), json.dumps(cols, indent=2) + "\n")
     tmp = os.path.join(GREETER, "wallpaper.tmp.jpg")
     r = subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", img, "-vf",
@@ -836,7 +854,7 @@ primary-highlighter = "block"
 no-window-decoration = true
 
 [font]
-family = "Iosevka Nerd Font"
+family = "{fonts()['ui']}"
 style = "Bold"
 
 [color-palette]
@@ -959,7 +977,7 @@ def viewers(p):
     Read at their next start (zathura: also `:source` inside)."""
     dark = p["mode"] == "dark"
     write(os.path.join(HOME, ".config/zathura/zathurarc"), f"""# zathura -- written by udiksa theme on every theme change (edit udiksa theme, not this file)
-set font "Iosevka Nerd Font 11"
+set font "{fonts()['ui']} 11"
 set selection-clipboard clipboard
 set adjust-open width
 set guioptions none
@@ -994,7 +1012,7 @@ set recolor-darkcolor "{p['text']}"
     write(os.path.join(HOME, ".config/imv/config"), f"""# imv -- written by udiksa theme on every theme change (edit udiksa theme, not this file)
 [options]
 background = {p['bg'].lstrip('#')}
-overlay_font = Iosevka Nerd Font:12
+overlay_font = {fonts()['ui']}:12
 overlay_text_color = {p['text'].lstrip('#')}
 overlay_background_color = {p['surface'].lstrip('#')}
 overlay_background_alpha = e6
@@ -1113,6 +1131,64 @@ def state():
         return {}
 
 
+def fontfiles():
+    """Push the two font choices (fonts()) into every app that has its own font setting. Files written here are not in
+    the repo (git-ignored); the shell watches fonts.json, kitty reloads on SIGUSR1, GTK follows gsettings at once."""
+    ft = fonts()
+    ui, mono, term = ft["ui"], ft["mono"], ft["term"]
+    head = "WRITTEN BY udiksa font / udiksa theme - overwritten when the fonts or the theme change"      # (no double dash: XML comments)
+    write(os.path.join(HOME, ".config/quickshell/fonts.json"), json.dumps({"ui": ui, "mono": mono}) + "\n")      # Theme.qml
+    write(os.path.join(HOME, ".config/kitty/fonts.conf"), f"# {head}\nfont_family      {term}\n")                  # kitty.conf includes it
+    write(os.path.join(HOME, ".config/mpv/fonts.conf"), f'# {head}\nosd-font="{ui}"\nsub-font="{ui}"\n')           # mpv.conf includes it
+    write(os.path.join(HOME, ".config/hypr/conf/fonts.lua"), f'-- {head}\nreturn {{ ui = "{ui}", mono = "{mono}" }}\n')   # general.lua (tab strip)
+    # fontconfig: what every app means by "sans-serif", "system-ui" and "monospace" (browsers, GTK, Qt fall back to these)
+    alias = lambda fam, to: f"  <alias binding=\"same\">\n    <family>{fam}</family>\n    <prefer><family>{to}</family></prefer>\n  </alias>\n"
+    write(os.path.join(HOME, ".config/fontconfig/conf.d/61-udiksa-fonts.conf"),
+          f'<?xml version="1.0"?>\n<!DOCTYPE fontconfig SYSTEM "fonts.dtd">\n<!-- {head} -->\n<fontconfig>\n'
+          + alias("sans-serif", ui) + alias("system-ui", ui) + alias("monospace", term) + "</fontconfig>\n")
+    # GTK 3 / 4 apps
+    for d in ("gtk-3.0", "gtk-4.0"):
+        f = os.path.join(HOME, ".config", d, "settings.ini")
+        t = open(f).read() if os.path.exists(f) else "[Settings]\n"
+        t = re.sub(r"(?m)^gtk-font-name=.*$", f"gtk-font-name={ui} 11", t) if re.search(r"(?m)^gtk-font-name=", t) else t.rstrip("\n") + f"\ngtk-font-name={ui} 11\n"
+        write(f, t)
+    for k, v in (("font-name", f"{ui} 11"), ("document-font-name", f"{ui} 11"), ("monospace-font-name", f"{term} 11")):
+        subprocess.run(["gsettings", "set", "org.gnome.desktop.interface", k, v], capture_output=True)
+    # Zed: its own settings file (JSON with comments), three keys; the file may be a link into the repo
+    zed = os.path.join(HOME, ".config/zed/settings.json")
+    if os.path.exists(zed):
+        z = open(zed).read(); o = z
+        z = re.sub(r'("ui_font_family"\s*:\s*)"[^"]*"', rf'\1"{ui}"', z)
+        z = re.sub(r'("buffer_font_family"\s*:\s*)"[^"]*"', rf'\1"{mono}"', z)
+        z = re.sub(r'("terminal"\s*:\s*\{{\s*"font_family"\s*:\s*)"[^"]*"', rf'\1"{mono}"', z)
+        if z != o:
+            write(zed, z)
+
+
+def greeter_font():
+    """Login + lock screen: only the font key of theme.json (no wallpaper work); the QML reads it at its next start."""
+    f = os.path.join(GREETER, "theme.json")
+    try:
+        d = json.load(open(f))
+    except (OSError, ValueError):
+        return
+    if os.access(GREETER, os.W_OK) and d.get("font") != fonts()["ui"]:
+        d["font"] = fonts()["ui"]
+        write(f, json.dumps(d, indent=2) + "\n")
+
+
+def cmd_fonts():
+    """`udiksa theme fonts`: re-write everything that carries a font (after `udiksa font` changed the choice)."""
+    st = state(); w = st.get("wallpaper")
+    fontfiles()
+    if w and os.path.exists(w):
+        p = palette_for(w)
+        qt(p, st.get("theme", "")); viewers(p); satty(p)
+    greeter_font()
+    subprocess.run(["pkill", "-USR1", "-x", "kitty"])        # kitty re-reads kitty.conf + fonts.conf
+    subprocess.run(["hyprctl", "reload"], capture_output=True)   # the tab strip's font
+
+
 def cmd_list():
     cur = state()
     res = []
@@ -1162,6 +1238,7 @@ def cmd_apply(img, pos=None, transition="grow"):
     kbd = os.path.join(HOME, ".local/lib/udiksa/kbd")          # only on laptops whose device folder has it
     if os.path.exists(kbd):
         subprocess.Popen([os.path.join(HOME, ".local/bin/udiksa"), "kbd", "theme"], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    fontfiles()
     hypr(p, theme); kitty(p, theme); starship(p); fastfetch(p); gtk(p, theme); qt(p, theme)
     ncspot(p); cava(p); satty(p); zed(p); cursor(p); btop(p); viewers(p); office(p)
     reload_apps()
@@ -1324,6 +1401,8 @@ if __name__ == "__main__":
         if not pool:
             sys.exit("no picture to choose from")
         cmd_apply(random.choice(pool), None, "wipe")
+    elif a[0] == "fonts":
+        cmd_fonts()
     elif a[0] == "current":
         print(json.dumps(state()))
     elif a[0] == "import" and len(a) > 1:

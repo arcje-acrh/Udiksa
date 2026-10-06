@@ -39,6 +39,54 @@ SetPage {
     readonly property var modes: ["extend", "mirror", "external", "laptop"]
     function setMode(m) { Quickshell.execDetached([Quickshell.env("HOME") + "/.local/bin/udiksa", "display", m]); page.dmode = m }
 
+    // ---- comfort lighting (eye comfort shield): `udiksa comfort`, hyprsunset behind it ----
+    property var cf: ({ mode: "off", temp: 4500, from: "20:00", to: "07:00", warm: [] })
+    readonly property var cfModes: ["off", "always", "schedule", "sunset"]
+    function cfRefresh() { cfInfo.running = true }
+    Process {
+        id: cfInfo
+        command: [Quickshell.env("HOME") + "/.local/lib/udiksa/comfort"]
+        running: true
+        stdout: StdioCollector { onStreamFinished: { try { page.cf = JSON.parse(text) } catch (e) {} } }
+    }
+    Process { id: cfSet; onExited: page.cfRefresh() }
+    function cfRun(args) { cfSet.command = [Quickshell.env("HOME") + "/.local/lib/udiksa/comfort"].concat(args); cfSet.running = true }
+    property int cfTemp: 4500            // the slider shows this at once; the file is written after you stop dragging
+    onCfChanged: cfTemp = cf.temp
+    Timer { id: cfLater; interval: 500; onTriggered: page.cfRun(["temp", String(page.cfTemp)]) }
+    function cfHour(t) { return parseInt(String(t).split(":")[0]) || 0 }
+
+    SetGroup { title: "Comfort lighting" }
+    SetRow {
+        title: "Eye comfort shield"
+        desc: "Warms the colours of every screen to cut blue light. Always = all day; Schedule = between two times; Sunset = from sunset to sunrise" + (page.cf.mode === "sunset" && page.cf.warm && page.cf.warm.length ? " (today " + page.cf.warm[0] + " – " + page.cf.warm[1] + ")." : ".")
+        Seg {
+            options: ["Off", "Always", "Schedule", "Sunset"]
+            current: page.cfModes.indexOf(page.cf.mode)
+            onPicked: (i) => { page.cf = Object.assign({}, page.cf, { mode: page.cfModes[i] }); page.cfRun(["mode", page.cfModes[i]]) }
+        }
+    }
+    SetRow {
+        title: "Warmth"
+        desc: "Lower = warmer (orange). 6000 K is almost neutral, 4500 K a gentle evening, 3000 K very warm."
+        SetNum {
+            value: page.cfTemp; from: 2500; to: 6000; step: 100; unit: " K"
+            onChanged: (x) => { page.cfTemp = x; if (page.cf.mode === "off") page.cfRun(["preview", String(x)]); cfLater.restart() }
+        }
+    }
+    SetRow {
+        visible: page.cf.mode === "schedule"
+        title: "Warm from"
+        desc: "The hour the shield turns on in the evening."
+        SetNum { value: page.cfHour(page.cf.from); from: 0; to: 23; unit: ":00"; barWidth: 120; onChanged: (x) => page.cfRun(["schedule", ("0" + x).slice(-2) + ":00", page.cf.to]) }
+    }
+    SetRow {
+        visible: page.cf.mode === "schedule"
+        title: "Warm until"
+        desc: "The hour it turns off in the morning."
+        SetNum { value: page.cfHour(page.cf.to); from: 0; to: 23; unit: ":00"; barWidth: 120; onChanged: (x) => page.cfRun(["schedule", page.cf.from, ("0" + x).slice(-2) + ":00"]) }
+    }
+
     SetGroup { title: "Laptop screen"; visible: Power.panel }       // a desktop has none: the whole group hides
     SetRow {
         visible: Power.panel && page.bl !== ""

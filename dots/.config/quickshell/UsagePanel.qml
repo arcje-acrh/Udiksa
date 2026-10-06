@@ -196,11 +196,11 @@ top -bn2 -d0.7 -o %CPU -w 200 | awk '/^top -/{n++} n==2 && /^ *[0-9]+ /{c=$12; f
             Row {
                 spacing: 18
                 Column {
-                    Text { text: "󰇚 down"; color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
+                    Text { text: "󰇚  down"; color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
                     Text { text: root.rate(root.s.rx ?? 0); color: Theme.coral; font.family: Theme.font; font.pixelSize: 16; font.bold: true }
                 }
                 Column {
-                    Text { text: "󰕒 up"; color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
+                    Text { text: "󰕒  up"; color: Theme.muted; font.family: Theme.font; font.pixelSize: 11 }
                     Text { text: root.rate(root.s.tx ?? 0); color: Theme.amber; font.family: Theme.font; font.pixelSize: 16; font.bold: true }
                 }
             }

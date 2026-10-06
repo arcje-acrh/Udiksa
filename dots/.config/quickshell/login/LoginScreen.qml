@@ -48,7 +48,7 @@ Item {
     readonly property color fg: (colours && colours.fg) || "#e8e8e8"
     readonly property color accent: (colours && colours.accent) || "#9ab0c8"
     readonly property color dimc: (colours && colours.dim) || "#6a7078"
-    readonly property string font: "Iosevka Nerd Font"
+    readonly property string font: (colours && colours.font) || "Space Grotesk"   // theme.json (Settings > Fonts)
     property real ui: 0
 
     function fail() {                            // wrong password: clear, shake, keep focus
@@ -114,7 +114,7 @@ Item {
         x: 70 * root.s
         y: root.height - 480 * root.s
         opacity: root.ui
-        onLoaded: { item.s = Qt.binding(() => root.s); item.fg = Qt.binding(() => root.fg); item.accent = Qt.binding(() => root.accent); item.dimc = Qt.binding(() => root.dimc); item.font = root.font }
+        onLoaded: { item.s = Qt.binding(() => root.s); item.font = Qt.binding(() => root.font); item.fg = Qt.binding(() => root.fg); item.accent = Qt.binding(() => root.accent); item.dimc = Qt.binding(() => root.dimc); item.font = root.font }
     }
 
     // ---- clock, top-left ----
