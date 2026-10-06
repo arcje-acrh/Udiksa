@@ -36,3 +36,5 @@ dots/.config/quickshell/fonts.json
 dots/.config/kitty/fonts.conf
 dots/.config/mpv/fonts.conf
 dots/.config/fontconfig/conf.d/
+# written by udiksa comfort (eye comfort shield)
+dots/.config/hypr/hyprsunset.conf
