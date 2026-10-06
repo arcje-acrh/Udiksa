@@ -59,6 +59,26 @@ hl.window_rule({
     float  = true,  -- float ...
     center = true,  -- ... in the middle
 })
+-- Zed's secondary windows (Settings, ...) are titled "Zed — <what>"; the editor windows are titled by their project.
+-- They float in the middle (user 2026-10-06: "settings and all keep floating, same for sub-windows of other apps").
+hl.window_rule({
+    name  = "zed-subwindows",
+    match = { class = "^dev\\.zed\\.Zed$", title = "^Zed — .*" },
+
+    float  = true,
+    center = true,
+    size   = "1200 800",
+})
+-- sub-windows of other apps that are plain top-level windows (not dialogs with a parent: Hyprland floats those itself):
+-- settings / options / about / shortcuts windows. The WHOLE title must match, so a browser tab "Settings — Zen Browser"
+-- (the main window) is never caught.
+hl.window_rule({
+    name  = "app-subwindows",
+    match = { title = "^(Settings|Options|Preferences|About|About .*|Keyboard Shortcuts|Keymap Editor|Customi[sz]e.*|Configure.*|Appearance|Task Manager)$" },
+
+    float  = true,
+    center = true,
+})
 hl.window_rule({
     name  = "portal-file-chooser",
     match = { class = "^(xdg-desktop-portal-gtk|xdg-desktop-portal-kde|org.freedesktop.impl.portal.desktop.kde)$" },
