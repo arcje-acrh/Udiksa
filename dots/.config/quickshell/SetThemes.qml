@@ -89,7 +89,9 @@ SetPage {
             onStreamFinished: {
                 try {
                     const j = JSON.parse(text)
-                    page.fontList = j.installed.map(f => ({ name: f[0], tag: f[1] ? "mono" : "" }))
+                    const all = j.installed.map(f => ({ name: f[0], tag: f[1] ? "mono" : "" }))
+                    const top = [j.font, "Iosevka Nerd Font"].filter((n, i, a) => a.indexOf(n) === i)      // the font in use and the default first
+                    page.fontList = top.map(n => all.find(f => f.name === n)).filter(f => f).map(f => ({ name: f.name, tag: (f.name === j.font ? "in use" : "default") + (f.tag ? " · mono" : "") })).concat(all.filter(f => top.indexOf(f.name) < 0))
                     page.fontCur = j.font; page.fontMono = j.mono
                 } catch (e) {}
             }
@@ -98,7 +100,7 @@ SetPage {
     Process { id: fontSet; onExited: page.fontRefresh() }
     function fontPick(name) { fontCur = name; fontSet.command = [fontExe, name]; fontSet.running = true }
 
-    SetGroup { title: "Font"; action: "reset to Space Grotesk"; onActionClicked: { fontSet.command = [page.fontExe, "reset"]; fontSet.running = true } }
+    SetGroup { title: "Font"; action: "reset to Iosevka Nerd Font"; onActionClicked: { fontSet.command = [page.fontExe, "reset"]; fontSet.running = true } }
     SetRow {
         title: "System font"
         desc: "One font for everything: the notch, Settings, apps, browsers, viewers, the login screen. Applies at once (Qt apps when they next start). In terminals and code it is used too when it is monospace; otherwise they use its companion" + (page.fontMono && page.fontMono !== page.fontCur ? " (" + page.fontMono.replace(/ Nerd Font$/, "") + ")." : ".")

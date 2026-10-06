@@ -52,7 +52,7 @@ CACHE = os.path.join(HOME, ".cache/rice/palettes")
 THUMBS = os.path.join(HOME, ".cache/rice/thumbs")
 STATE = os.path.join(HOME, ".local/state/rice/theme.json")
 FONTS = os.path.join(HOME, ".local/state/rice/fonts.json")      # the two font choices (udiksa font): ui + mono
-FONT_DEFAULTS = {"ui": "Space Grotesk", "mono": "Iosevka Nerd Font"}
+FONT_DEFAULTS = {"ui": "Iosevka Nerd Font", "mono": "Iosevka Nerd Font"}
 IMG = (".png", ".jpg", ".jpeg", ".webp")
 SKIP = {"Unsorted"}
 

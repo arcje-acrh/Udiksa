@@ -2,7 +2,7 @@
 """udiksa comfort -- comfort lighting (eye comfort shield): warms the screen's colours to cut blue light, by hyprsunset.
 
   udiksa comfort                    state (JSON): mode, temperature, times, running
-  udiksa comfort on | off | toggle  warm the screen now (mode "always") / back to normal
+  udiksa comfort on [K] | off | toggle  warm the screen now (mode "always", optionally at K) / back to normal
   udiksa comfort temp <K>           colour temperature, 2500 (very warm) .. 6000 (almost neutral); saved + applied live
   udiksa comfort mode <m>           off | always | schedule | sunset
   udiksa comfort schedule <from> <to>   e.g. 20:00 07:00 (mode "schedule")
@@ -114,6 +114,8 @@ def main(a):
         print(json.dumps({**d, "running": running(), "warm": list(times(d)) if d["mode"] in ("schedule", "sunset") else []}))
     elif cmd in ("on", "off", "toggle"):
         d["mode"] = {"on": "always", "off": "off", "toggle": "off" if d["mode"] != "off" else "always"}[cmd]
+        if cmd == "on" and len(a) > 1:                     # `on 4200`: switch on at exactly that temperature
+            d["temp"] = max(2500, min(6000, int(float(a[1]))))
         save(d); apply()
     elif cmd == "temp" and len(a) > 1:
         d["temp"] = max(2500, min(6000, int(float(a[1])))); save(d)
@@ -129,9 +131,11 @@ def main(a):
     elif cmd == "schedule" and len(a) > 2:
         d["from"], d["to"] = a[1], a[2]; d["mode"] = "schedule"; save(d); apply()
     elif cmd == "preview" and len(a) > 1:
-        if not running():
-            start(); time.sleep(0.6)
-        subprocess.run(["hyprctl", "hyprsunset", "temperature", str(max(2500, min(6500, int(float(a[1])))))], capture_output=True)
+        t = str(max(2500, min(6500, int(float(a[1])))))
+        if running():
+            subprocess.run(["hyprctl", "hyprsunset", "temperature", t], capture_output=True)
+        else:        # -t = exactly this temperature at once (without it the daemon first applies a leftover evening profile)
+            subprocess.Popen(["hyprsunset", "-t", t], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
     elif cmd == "apply":
         apply()
     else:

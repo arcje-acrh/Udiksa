@@ -268,7 +268,7 @@ usage: [<name> | list | reset | apply]
   (none)                 The font in use, its terminal companion and every installed font (JSON)
   <name>                 Use this font everywhere (shell, apps, browsers, viewers, login screen)
   list                   Installed fonts, one per line (name, then sans or mono)
-  reset                  Back to Space Grotesk
+  reset                  Back to Iosevka Nerd Font (the default)
   apply                  Write every app's config again (a theme change does it too)
 # ARGUMENTS
   <name>                 A font family, any case, as `list` prints it ("Space Grotesk", "Inter")
@@ -280,7 +280,7 @@ Comfort lighting (eye comfort shield): warm screen colours, less blue light.
 usage: [on | off | toggle | temp <K> | mode <mode> | schedule <from> <to> | preview <K> | apply]
 # COMMANDS
   (none)                 The saved choice and whether the filter is running (JSON)
-  on | off | toggle      Warm the screen now (mode always) / back to normal
+  on [K] | off | toggle  Warm the screen now (mode always, optionally at K) / back to normal
   temp <K>               Colour temperature, 2500 (very warm) to 6000 (almost neutral)
   mode <mode>            off, always, schedule or sunset
   schedule <from> <to>   Warm between two times, e.g. 20:00 07:00

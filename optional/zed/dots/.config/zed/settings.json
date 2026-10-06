@@ -10,8 +10,8 @@
     }
   },
   "theme": "Rice",
-  "ui_font_family": "Space Grotesk",
-  "buffer_font_family": "SpaceMono Nerd Font",
+  "ui_font_family": "Iosevka Nerd Font",
+  "buffer_font_family": "Iosevka Nerd Font",
   "buffer_font_size": 15,
   "ui_font_size": 15,
   "buffer_line_height": "comfortable",

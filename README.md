@@ -33,7 +33,7 @@ The notch on hover, tiling, the launcher, live theme switching (open apps recolo
 | **Shell, bar, launcher, notifications** | one [Quickshell](https://quickshell.org) shell: the notch |
 | **Lock and login screen** | Quickshell, the same design for both (greetd + cage at boot); the lock screen has a spinning-record media player |
 | **Terminal** | kitty, bash, starship, ble.sh |
-| **Font** | Space Grotesk, one font for everything (Space Mono in the terminal); pick any installed font in Settings > Themes |
+| **Font** | Iosevka Nerd Font, one font for everything; pick any installed font (Space Grotesk, Inter, Geist, ...) in Settings > Themes |
 | **Mouse pointer** | Bibata, recoloured with the theme; grows when you shake it |
 | **GTK / Qt** | adw-gtk3 / Kvantum, recoloured with the theme |
 | **Themes** | a folder of wallpapers + one colour file each, tinted by every wallpaper (matugen); add your own |
@@ -59,10 +59,10 @@ The notch on hover, tiling, the launcher, live theme switching (open apps recolo
 - **Retro-hardware controls.** LED bars instead of sliders, keys that press in, hairline switches, Iosevka
   in the terminal and code. Rounded screen corners match the windows.
 - **One font, like a theme.** Settings > Themes > Font changes the system font everywhere at once, live: the shell, GTK
-  and Qt apps, the browser's default fonts, viewers and the login screen. Space Grotesk is the default; every font
+  and Qt apps, the browser's default fonts, viewers and the login screen. Iosevka Nerd Font is the default; every font
   installed on the machine is found by itself (about 90 come with the rice: Inter, Geist, Outfit, Sora, Jost, Commit
   Mono, Nerd Fonts, ...). Terminals and Zed use the font too when it is monospace, otherwise its companion
-  (Space Grotesk gets Space Mono). (`udiksa font`)
+  (Space Grotesk gets Space Mono, Geist gets Geist Mono). (`udiksa font`)
 - **Comfort lighting.** Settings > Display has an eye comfort shield: warm the screen's colours all day, between two
   times, or from sunset to sunrise, with a warmth slider. (`udiksa comfort`, hyprsunset)
 - **Tools built in.** Screen recording (GPU-encoded, with or without sound), a colour picker, screenshots (area,

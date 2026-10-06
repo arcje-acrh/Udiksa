@@ -4,7 +4,7 @@
   udiksa font                  the font in use (JSON) + every installed font
   udiksa font list             installed fonts, one per line:  <name> <TAB> sans|mono
   udiksa font <name>           use this font everywhere, e.g. udiksa font "Space Grotesk"
-  udiksa font reset            back to Space Grotesk
+  udiksa font reset            back to Iosevka Nerd Font (the default)
   udiksa font apply            write everything again (also done by every theme change)
 
 The font is used by the shell (notch, Settings, lock), GTK / Qt apps, browsers' default fonts, viewers and the login screen.
@@ -16,7 +16,7 @@ import json, os, re, subprocess, sys
 
 HOME = os.path.expanduser("~")
 FONTS = os.path.join(HOME, ".local/state/rice/fonts.json")
-DEFAULT = "Space Grotesk"
+DEFAULT = "Iosevka Nerd Font"
 THEME = os.path.join(HOME, ".local/lib/udiksa/theme")
 # companions for terminals: a proportional font -> the monospace sibling that matches it (first installed wins)
 PAIRS = {"space grotesk": "SpaceMono", "space mono": "SpaceMono", "geist": "GeistMono", "ibm plex sans": "BlexMono",

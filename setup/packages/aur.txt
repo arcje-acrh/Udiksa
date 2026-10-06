@@ -5,7 +5,7 @@ quickshell-git
 bibata-cursor-theme-bin
 # terminal clock: launcher > Clock (dots/.local/share/applications/rice-clock.desktop) -- 2026-10-03
 tty-clock
-# fonts to choose from in Settings > Themes > Font (udiksa font): Space Grotesk is the default; the rest are choices (only fonts that build without a source toolchain) -- 2026-10-07
+# fonts to choose from in Settings > Themes > Font (udiksa font): Iosevka Nerd Font (repo.txt) is the default; these are choices (only fonts that build without a source toolchain) -- 2026-10-07
 otf-space-grotesk
 ttf-geist
 ttf-outfit

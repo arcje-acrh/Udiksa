@@ -2,7 +2,7 @@
 -- https://wiki.hypr.land/Configuring/Basics/Variables/#general
 local colors = require("conf.colors")  -- the theme's colours (written by udiksa theme)
 local ok_fonts, fonts = pcall(require, "conf.fonts")   -- written by udiksa font; not there yet = the shipped default
-if not ok_fonts then fonts = { ui = "Space Grotesk", mono = "Iosevka Nerd Font" } end
+if not ok_fonts then fonts = { ui = "Iosevka Nerd Font", mono = "Iosevka Nerd Font" } end
 
 hl.config({
     general = {

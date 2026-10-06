@@ -56,7 +56,6 @@ SetPage {
     Process { id: cfPrev }               // live preview while dragging: no daemon restart, no refresh
     Timer { id: cfShow; interval: 70; onTriggered: { cfPrev.command = [Quickshell.env("HOME") + "/.local/lib/udiksa/comfort", "preview", String(page.cfTemp)]; cfPrev.running = true } }
     Timer { id: cfSave; interval: 600; onTriggered: page.cfRun(["temp", String(page.cfTemp)]) }
-    Timer { id: cfEnd; interval: 2500; onTriggered: if (page.cf.mode === "off") page.cfRun(["apply"]) }   // shield off: the preview fades back after a moment
     function cfHour(t) { return parseInt(String(t).split(":")[0]) || 0 }
 
     SetGroup { title: "Comfort lighting" }
@@ -71,10 +70,14 @@ SetPage {
     }
     SetRow {
         title: "Warmth"
-        desc: "Lower = warmer (orange). 6000 K is almost neutral, 4500 K a gentle evening, 3000 K very warm."
+        desc: "Lower = warmer (orange). 6000 K is neutral, 4500 K a gentle evening, 3000 K very warm. Moving it turns the shield on."
         SetNum {
             value: page.cfTemp; from: 2500; to: 6000; step: 100; unit: " K"
-            onChanged: (x) => { page.cfTemp = x; cfShow.restart(); cfSave.restart(); cfEnd.restart() }
+            onChanged: (x) => {
+                page.cfTemp = x
+                if (page.cf.mode === "off") { page.cf = Object.assign({}, page.cf, { mode: "always" }); page.cfRun(["on", String(x)]) }   // moving the warmth turns the shield on, at that warmth
+                else { cfShow.restart(); cfSave.restart() }
+            }
         }
     }
     SetRow {

@@ -65,7 +65,7 @@ Singleton {
         onFileChanged: reload()
         onLoaded: { try { theme.fonts = JSON.parse(text()) } catch (e) { console.warn("fonts.json:", e) } }
     }
-    readonly property string font:    fonts.ui   ? fonts.ui   : "Space Grotesk"        // every text in the shell
+    readonly property string font:    fonts.ui   ? fonts.ui   : "Iosevka Nerd Font"        // every text in the shell
     readonly property string mono:    fonts.mono ? fonts.mono : "Iosevka Nerd Font"   // fixed-width text (code, terminal-like)
     readonly property string fontCjk: "Noto Sans CJK JP"
     readonly property int fontSize: 13
