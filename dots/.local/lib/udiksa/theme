@@ -655,6 +655,7 @@ def grub(p, theme, img):
             corners += f'\n+ image {{\n    left = {left}\n    top = {top}\n    width = {cr}\n    height = {cr}\n    file = "corner_{name}.png"\n}}\n'
     ver = subprocess.run(["pacman", "-Q", "grub"], capture_output=True, text=True).stdout.split()[-1:] or ["2"]
     ver = ver[0].split(":")[-1].split("-")[0]
+    # (the label uses a plain "-" between the words: the GRUB font has no "·", it drew a ? box)
     txt = f"""# rice GRUB theme -- written by udiksa theme for "{theme}"; edit udiksa theme, not this file.
 title-text: ""
 desktop-image: "background.png"
@@ -671,7 +672,7 @@ terminal-border: "0"
     top = 110
     width = 2300
     height = 40
-    text = "GNU GRUB {ver} · arch · theme: {theme}"
+    text = "GNU GRUB {ver} - arch - theme: {theme}"
     font = "RiceTerm Regular 24"
     color = "{p['dim']}"
 }}

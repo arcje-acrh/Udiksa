@@ -79,6 +79,21 @@ nothing needs restarting.
 
 <img src="docs/screenshots/switcher.webp" alt="The theme switcher (Super+T), Tokyo Night" width="100%">
 
+### The boot menu follows the theme
+
+<img src="docs/screenshots/grub-themes.webp" alt="The GRUB boot menu in Tokyo Night, Gruvbox Dark and Catppuccin Latte" width="100%">
+
+<sub>Tokyo Night · Gruvbox Dark · Catppuccin Latte (the real GRUB menu, booted in a virtual machine).</sub>
+
+With GRUB, the boot menu is redrawn on every theme change, so it always matches the desktop:
+
+- **Background:** the theme's own dark (or light) colour with the wallpaper faint behind it (16 %) and fine scan lines, like a glowing terminal.
+- **Text:** monospace Iosevka in the theme's text colour, the title line and the countdown in its quieter colours.
+- **Selection:** a soft band in the theme's accent colour with a `>` in front of the chosen entry.
+- **Corners:** rounded like the desktop's.
+
+It is made by `udiksa theme` (`udiksa theme corners` redoes just this and the lock screen) and installed in `/boot/grub/themes/rice/`; other boot loaders keep their own look.
+
 ### Add or remove a theme
 
 A theme is just a folder in `~/Pictures/Wallpapers/`.
