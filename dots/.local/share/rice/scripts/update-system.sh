@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 # title: Update system
-# desc: Update everything: official packages (pacman -Syu), then AUR packages (yay -Sua), then Hyprland plugins
+# desc: Update everything: official packages (pacman -Syu), then AUR packages (yay -Sua), AUR rebuilds the update broke (e.g. quickshell after a Qt bump), then Hyprland plugins
 # terminal: yes
 running=$(uname -r)
+qt_before=$(pacman -Q qt6-base 2>/dev/null | awk '{split($2,v,"."); print v[1]"."v[2]}')
 
 echo "==> Official packages (pacman)"
 sudo pacman -Syu || { echo; echo ">>> pacman stopped with an error (see above); AUR update skipped."; exit 1; }
@@ -10,6 +11,25 @@ sudo pacman -Syu || { echo; echo ">>> pacman stopped with an error (see above); 
 if command -v yay >/dev/null; then
     echo; echo "==> AUR packages (yay)"
     yay -Sua || echo ">>> An AUR package failed (see above); the official packages are already up to date."
+fi
+
+# AUR packages are not rebuilt by pacman. Rebuild the ones this update just broke:
+#  - Qt minor bump (6.11 -> 6.12): every AUR package depending on qt6 (e.g. quickshell-git), its Qt-private ABI changes
+#  - any AUR program in /usr with a now-missing shared library (soname bump, e.g. yay vs libalpm)
+if command -v yay >/dev/null; then
+    qt_after=$(pacman -Q qt6-base 2>/dev/null | awk '{split($2,v,"."); print v[1]"."v[2]}')
+    [[ -n $qt_before && $qt_before != "$qt_after" ]] && qt=$(pacman -Qmi | awk '/^Name/{n=$3} /^Depends On/ && /qt6/{print n}')
+    broken=$(for pkg in $(pacman -Qqm); do
+        for f in $(pacman -Qlq "$pkg" | grep -E '^/usr/(bin|lib)/[^/]+$'); do
+            [[ -x $f && -f $f ]] && ldd "$f" 2>/dev/null | grep -q 'not found' && { echo "$pkg"; break; }
+        done
+    done)
+    mapfile -t rebuild < <(printf '%s\n' $qt $broken | sort -u)
+    if ((${#rebuild[@]})); then
+        echo; echo "==> Rebuilding AUR packages broken by this update: ${rebuild[*]}"
+        yay -S --rebuild "${rebuild[@]}" || echo ">>> Rebuild failed (see above); retry:  yay -S --rebuild ${rebuild[*]}"
+        [[ " ${rebuild[*]} " == *quickshell* ]] && echo ">>> The shell keeps the old build until you log out and in."
+    fi
 fi
 
 if command -v hyprpm >/dev/null && hyprpm list 2>/dev/null | grep -q Repository; then
