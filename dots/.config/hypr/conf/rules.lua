@@ -54,6 +54,7 @@ hl.window_rule({
 -- file pickers and save / open / print dialogs: float in the middle
 hl.window_rule({
     name  = "dialogs",
+    min_size = "800 560",  -- GTK/Qt dialogs open small at 1.25 scale
     match = { title = "^(Open|Open File|Open Files|Open Folder|Save|Save As|Save File|Select a File|Choose Files?|File Upload|Select Folder|Export|Import|Print|Properties|Preferences|Rename)( .*)?$" },
 
     float  = true,  -- float ...
@@ -113,8 +114,9 @@ hl.window_rule({
     name  = "browser-windows-open-floating",
     match = { class = "^(zen|firefox|librewolf|chromium|google-chrome|brave-browser)$" },
 
-    float  = true,
-    center = true,
+    float    = true,
+    center   = true,
+    min_size = "900 650",  -- pop-ups (Gmail compose, ...) ask for a tiny CSS-pixel size; never smaller than this
 })
 -- browser EXTENSION pop-outs (user 2026-09-26: the Bitwarden unlock window opened tiled). Their title is
 -- "Extension: (<extension name>) - <page> — Zen Browser" (same pattern in Firefox; Chromium: class
@@ -124,8 +126,9 @@ hl.window_rule({
     name  = "browser-extension-popups",
     match = { title = "^Extension: \\(.*" },
 
-    float  = true,
-    center = true,
+    float    = true,
+    center   = true,
+    min_size = "1 1",  -- extension pop-outs (Bitwarden) are small by design
 })
 hl.window_rule({
     name  = "chromium-extension-popups",

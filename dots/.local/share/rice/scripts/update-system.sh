@@ -32,6 +32,11 @@ if command -v yay >/dev/null; then
     fi
 fi
 
+# optional machine-specific steps: every ~/.config/udiksa/update.d/*.sh runs here (none ship with Udiksa)
+for h in "$HOME"/.config/udiksa/update.d/*.sh; do
+    [[ -f $h ]] && { echo; echo "==> ${h##*/}"; bash "$h"; }
+done
+
 if command -v hyprpm >/dev/null && hyprpm list 2>/dev/null | grep -q Repository; then
     echo; echo "==> Hyprland plugins (hyprpm: rebuilt only when Hyprland changed)"
     hyprpm update || echo ">>> A plugin did not build (shake to find may be off until it does)."
