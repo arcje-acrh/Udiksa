@@ -7,12 +7,12 @@ import Quickshell.Bluetooth
 Item {
     id: root
     readonly property var ad: Bluetooth.defaultAdapter
-    Component.onCompleted: if (ad && ad.enabled) ad.discovering = true
+    Component.onCompleted: if (ad && ad.enabled) { ad.pairable = true; ad.discovering = true }   // pairable: BlueZ can be left "Pairable: no", then pairing silently fails
     Component.onDestruction: if (ad) ad.discovering = false
 
     readonly property var devs: {
         if (!ad) return []
-        const ds = ad.devices.values.filter(d => d.paired || d.connected || d.deviceName)   // skip nameless beacons
+        const ds = ad.devices.values.filter(d => d.paired || d.trusted || d.connected || d.deviceName)   // skip nameless beacons
         ds.sort((a, b) => (b.connected - a.connected) || (b.paired - a.paired) || (a.name || "").localeCompare(b.name || ""))
         return ds
     }
@@ -56,7 +56,7 @@ Item {
                     icon: root.kindIcon(modelData)
                     title: modelData.name
                     active: modelData.connected
-                    actionIcon: modelData.paired ? "󰆴" : ""      // forget (remove pairing)
+                    actionIcon: modelData.paired || modelData.trusted ? "󰆴" : ""      // forget (also a stale "trusted but not paired" entry: it connects and drops until forgotten)
                     note: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting ? "…"
                         : modelData.connected ? "connected" + (modelData.batteryAvailable ? " · battery " + Math.round(modelData.battery * 100) + "%" : "")
                         : (modelData.paired ? "paired" : "click to pair")

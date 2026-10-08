@@ -7,7 +7,7 @@ import Quickshell.Bluetooth
 SetPage {
     id: page
     readonly property var ad: Bluetooth.defaultAdapter
-    Component.onCompleted: if (ad && ad.enabled) ad.discovering = true
+    Component.onCompleted: if (ad && ad.enabled) { ad.pairable = true; ad.discovering = true }   // BlueZ can be left "Pairable: no"
     Component.onDestruction: if (ad) ad.discovering = false
     readonly property var all: ad ? ad.devices.values : []
     readonly property var mine: all.filter(d => d.paired).sort((a, b) => (b.connected - a.connected) || (a.name || "").localeCompare(b.name || ""))
@@ -58,7 +58,11 @@ SetPage {
             required property var modelData
             title: page.kindIcon(modelData) + "  " + (modelData.name || modelData.address)
             desc: modelData.pairing ? "pairing…" : modelData.address
-            SetButton { text: "Pair"; accent: true; onClicked: { modelData.trusted = true; modelData.pair() } }
+            Row {
+                spacing: 6
+                SetButton { text: "Forget"; warn: true; visible: modelData.trusted; onClicked: modelData.forget() }   // stale entry (trusted, never paired): connects and drops until forgotten
+                SetButton { text: "Pair"; accent: true; onClicked: { modelData.trusted = true; modelData.pair() } }
+            }
         }
     }
 }
