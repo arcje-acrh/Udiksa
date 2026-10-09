@@ -2,6 +2,8 @@
 //   left card: devices (scans while open); click = connect / disconnect; a new device = pair + trust + connect
 //   right column: Bluetooth on/off, visible to others, adapter details
 import QtQuick
+import Quickshell
+import Quickshell.Io
 import Quickshell.Bluetooth
 
 Item {
@@ -9,6 +11,15 @@ Item {
     readonly property var ad: Bluetooth.defaultAdapter
     Component.onCompleted: if (ad && ad.enabled) { ad.pairable = true; ad.discovering = true }   // pairable: BlueZ can be left "Pairable: no", then pairing silently fails
     Component.onDestruction: if (ad) ad.discovering = false
+
+    // Samsung Galaxy Buds: the addresses Galaxy Buds Client manages (its settings.json), or a "Buds" name
+    property var budsMacs: []
+    Process {
+        running: true
+        command: ["python3", "-I", "-c", "import json,os;print(*[d['MacAddress'] for d in json.load(open(os.path.expanduser('~/.local/share/GalaxyBudsClient/settings.json'))).get('Devices',[])])"]
+        stdout: StdioCollector { onStreamFinished: root.budsMacs = text.trim().toUpperCase().split(/\s+/) }
+    }
+    function isBuds(d) { return budsMacs.indexOf((d.address || "").toUpperCase()) >= 0 || /galaxy buds/i.test(d.deviceName || "") }
 
     readonly property var devs: {
         if (!ad) return []
@@ -57,6 +68,7 @@ Item {
                     title: modelData.name
                     active: modelData.connected
                     actionIcon: modelData.paired || modelData.trusted ? "󰆴" : ""      // forget (also a stale "trusted but not paired" entry: it connects and drops until forgotten)
+                    action2Icon: root.isBuds(modelData) ? "󰒓" : ""                    // Galaxy Buds settings (Galaxy Buds Client)
                     note: modelData.pairing || modelData.state === BluetoothDeviceState.Connecting ? "…"
                         : modelData.connected ? "connected" + (modelData.batteryAvailable ? " · battery " + Math.round(modelData.battery * 100) + "%" : "")
                         : (modelData.paired ? "paired" : "click to pair")
@@ -66,6 +78,7 @@ Item {
                         else { modelData.trusted = true; modelData.pair() }
                     }
                     onActionClicked: modelData.forget()
+                    onAction2Clicked: Quickshell.execDetached(["sh", "-c", "galaxybudsclient app -a || galaxybudsclient"])
                 }
                 Text {
                     parent: devList
