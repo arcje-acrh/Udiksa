@@ -57,6 +57,7 @@ Rectangle {
         id: actText
         visible: root.actionIcon !== ""
         anchors.right: parent.right; anchors.rightMargin: 10; anchors.verticalCenter: parent.verticalCenter
+        width: 16; horizontalAlignment: Text.AlignHCenter
         text: root.actionIcon
         color: act.containsMouse ? Theme.coral : Theme.muted
         font.family: Theme.font; font.pixelSize: 14
@@ -66,7 +67,8 @@ Rectangle {
         id: act2Text
         visible: root.action2Icon !== ""
         anchors.right: actText.visible ? actText.left : parent.right
-        anchors.rightMargin: actText.visible ? 12 : 10; anchors.verticalCenter: parent.verticalCenter
+        anchors.rightMargin: 10; anchors.verticalCenter: parent.verticalCenter
+        width: 16; horizontalAlignment: Text.AlignHCenter
         text: root.action2Icon
         color: act2.containsMouse ? Theme.coral : Theme.muted
         font.family: Theme.font; font.pixelSize: 14

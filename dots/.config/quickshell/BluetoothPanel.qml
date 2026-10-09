@@ -12,14 +12,15 @@ Item {
     Component.onCompleted: if (ad && ad.enabled) { ad.pairable = true; ad.discovering = true }   // pairable: BlueZ can be left "Pairable: no", then pairing silently fails
     Component.onDestruction: if (ad) ad.discovering = false
 
-    // Samsung Galaxy Buds: the addresses Galaxy Buds Client manages (its settings.json), or a "Buds" name
+    // Samsung Galaxy Buds = a paired device that offers Samsung's buds control service (UUID 2e73a4ad-..., what
+    // Galaxy Buds Client talks to; BlueZ lists it for every Galaxy Buds model), or one the client already manages
     property var budsMacs: []
     Process {
         running: true
-        command: ["python3", "-I", "-c", "import json,os;print(*[d['MacAddress'] for d in json.load(open(os.path.expanduser('~/.local/share/GalaxyBudsClient/settings.json'))).get('Devices',[])])"]
+        command: ["sh", "-c", "bluetoothctl devices Paired | while read -r _ m _; do bluetoothctl info \"$m\" | grep -qi 2e73a4ad-332d-41fc-90e2-16bef06523f2 && echo \"$m\"; done; python3 -I -c \"import json,os;print(*[d['MacAddress'] for d in json.load(open(os.path.expanduser('~/.local/share/GalaxyBudsClient/settings.json'))).get('Devices',[])],sep='\\\\n')\" 2>/dev/null"]
         stdout: StdioCollector { onStreamFinished: root.budsMacs = text.trim().toUpperCase().split(/\s+/) }
     }
-    function isBuds(d) { return budsMacs.indexOf((d.address || "").toUpperCase()) >= 0 || /galaxy buds/i.test(d.deviceName || "") }
+    function isBuds(d) { return budsMacs.indexOf((d.address || "").toUpperCase()) >= 0 }
 
     readonly property var devs: {
         if (!ad) return []
