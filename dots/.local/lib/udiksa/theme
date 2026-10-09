@@ -1101,6 +1101,18 @@ def reload_apps():
     subprocess.run(["pkill", "-USR1", "-x", "kitty"])
 
 
+def hooks(p, theme):
+    """Your own scripts: every executable ~/.config/udiksa/theme.d/*.sh runs after a theme change, with
+    UDIKSA_THEME / _MODE (dark|light) / _BG / _TEXT / _ACCENT / _ACCENT2 in its environment. Not waited for."""
+    env = dict(os.environ, UDIKSA_THEME=theme, UDIKSA_MODE=p["mode"], UDIKSA_BG=p["bg"], UDIKSA_TEXT=p["text"],
+               UDIKSA_ACCENT=p["accent"], UDIKSA_ACCENT2=p["accent2"])
+    d = os.path.join(HOME, ".config/udiksa/theme.d")
+    for x in sorted(os.listdir(d)) if os.path.isdir(d) else []:
+        x = os.path.join(d, x)
+        if x.endswith(".sh") and os.access(x, os.X_OK):
+            subprocess.Popen([x], env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+
+
 # ---------------- listing ----------------
 def themes():
     out = []
@@ -1242,6 +1254,7 @@ def cmd_apply(img, pos=None, transition="grow"):
     hypr(p, theme); kitty(p, theme); starship(p); fastfetch(p); gtk(p, theme); qt(p, theme)
     ncspot(p); cava(p); satty(p); zed(p); cursor(p); btop(p); viewers(p); office(p)
     reload_apps()
+    hooks(p, theme)
     write(STATE, json.dumps({"theme": theme, "wallpaper": img}) + "\n")   # the switcher reads this: before the slow part
     # boot + login screens last: GRUB alone takes ~3 s, and the open apps should not wait for it to recolour
     grub(p, theme, img); greeter(p, img)

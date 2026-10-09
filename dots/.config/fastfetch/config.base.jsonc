@@ -54,7 +54,7 @@
         { "type": "gpu", "key": "│ ├󰻑", "keyColor": "yellow" },
         // one line of GPU state from ~/.local/bin/udiksa gpu (never wakes the dGPU)
         { "type": "command", "key": "│ ├󰘚", "keyColor": "yellow",
-          "text": "g=$HOME/.local/bin/udiksa gpu; echo \"$($g mode) · screen on $($g display) · dGPU $($g dgpu)\"" },
+          "text": "g=\"$HOME/.local/bin/udiksa gpu\"; echo \"$($g mode) · screen on $($g display) · dGPU $($g dgpu)\"" },
         { "type": "memory", "key": "│ ├󰾆", "keyColor": "yellow" },
         { "type": "disk", "key": "│ └󰋊", "keyColor": "yellow" }
     ]
