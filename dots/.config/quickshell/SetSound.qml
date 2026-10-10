@@ -62,6 +62,11 @@ SetPage {
         }
     }
     SetRow {
+        title: "Volume keys move all outputs"
+        desc: "When apps play on more than one output (laptop speaker and Bluetooth), the volume and mute keys change every output in use, not just the default one."
+        Seg { options: ["On", "Off"]; current: Route.both ? 0 : 1; onPicked: (i) => Route.setBoth(i === 0) }
+    }
+    SetRow {
         title: "Switch to new headphones"
         desc: "Headphones, a headset, Bluetooth or USB audio take over the sound as soon as they connect; unplugged = back to the previous output."
         Seg { options: ["On", "Off"]; current: page.autoSwitch ? 0 : 1; onPicked: (i) => page.setAuto(i === 0) }

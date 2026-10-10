@@ -1,0 +1,27 @@
+#!/bin/bash
+# udiksa volume -- the volume keys. up | down | mute change the default output; when "both" is on AND apps are
+# playing on more than one output (udiksa route), every such output moves together (each by the same step).
+#
+#   udiksa volume up | down | mute
+#   udiksa volume both [on|off]     keys move all outputs in use (no argument: print on / off)
+flag=${XDG_STATE_HOME:-$HOME/.local/state}/rice/volume-both
+if [[ $1 == both ]]; then
+    case ${2:-} in
+        on)  mkdir -p "${flag%/*}"; touch "$flag" ;;
+        off) rm -f "$flag" ;;
+        *)   [[ -e $flag ]] && echo on || echo off ;;
+    esac
+    exit 0
+fi
+ids=(@DEFAULT_AUDIO_SINK@)
+if [[ -e $flag ]]; then
+    mapfile -t act < <("$(dirname "$0")/route" | jq -r '.sinks | map(select(.active)) | if length > 1 then .[].id else empty end')
+    ((${#act[@]})) && ids=("${act[@]}")
+fi
+case $1 in
+    up)   for i in "${ids[@]}"; do wpctl set-volume -l 1.25 "$i" 5%+; done ;;
+    down) for i in "${ids[@]}"; do wpctl set-volume "$i" 5%-; done ;;
+    mute) m=0; wpctl get-volume @DEFAULT_AUDIO_SINK@ | grep -q MUTED || m=1   # all follow the default's new state
+          for i in "${ids[@]}"; do wpctl set-mute "$i" "$m"; done ;;
+    *)    echo "usage: udiksa volume up|down|mute | both [on|off]" >&2; exit 2 ;;
+esac

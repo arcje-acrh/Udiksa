@@ -57,6 +57,8 @@ help() {
     row defaults  "Default apps per file type"
     row flash     "Write a disk image to a USB stick"
     row comfort   "Comfort lighting: warm screen colours (eye shield)"
+    row volume    "Volume keys: up, down, mute, both (all outputs in use)"
+    row route     "Per-app audio output: one app to the laptop speaker, rest on Bluetooth"
     row xdpi      "DPI for X11 apps"
     row clock     "The terminal clock window"
     [[ -x $LIB/kbd ]] && { sec "HARDWARE"; row kbd "ASUS keyboard lighting"; row slash "ASUS lid light"; }
@@ -109,7 +111,7 @@ status() {
     grp look     "theme wallpaper font cursor"
     grp capture  "shot record pick"
     grp shell    "toggle open clipboard emoji lock dnd osd scratch settings shell ipc"
-    grp system   "display comfort touchpad panel-hz gpu idle defaults flash xdpi clock"
+    grp system   "display comfort route volume touchpad panel-hz gpu idle defaults flash xdpi clock"
     [[ -x $LIB/kbd ]] && grp hardware "kbd slash"
     grp manage   "install update doctor firstrun completion version"
     printf '\n  %sudiksa help%s            every command with a description\n' "$C" "$R"

@@ -25,6 +25,8 @@ _udiksa() {
             settings)   w="get set reset power monitor anim cursor shake startup bind" ;;
             font)       local IFS=$'\n'; COMPREPLY=($(compgen -W "reset apply list $(udiksa font list 2>/dev/null | cut -f1)" -- "$cur")); return ;;
             comfort)    w="on off toggle temp mode schedule preview apply" ;;
+            route)      w="speaker bt" ;;
+            volume)     w="up down mute both" ;;
             kbd)        w="set apply theme lit" ;;
             slash)      w="set apply" ;;
         esac

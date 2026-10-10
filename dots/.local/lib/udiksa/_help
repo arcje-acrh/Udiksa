@@ -293,6 +293,26 @@ usage: [on | off | toggle | temp <K> | mode <mode> | schedule <from> <to> | prev
 note: Needs hyprsunset. The choice is kept in ~/.local/state/rice/comfort.json; set it in Settings > Display too.
 example: udiksa comfort schedule 21:00 06:30  evenings only
 example: udiksa comfort temp 3800  warmer
+[route]
+Per-app / per-tab audio output, like Samsung's separate app sound: with a Bluetooth speaker connected, play one app on the laptop speaker and keep the rest on Bluetooth.
+usage: [<app> speaker | <app> bt | <idx>[,<idx>] speaker | bt]
+# COMMANDS
+  (none)                 JSON: the speaker and Bluetooth outputs and every app that is playing, with its output
+  <app> speaker          Move that app to the laptop speaker
+  <app> bt               Move that app to the Bluetooth output
+  <idx>[,<idx>] speaker|bt  Move single streams (a browser tab) by the index in the JSON
+note: <app> is the name PipeWire shows for the stream (Zen, mpv, spotify ...), any case. The choice is remembered for the app. The media panel's players list has the same key on each row.
+example: udiksa route Zen speaker  the browser on the laptop speaker
+example: udiksa route Zen bt  back to Bluetooth
+[volume]
+The volume keys. With "both" on and apps playing on more than one output (laptop speaker + Bluetooth), the keys move every output in use.
+usage: up | down | mute | both [on|off]
+# COMMANDS
+  up | down              Volume +5 % / -5 % (up to 125 %)
+  mute                   Mute / unmute
+  both [on|off]          Keys move all outputs in use; no argument prints the setting
+note: Bound to XF86AudioRaiseVolume / LowerVolume / Mute. Set it in Settings > Sound ("Volume keys move all outputs").
+example: udiksa volume both on  the keys move speaker and Bluetooth together
 [kbd]
 ASUS keyboard lighting (does nothing on other machines).
 usage: [set <key> <value>... | apply | theme | lit]

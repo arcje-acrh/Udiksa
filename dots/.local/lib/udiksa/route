@@ -1,0 +1,56 @@
+#!/usr/bin/env python3
+# udiksa route -- per-stream audio output (like Samsung's "separate app sound"): with a Bluetooth speaker
+# connected, send ONE app or ONE browser tab to the laptop speaker and keep the rest on Bluetooth (or back).
+#
+#   udiksa route                     JSON: speaker / bt sink names + every stream (app, title, corked, sink)
+#   udiksa route <app> speaker       move all of that app's streams to the built-in speaker
+#   udiksa route <idx>[,<idx>] bt    move single streams (indexes from the JSON) to the Bluetooth sink
+#
+# <app> is matched (case-insensitive) against the stream's application name or binary, e.g. "Zen".
+# A browser has one stream per tab that played sound, titled with the page: that is how tabs are told apart.
+# Works through PipeWire's pulse layer (pactl). WirePlumber remembers the last move per app, so new
+# streams of that app start on the same output.
+import json, re, subprocess, sys
+
+def pactl(*a):
+    return subprocess.run(["pactl", "-f", "json", *a], capture_output=True, text=True).stdout
+
+def state():
+    sinks = json.loads(pactl("list", "sinks") or "[]")
+    names = {s["index"]: s["name"] for s in sinks}
+    bt = [s["name"] for s in sinks if s["name"].startswith("bluez_")]
+    spk = [s["name"] for s in sinks if not s["name"].startswith("bluez_")]
+    default = subprocess.run(["pactl", "get-default-sink"], capture_output=True, text=True).stdout.strip()
+    apps = []
+    for i in json.loads(pactl("list", "sink-inputs") or "[]"):
+        p = i["properties"]
+        apps.append({"index": i["index"], "app": p.get("application.name", ""),
+                     "bin": p.get("application.process.binary", ""), "sink": names.get(i["sink"], ""),
+                     "title": p.get("media.name", ""), "corked": bool(i.get("corked"))})
+    busy = {a["sink"] for a in apps if not a["corked"]}
+    outs = [{"name": s["name"], "id": int(s["properties"].get("object.id", 0)), "bt": s["name"].startswith("bluez_"),
+             "active": s["name"] in busy} for s in sinks]
+    # ponytail: first non-Bluetooth sink = "the laptop speaker"; fine for one internal card
+    return {"speaker": spk[0] if spk else None,
+            "bt": default if default in bt else (bt[0] if bt else None), "apps": apps, "sinks": outs}
+
+def main(argv):
+    st = state()
+    if not argv:
+        print(json.dumps(st)); return 0
+    if len(argv) != 2 or argv[1] not in ("speaker", "bt"):
+        print("usage: udiksa route [<app> speaker|bt]", file=sys.stderr); return 2
+    want, target = argv[0].lower(), st["speaker" if argv[1] == "speaker" else "bt"]
+    ids = {int(x) for x in want.split(",")} if re.fullmatch(r"\d+(,\d+)*", want) else None
+    if not target:
+        print("no " + ("speaker" if argv[1] == "speaker" else "Bluetooth") + " output", file=sys.stderr); return 1
+    n = 0
+    for a in st["apps"]:
+        if a["index"] in ids if ids else want in (a["app"].lower(), a["bin"].lower()):
+            subprocess.run(["pactl", "move-sink-input", str(a["index"]), target]); n += 1
+    if not n:
+        print("no playing app or stream " + argv[0], file=sys.stderr); return 1
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

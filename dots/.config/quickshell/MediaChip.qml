@@ -8,7 +8,7 @@ Item {
     property bool active: false            // its panel is open (coral)
     property int maxTextWidth: 160
     readonly property var player: {
-        const ps = Mpris.players.values
+        const ps = Mpris.players.values.filter(p => !/playerctld/i.test((p.dbusName || "") + (p.identity || "")))
         for (let i = 0; i < ps.length; i++) if (ps[i].isPlaying) return ps[i]
         return ps.length ? ps[0] : null
     }

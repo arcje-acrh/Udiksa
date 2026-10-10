@@ -4,6 +4,7 @@ singleton Notifs Notifs.qml
 singleton Power Power.qml
 singleton Tailscale Tailscale.qml
 singleton Bt Bt.qml
+singleton Route Route.qml
 singleton NotchCtl NotchCtl.qml
 Bar Bar.qml
 SideArt SideArt.qml
