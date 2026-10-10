@@ -8,8 +8,8 @@
 #
 # <app> is matched (case-insensitive) against the stream's application name or binary, e.g. "Zen".
 # A browser has one stream per tab that played sound, titled with the page: that is how tabs are told apart.
-# Works through PipeWire's pulse layer (pactl). WirePlumber remembers the last move per app, so new
-# streams of that app start on the same output.
+# Works through PipeWire's pulse layer (pactl). A move lives as long as the stream; the shell (Route.qml)
+# remembers the choice per page and applies it to the tab's next stream.
 import json, re, subprocess, sys
 
 def pactl(*a):

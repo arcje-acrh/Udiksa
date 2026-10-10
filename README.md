@@ -65,6 +65,11 @@ The notch on hover, tiling, the launcher, live theme switching (open apps recolo
   (Space Grotesk gets Space Mono, Geist gets Geist Mono). (`udiksa font`)
 - **Comfort lighting.** Settings > Display has an eye comfort shield: warm the screen's colours all day, between two
   times, or from sunset to sunrise, with a warmth slider. (`udiksa comfort`, hyprsunset)
+- **Separate sound per app and per tab.** With a Bluetooth speaker connected, the media panel lists everything that
+  is playing, a browser tab on its own row, and each row has a key that sends it to the laptop speaker or to
+  Bluetooth, so a song can stay on the speaker while a video plays on the laptop. The choice is remembered per page,
+  also after a tab has been paused for a long time. The sound panel shows one slider per output while sound is
+  split, and Settings > Sound can make the volume keys move all of them. (`udiksa route`, `udiksa volume`)
 - **Tools built in.** Screen recording (GPU-encoded, with or without sound), a colour picker, screenshots (area,
   window, screen, or drawn on; a click on the notch's "saved" card opens the picture, and laptops without Print Screen
   get the same modes on the snip key), keep awake, game mode, a terminal clock (`udiksa clock`), a usage panel (CPU per core,
@@ -320,6 +325,7 @@ One command for the whole rice (`udiksa help` lists everything, `udiksa <command
 | `udiksa scratch sysmon \| music \| chat` | app scratchpads |
 | `udiksa display` · `udiksa touchpad` · `udiksa panel-hz` · `udiksa gpu` · `udiksa idle` · `udiksa defaults` · `udiksa flash` | screens, touchpad, GPU, idle timers, default apps, USB flasher |
 | `udiksa font <name> \| list \| reset` · `udiksa comfort on \| off \| temp <K>` | the system font, the eye comfort shield |
+| `udiksa route [<app> speaker \| bt]` · `udiksa volume up \| down \| mute \| both [on \| off]` | where each app or tab plays (laptop speaker or Bluetooth), the volume keys |
 | `udiksa settings ...` · `udiksa shell` · `udiksa cursor` · `udiksa xdpi` | back ends of the Settings app and the shell |
 | `udiksa kbd` · `udiksa slash` | ASUS keyboard and lid lights (only where installed) |
 | `udiksa install` · `udiksa update [dots]` · `udiksa doctor` | install parts, update the system (or pull and relink the dotfiles), check the setup |
