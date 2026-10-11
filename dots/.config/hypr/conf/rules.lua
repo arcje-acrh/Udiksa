@@ -36,21 +36,6 @@ hl.window_rule({
 -- ---------------------------------------------------------------------------
 -- Windows that should OPEN FLOATING (never tiled). Add more by copying a block.
 -- ---------------------------------------------------------------------------
--- Picture-in-Picture video (Zen/Firefox, Chromium): small, bottom-right corner,
--- pinned (follows you to every workspace), keeps the video shape, does not
--- steal focus from what you are doing.
-hl.window_rule({
-    name  = "pip",
-    match = { title = "^(Picture-in-Picture|Picture in picture)$" },
-
-    float             = true,
-    pin               = true,       -- follow you to every workspace
-    size              = "480 270",  -- small video window
-    move              = "monitor_w-500 monitor_h-290",
-    keep_aspect_ratio = true,  -- keep the video's shape
-    no_initial_focus  = true,  -- do not steal focus
-})
-
 -- file pickers and save / open / print dialogs: float in the middle
 hl.window_rule({
     name  = "dialogs",
@@ -112,7 +97,8 @@ hl.window_rule({
 -- asks to be nearly screen-sized), so only pop-ups stay floating.
 hl.window_rule({
     name  = "browser-windows-open-floating",
-    match = { class = "^(zen|firefox|librewolf|chromium|google-chrome|brave-browser)$" },
+    match = { class = "^(zen|firefox|librewolf|chromium|google-chrome|brave-browser)$",
+              title = "negative:^(Picture-in-Picture|Picture in picture)$" },   -- the PiP window has its own rule below
 
     float    = true,
     center   = true,
@@ -137,6 +123,25 @@ hl.window_rule({
     float  = true,
     center = true,
 })
+-- Picture-in-Picture video (Zen/Firefox, Chromium): small, bottom-right corner,
+-- pinned (follows you to every workspace), keeps the video shape, does not
+-- steal focus from what you are doing.
+-- This block must stay AFTER "browser-windows-open-floating": the PiP window's class is the browser's, so that
+-- rule (centre, min_size 900x650) matches it too and, coming later, would win: the window could not be made
+-- smaller than 900x650 and opened in the middle. min_size here puts that back.
+hl.window_rule({
+    name  = "pip",
+    match = { title = "^(Picture-in-Picture|Picture in picture)$" },
+
+    float             = true,
+    pin               = true,       -- follow you to every workspace
+    size              = "480 270",  -- small video window
+    min_size          = "200 112",  -- may be resized small (the browser rule above asks for 900 650)
+    move              = "monitor_w-500 monitor_h-290",
+    keep_aspect_ratio = true,  -- keep the video's shape
+    no_initial_focus  = true,  -- do not steal focus
+})
+
 -- sign-in / authorise pop-ups that sites and apps open ("Sign in with Google", OAuth, password prompts)
 hl.window_rule({
     name  = "sign-in-popups",
