@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=WhatsApp
+Exec=chromium --app=https://web.whatsapp.com --class=whatsapp
+Icon=internet-chat
+Type=Application
+Categories=Network;InstantMessaging;
+StartupWMClass=whatsapp
