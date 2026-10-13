@@ -23,14 +23,15 @@
   "scrollbar": { "show": "never" },
   "toolbar": { "quick_actions": false },
   "tab_bar": { "show_nav_history_buttons": false },
-  "collaboration_panel": { "button": false },
+  "collaboration_panel": { "dock": "left",
+                           "button": false },
   "git": { "inline_blame": { "enabled": false } },
 
   // JetBrains / VS Code layout: files on the left, the AI agent on the right
   "project_panel": { "dock": "left", "default_width": 260 },
   "agent": { "dock": "right", "default_width": 660 },
   "git_panel": { "dock": "left" },
-  "outline_panel": { "dock": "right" },
+  "outline_panel": { "dock": "left" },
 
   "terminal": { "font_family": "Iosevka Nerd Font", "blinking": "off", "copy_on_select": true },
 
