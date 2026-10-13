@@ -198,7 +198,7 @@ git clone https://github.com/arcje-acrh/Udiksa ~/Udiksa
 cd ~/Udiksa && ./install.sh apps rice
 ```
 
-- **apps**: the core apps, then asks about each optional one (Zen Browser, OnlyOffice, ncspot, Tailscale, Zed, WhatsApp).
+- **apps**: the core apps, then asks about each optional one (Zen Browser, OnlyOffice, ncspot, Tailscale, Zed, WhatsApp, Galaxy Buds).
 - **rice**: links the configs, installs the login screen, boot splash and GRUB theme (if you use GRUB),
   and sets up hibernation (uses your swap, or makes a swap file).
 - **Hardware**: on an ASUS laptop or a hybrid NVIDIA laptop, it offers the matching support (see `hardware/`).
@@ -301,7 +301,7 @@ Udiksa/
 │   └── Pictures/Wallpapers/<Theme>/
 ├── system/             files for / (login screen, boot splash, power helper) + hibernation / snapshot setup
 ├── setup/              arch.sh (blank disk), apps.sh, rice.sh, packages/*.txt
-├── optional/<app>/     Zen, OnlyOffice, ncspot, Tailscale, Zed, WhatsApp: asked at install, each with its own dots/
+├── optional/<app>/     Zen, OnlyOffice, ncspot, Tailscale, Zed, WhatsApp, Galaxy Buds: asked at install, each with its own dots/
 ├── hardware/<vendor>/  ASUS, hybrid NVIDIA: detected, then offered; dots/ + system/ + packages
 └── docs/               screenshots, adding hardware support
 ```

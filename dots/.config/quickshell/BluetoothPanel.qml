@@ -17,7 +17,7 @@ Item {
     property var budsMacs: []
     Process {
         running: true
-        command: ["sh", "-c", "bluetoothctl devices Paired | while read -r _ m _; do bluetoothctl info \"$m\" | grep -qi 2e73a4ad-332d-41fc-90e2-16bef06523f2 && echo \"$m\"; done; python3 -I -c \"import json,os;print(*[d['MacAddress'] for d in json.load(open(os.path.expanduser('~/.local/share/GalaxyBudsClient/settings.json'))).get('Devices',[])],sep='\\\\n')\" 2>/dev/null"]
+        command: ["sh", "-c", "command -v galaxybudsclient >/dev/null || exit 0; bluetoothctl devices Paired | while read -r _ m _; do bluetoothctl info \"$m\" | grep -qi 2e73a4ad-332d-41fc-90e2-16bef06523f2 && echo \"$m\"; done; python3 -I -c \"import json,os;print(*[d['MacAddress'] for d in json.load(open(os.path.expanduser('~/.local/share/GalaxyBudsClient/settings.json'))).get('Devices',[])],sep='\\\\n')\" 2>/dev/null"]
         stdout: StdioCollector { onStreamFinished: root.budsMacs = text.trim().toUpperCase().split(/\s+/) }
     }
     function isBuds(d) { return budsMacs.indexOf((d.address || "").toUpperCase()) >= 0 }
@@ -79,7 +79,7 @@ Item {
                         else { modelData.trusted = true; modelData.pair() }
                     }
                     onActionClicked: modelData.forget()
-                    onAction2Clicked: Quickshell.execDetached(["sh", "-c", "galaxybudsclient app -a || galaxybudsclient"])
+                    onAction2Clicked: Quickshell.execDetached(["galaxybudsclient"])   // starts it, or (already running) shows its window; `app -a` exits 0 with an error when it is not running, so no fallback ever ran
                 }
                 Text {
                     parent: devList
