@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Netflix
+Exec=chromium --app=https://www.netflix.com --class=netflix
+Icon=video-x-generic
+Type=Application
+Categories=AudioVideo;Video;
+StartupWMClass=netflix
