@@ -128,7 +128,7 @@ usage: <name>
 # ARGUMENTS
   sysmon                 btop (system monitor)                   Ctrl+Shift+Esc
   music                  ncspot + cava, or your own app          Super+M
-  chat                   your chat app                           Super+D
+  chat                   your chat app                           Super+C
 note: The first press starts the app, later presses show or hide it. Pick the music and chat apps in Settings > Apps; the choice is saved in ~/.config/hypr/local/scratch.json.
 [settings]
 The back end of the Settings app: saves your choices and applies them live.

@@ -1,7 +1,7 @@
 // SetApps.qml -- Settings > Apps > Default and startup (was SetSystem.qml): startup apps (yours can
 // be added / removed here, via udiksa settings -> settings.lua; the hand-written ones live in autostart.lua), and
 // default apps per kind of file (every installed app that opens it is offered), and the apps of the music / chat
-// scratchpads (Super+M / Super+D, ~/.local/bin/udiksa scratch; saved in ~/.config/hypr/local/scratch.json).
+// scratchpads (Super+M / Super+C, ~/.local/bin/udiksa scratch; saved in ~/.config/hypr/local/scratch.json).
 import QtQuick
 import Quickshell
 import Quickshell.Io
@@ -152,7 +152,7 @@ SetPage {
         desc: "Ctrl+Shift+Esc   ·   btop, floating over everything; the same keys hide it."
     }
     ScratchRow { title: "Music"; name: "music"; keys: "Super+M"; fallback: page.hasMusic ? "ncspot + cava (the music extra)" : "" }
-    ScratchRow { title: "Chat"; name: "chat"; keys: "Super+D" }
+    ScratchRow { title: "Chat"; name: "chat"; keys: "Super+C" }
 
     SetGroup { title: "Default apps" }
     Repeater {

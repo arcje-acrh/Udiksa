@@ -42,7 +42,7 @@ hl.bind(mainMod .. " + SHIFT + P", function() -- pin: on every workspace
     if not w.pinned and not w.floating then hl.dispatch(hl.dsp.window.float({ action = "enable" })) end
     hl.dispatch(hl.dsp.window.pin())
 end)
-hl.bind(mainMod .. " + C",             hl.dsp.window.center())
+hl.bind(mainMod .. " + CTRL + C",            hl.dsp.window.center())
 hl.bind(mainMod .. " + ALT + backslash", function() -- picture-in-picture: small, pinned, bottom-right
     local w = hl.get_active_window()
     if not w then return end
@@ -153,7 +153,7 @@ hl.bind("ALT + Print",                 hl.dsp.exec_cmd(shot .. " edit"))
 local scratch = os.getenv("HOME") .. "/.local/bin/udiksa scratch"
 hl.bind("CTRL + SHIFT + Escape",       hl.dsp.exec_cmd(scratch .. " sysmon"))
 hl.bind(mainMod .. " + M",             hl.dsp.exec_cmd(scratch .. " music"))
-hl.bind(mainMod .. " + D",             hl.dsp.exec_cmd(scratch .. " chat"))
+hl.bind(mainMod .. " + C",             hl.dsp.exec_cmd(scratch .. " chat"))
 
 --- Mouse
 -- scroll through workspaces / move+resize with the mouse
