@@ -23,7 +23,7 @@ Row {
             readonly property bool extra: at > root.safeFrac
             readonly property bool marked: root.mark >= 0 && Math.abs(at - root.mark) < 0.5 / root.segs
             width: 4; height: root.segH; radius: 1
-            color: lit ? (root.off ? Theme.dim : (extra ? Theme.amber : Theme.coral))
+            color: lit ? (root.off ? Theme.dim : (marked ? Theme.muted : (extra ? Theme.amber : Theme.coral)))
                  : (marked ? Theme.muted : (extra ? Qt.alpha(Theme.amber, 0.14) : Theme.raised))
             Rectangle {   // soft glow around lit segments
                 visible: parent.lit && !root.off

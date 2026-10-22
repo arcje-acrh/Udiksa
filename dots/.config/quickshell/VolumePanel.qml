@@ -2,6 +2,7 @@
 //   left card: output + microphone level (click the label = mute) and up to 3 playing apps
 //   right card: pick the output / input device (becomes the default)
 import QtQuick
+import Quickshell.Io
 import Quickshell.Services.Pipewire
 
 Item {
@@ -27,6 +28,18 @@ Item {
         return sink ? [sink] : []
     }
     Timer { interval: 2000; repeat: true; running: true; triggeredOnStart: true; onTriggered: Route.refresh() }
+
+    // mic mark = the mic's hardware 0 dB (pactl "base volume") + 26 dB of boost. Measured 2026-10-22 on the
+    // built-in mic: loud speech at 0 dB peaks at -32 dBFS, so +26 dB leaves 6 dB headroom; more clips (= low +
+    // distorted on calls). Slider is cubic like pactl, so cubic(safe) = cubic(base) * 10^(26/60). No boost (USB, BT) = 1.
+    property real micSafe: 1
+    onSourceChanged: micBase.running = true
+    Process {
+        id: micBase
+        running: true
+        command: ["sh", "-c", "pactl -f json list sources | jq -r --arg n \"$(pactl get-default-source)\" '.[] | select(.name == $n) | .base_volume.value'"]
+        stdout: StdioCollector { onStreamFinished: { const b = parseInt(text) / 65536; root.micSafe = b > 0 ? Math.min(1, b * Math.pow(10, 26 / 60)) : 1 } }
+    }
 
     PwObjectTracker { objects: root.sinks.concat(root.sources, root.streams) }
 
@@ -57,6 +70,7 @@ Item {
             LevelSlider {
                 width: parent.width
                 label: "Microphone"
+                mark: root.micSafe < 1 ? root.micSafe : -1   // marker segment at the no-clipping level
                 value: root.source && root.source.audio ? root.source.audio.volume : 0
                 off: root.source && root.source.audio ? root.source.audio.muted : false
                 valueText: off ? "Muted" : Math.round(value * 100) + "%"

@@ -10,6 +10,7 @@ Item {
     property real safe: 1.0                // above this the track is tinted amber (easy to see, hard to do by mistake)
     readonly property real frac: Math.max(0, Math.min(1, value / max))
     readonly property real safeFrac: Math.min(1, safe / max)
+    property real mark: -1                 // value of a marker segment in the theme's muted colour (-1 = none)
     property bool off: false
     property string valueText: Math.round(value * 100) + "%"
     signal moved(real v)
@@ -35,6 +36,7 @@ Item {
             width: parent.width
             frac: root.frac
             safeFrac: root.safeFrac
+            mark: root.mark >= 0 ? root.mark / root.max : -1
             off: root.off
         }
         MouseArea {

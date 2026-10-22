@@ -16,6 +16,13 @@ theme_img=$(python3 -c 'import json,os;print(json.load(open(os.path.expanduser("
 [[ -f ${theme_img:-} ]] && "$HOME/.local/bin/udiksa" theme apply "$theme_img" --transition none
 
 "$HOME/.local/bin/udiksa" defaults
+# built-in mic at its hardware 0 dB + 26 dB (the notch's marker, VolumePanel.qml): WirePlumber starts a new mic at
+# 100 %, which on analog laptop mics (0 dB at 10 %) is up to +60 dB = clipped, "low and distorted" on calls.
+# Mics whose 100 % is 0 dB (digital arrays, USB) are left alone.
+mic=$(pactl -f json list sources | jq -r '[.[] | select(.name | startswith("alsa_input.pci"))][0] | "\(.name) \(.base_volume.value)"' 2>/dev/null)
+read -r mic_name mic_base <<<"$mic"
+[[ $mic_base =~ ^[0-9]+$ ]] && (( mic_base < 65536 )) &&
+    pactl set-source-volume "$mic_name" "$(awk -v b="$mic_base" 'BEGIN { printf "%d%%", b / 65536 * 10 ^ (26 / 60) * 100 + 0.5 }')"
 # Settings > Power (~/.config/hypr/power.json): idle timers (hypridle.conf) + lid / power button / hibernate delay (logind)
 "$HOME/.local/bin/udiksa" settings power apply
 "$HOME/.local/bin/udiksa" settings cursor          # mouse pointer: GTK, X11 apps, login screen (Udiksa unless picked)
