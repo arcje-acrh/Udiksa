@@ -73,7 +73,7 @@ hl.bind(mainMod .. " + ALT + left",    hl.dsp.window.move({ into_group = "l" }))
 hl.bind(mainMod .. " + ALT + right",   hl.dsp.window.move({ into_group = "r" }))
 hl.bind(mainMod .. " + ALT + up",      hl.dsp.window.move({ into_group = "u" }))
 hl.bind(mainMod .. " + ALT + down",    hl.dsp.window.move({ into_group = "d" }))
-hl.bind(mainMod .. " + CTRL + G",      hl.dsp.group.lock_active({ action = "toggle" }))
+hl.bind(mainMod .. " + CTRL + G",      hl.dsp.group.lock({ action = "toggle" }))
 
 --- Move focus
 -- move focus with arrow keys
