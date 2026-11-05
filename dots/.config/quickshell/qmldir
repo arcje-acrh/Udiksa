@@ -84,3 +84,5 @@ ScreenCorners ScreenCorners.qml
 singleton Corners Corners.qml
 CornerArcs CornerArcs.qml
 singleton Binds Binds.qml
+LockScreen LockScreen.qml
+LockCard LockCard.qml

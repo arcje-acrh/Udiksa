@@ -759,7 +759,7 @@ def greeter(p, img):
         except (OSError, ValueError):
             cr = 0
     cols["corner"] = cr
-    cols["font"] = fonts()["ui"]                     # LoginScreen reads it
+    cols["font"] = fonts()["ui"]                     # (LoginScreen uses Departure Mono now; kept for the greeter shell)
     write(os.path.join(GREETER, "theme.json"), json.dumps(cols, indent=2) + "\n")
     tmp = os.path.join(GREETER, "wallpaper.tmp.jpg")
     r = subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", img, "-vf",
@@ -771,6 +771,9 @@ def greeter(p, img):
         src = os.path.join(LOGIN_SRC, name)
         if os.path.exists(src):
             write(os.path.join(GREETER, dest), open(src).read())
+    font = os.path.join(LOGIN_SRC, "DepartureNarrow.otf")    # LoginScreen's FontLoader, beside it
+    if os.path.exists(font):
+        shutil.copyfile(font, os.path.join(GREETER, "DepartureNarrow.otf"))
 
 
 def ncspot(p):

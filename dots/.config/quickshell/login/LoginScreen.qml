@@ -1,7 +1,7 @@
-// LoginScreen.qml -- the ONE login / lock screen design (layout from qylock's "sword" theme, GPL-3.0,
+// LoginScreen.qml -- the login design (layout from qylock's "sword" theme, GPL-3.0,
 // github.com/Darkkal44/qylock). Used twice:
 //   * boot login: /var/lib/rice-greeter/shell.qml (greetd runs it in cage as user "greeter")
-//   * lock screen: ~/.config/quickshell/Lock.qml (inside the running shell)
+//   * lock screen after sleep / hibernation: ~/.config/quickshell/Lock.qml (other locks: ../LockScreen.qml)
 // udiksa theme copies this folder to /var/lib/rice-greeter/ on every theme change, together with theme.json
 // (colours for a dark scrim) and wallpaper.jpg, so edit it HERE, then run `udiksa theme reapply`.
 //
@@ -28,9 +28,9 @@ Item {
     property bool busy: false                    // waiting for greetd / PAM
     property string host: ""                     // shown bottom-left after the session / WM name
     property string wm: "Hyprland"               // lock mode: the running WM (login mode shows the session)
-    property string face: ""                     // lock, face unlock: "" none | "scan" | "ok" | "miss"
+    property string face: ""                     // lock, face unlock: "" none | "ready" | "scan" | "ok" | "miss"
     property bool leaving: false                 // unlocked: play out (Lock.qml drops the lock right after)
-    signal faceRetry()                           // Space in the empty field / click on the note after a miss
+    signal faceRetry()                           // Space in the empty field / click on the note: start face unlock
 
     // battery, shown under the date
     readonly property var bat: UPower.displayDevice
@@ -45,7 +45,8 @@ Item {
     readonly property color fg: (colours && colours.fg) || "#e8e8e8"
     readonly property color accent: (colours && colours.accent) || "#9ab0c8"
     readonly property color dimc: (colours && colours.dim) || "#6a7078"
-    readonly property string font: (colours && colours.font) || "Iosevka Nerd Font"   // theme.json (Settings > Fonts)
+    FontLoader { id: pixel; source: "DepartureNarrow.otf" }   // Departure Mono at 75 % width (dev/narrow-font.py)
+    readonly property string font: pixel.status === FontLoader.Ready ? pixel.name : "Departure Mono"
     property real ui: 0
 
     function fail() {                            // wrong password: clear, shake, keep focus
@@ -116,16 +117,19 @@ Item {
             id: clock
             text: Qt.formatTime(new Date(), "HH:mm")
             color: root.fg
-            font { family: root.font; pixelSize: 80 * root.s; bold: true; letterSpacing: -7 * root.s }   // tighter: Iosevka's monospace cells look wide this big
+            font.family: root.font; font.pixelSize: Math.round(99 * root.s)
+            font.letterSpacing: -2 * root.s
         }
         Row {
             spacing: 10 * root.s
             Rectangle { width: 22 * root.s; height: Math.max(1, root.s); color: root.accent; anchors.verticalCenter: parent.verticalCenter }
             Text {
                 id: date
+                anchors.verticalCenter: parent.verticalCenter
                 text: Qt.formatDate(new Date(), "dddd · MMMM d").toUpperCase()
                 color: root.accent
-                font { family: root.font; pixelSize: 13 * root.s; letterSpacing: 3 * root.s }
+                font.family: root.font; font.pixelSize: Math.round(15 * root.s)
+                font.letterSpacing: 2 * root.s
             }
         }
         Item { width: 1; height: 6 * root.s }
@@ -155,9 +159,10 @@ Item {
         Text {
             id: who
             anchors.right: parent.right
-            text: root.users.length ? root.users[root.userIndex].name : ""
+            text: root.users.length ? root.users[root.userIndex].name.toUpperCase() : ""
             color: root.fg
-            font { family: root.font; pixelSize: 22 * root.s; letterSpacing: 2 * root.s; bold: true }
+            font.family: root.font; font.pixelSize: Math.round(26 * root.s)
+            font.letterSpacing: 3 * root.s
             scale: whoMa.containsMouse && root.users.length > 1 ? 1.05 : 1.0
             Behavior on scale { NumberAnimation { duration: 250; easing.type: Easing.OutBack } }
             transform: Translate { id: whoT }
@@ -167,17 +172,27 @@ Item {
                 hoverEnabled: true
                 enabled: root.users.length > 1
                 cursorShape: enabled ? Qt.PointingHandCursor : Qt.ArrowCursor
-                onClicked: swapUser.start()
+                onClicked: { swapUser.step = 1; swapUser.start() }
             }
             SequentialAnimation {
                 id: swapUser
+                property int step: 1
                 ParallelAnimation { NumberAnimation { target: who; property: "opacity"; to: 0; duration: 120 } NumberAnimation { target: whoT; property: "x"; to: 15 * root.s; duration: 120 } }
-                ScriptAction { script: { root.userIndex = (root.userIndex + 1) % root.users.length; pw.text = ""; pw.forceActiveFocus() } }
+                ScriptAction { script: { const n = root.users.length; root.userIndex = (root.userIndex + swapUser.step + n) % n; pw.text = ""; pw.forceActiveFocus() } }
                 ParallelAnimation { NumberAnimation { target: who; property: "opacity"; to: 1; duration: 180 } NumberAnimation { target: whoT; property: "x"; to: 0; duration: 180 } }
             }
         }
 
-        Item { width: 1; height: 22 * root.s }
+        Text {                                   // more than one user: which one, and how to switch
+            anchors.right: parent.right
+            visible: root.users.length > 1
+            topPadding: 6 * root.s
+            text: "◂ " + (root.userIndex + 1) + " / " + root.users.length + " ▸   click name or ↑ ↓"
+            color: root.fg
+            opacity: 0.45
+            font { family: root.font; pixelSize: 11 * root.s; letterSpacing: 1 * root.s }
+        }
+        Item { width: 1; height: 20 * root.s }
 
         Item {
             width: parent.width
@@ -196,8 +211,10 @@ Item {
                 Keys.onReturnPressed: root.go()
                 Keys.onEnterPressed: root.go()
                 Keys.onEscapePressed: text = ""
+                Keys.onUpPressed: if (root.users.length > 1) { swapUser.step = -1; swapUser.restart() }
+                Keys.onDownPressed: if (root.users.length > 1) { swapUser.step = 1; swapUser.restart() }
                 Keys.onPressed: event => {
-                    if (event.key === Qt.Key_Space && text.length === 0 && root.face === "miss") { root.faceRetry(); event.accepted = true }
+                    if (event.key === Qt.Key_Space && text.length === 0 && (root.face === "ready" || root.face === "miss")) { root.faceRetry(); event.accepted = true }
                 }
                 Row {
                     anchors { left: parent.left; verticalCenter: parent.verticalCenter }
@@ -281,7 +298,7 @@ Item {
                 id: faceNote
                 anchors.right: parent.right
                 y: 10 * root.s
-                text: root.face === "scan" ? "Looking for you…" : root.face === "ok" ? "Welcome back"
+                text: root.face === "ready" ? "Press space for face unlock" : root.face === "scan" ? "Looking for you…" : root.face === "ok" ? "Welcome back"
                     : root.face === "miss" ? "Didn't recognise you · space to try again" : ""
                 color: root.fg
                 font { family: root.font; pixelSize: 11 * root.s; letterSpacing: 1 * root.s }
@@ -293,8 +310,8 @@ Item {
                 MouseArea {
                     id: noteMa
                     anchors.fill: parent
-                    hoverEnabled: root.face === "miss"
-                    enabled: root.face === "miss"
+                    hoverEnabled: root.face === "ready" || root.face === "miss"
+                    enabled: hoverEnabled
                     cursorShape: Qt.PointingHandCursor
                     onClicked: { root.faceRetry(); pw.forceActiveFocus() }
                 }

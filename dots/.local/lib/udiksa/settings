@@ -296,8 +296,8 @@ def write_idle(p):
            "# Locking = the Quickshell lock screen (~/.config/quickshell/Lock.qml), via its IPC call.", "",
            "general {",
            "    lock_cmd = qs ipc call lock lock                                  # loginctl lock-session ends up here",
-           "    before_sleep_cmd = loginctl lock-session                          # lock before sleep / hibernate (lid, key, timer)",
-           "    after_sleep_cmd = hyprctl dispatch 'hl.dsp.dpms({action = \"on\"})'; qs ipc call power resumed; qs ipc call lock face  # screen on; refresh rate + lid light for the power source now; look for your face again",
+           "    before_sleep_cmd = qs ipc call lock sleep                         # lock before sleep / hibernate (lid, key, timer): the login look on waking",
+           "    after_sleep_cmd = hyprctl dispatch 'hl.dsp.dpms({action = \"on\"})'; qs ipc call power resumed; qs ipc call lock wake  # screen on; refresh rate + lid light for the power source now; face scan (login look)",
            "    inhibit_sleep = 3                                                 # hold sleep until the lock screen is really up,",
            "                                                                      # so waking never shows the desktop first",
            "}"]

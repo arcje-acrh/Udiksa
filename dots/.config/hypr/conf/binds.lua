@@ -190,8 +190,8 @@ hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -c backlight -e2
 -- closing the lid locks at once (udiksa idle lid: skipped when the lid action is "ignore", e.g. docked). Sleep still
 -- locks too, but logind ignores the lid for 30 s after waking, so a quick close would otherwise stay unlocked.
 hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/udiksa idle lid"), { locked = true })
--- opening it: the lock screen looks for your face (once; does nothing when not locked)
-hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("qs ipc call lock face"), { locked = true })
+-- opening it: the sleep lock (login look) starts face unlock; the overlay waits for Space (Lock.qml)
+hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("qs ipc call lock wake"), { locked = true })
 
 --- Caps and Num Lock
 -- Caps Lock / Num Lock: show their state in the notch. non_consuming = the key still
