@@ -3,6 +3,8 @@
 # "sleep" for the notch power menu.
 #   udiksa idle off   <bat|ac|any>    screen off, only when on that power source
 #   udiksa idle sleep <bat|ac|any>    sleep; with "hibernate after" set (Settings) = sleep, then hibernate later
+#   udiksa idle lid                   lid closed (Hyprland switch bind): lock now, unless the lid action is "ignore"
+#                                     (logind skips the lid for 30 s after waking, so the lock can't wait for sleep)
 # A timer for battery and one for the charger both run; the one for the other power source does nothing.
 set -u
 on_ac=0
@@ -16,5 +18,8 @@ esac
 case ${1:-} in
     off)   hyprctl dispatch 'hl.dsp.dpms({action = "off"})' >/dev/null ;;
     sleep) if [[ -f /etc/systemd/sleep.conf.d/udiksa.conf ]]; then systemctl suspend-then-hibernate; else systemctl suspend; fi ;;
-    *)     sed -n '2,6p' "$0"; exit 2 ;;
+    lid)   key=HandleLidSwitch
+           (( $(hyprctl monitors -j | jq length) > 1 )) && key=HandleLidSwitchDocked || { ((on_ac)) && key=HandleLidSwitchExternalPower; }
+           [[ $(busctl get-property org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager $key) == *'"ignore"' ]] || loginctl lock-session ;;
+    *)     sed -n '2,8p' "$0"; exit 2 ;;
 esac

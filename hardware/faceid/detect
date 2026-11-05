@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+# exit 0 = an IR camera (Windows Hello type) is there: a video device whose name says IR / infrared
+for d in /sys/class/video4linux/video*; do
+    [[ $(cat "$d/index" 2>/dev/null) == 0 ]] && grep -qiE '\bIR\b|infrared' "$d/name" 2>/dev/null && exit 0
+done
+exit 1

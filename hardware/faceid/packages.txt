@@ -1,0 +1,2 @@
+# Howdy Next: face unlock through PAM (C++ rewrite of Howdy, from the AUR)
+aur:howdy-next

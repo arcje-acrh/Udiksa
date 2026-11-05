@@ -4,7 +4,7 @@
 #   apps  (2)  the apps        core apps + the optional ones you say yes to (Zen, OnlyOffice, ncspot, Tailscale, WhatsApp, Netflix, Galaxy Buds)
 #   rice  (3)  the rice        dots/ linked into ~, login screen, boot splash + GRUB theme (if GRUB), hibernation (asked)
 #   after rice                 hardware support, offered only where it fits (hardware/<name>/detect): ASUS laptops,
-#                        hybrid NVIDIA laptops. Run one by hand: hardware/<name>/install.sh
+#                        hybrid NVIDIA laptops, IR cameras (face unlock). Run one by hand: hardware/<name>/install.sh
 # The rice adapts to the machine (screens, GPU, battery, boot loader); your own choices live in
 # ~/.config/hypr/local (the personal layer, not in the repo).
 # Usage:  ./install.sh arch          from the Arch USB (blank machine only)

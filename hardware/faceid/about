@@ -1,0 +1,2 @@
+Face unlock (IR camera found): unlock the lock screen and sudo by looking at the camera, with Howdy. Your password
+always works too; the login screen at boot still asks for it (it unlocks your keyring).

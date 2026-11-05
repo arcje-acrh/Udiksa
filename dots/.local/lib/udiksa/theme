@@ -759,7 +759,7 @@ def greeter(p, img):
         except (OSError, ValueError):
             cr = 0
     cols["corner"] = cr
-    cols["font"] = fonts()["ui"]                     # LoginScreen / Turntable read it
+    cols["font"] = fonts()["ui"]                     # LoginScreen reads it
     write(os.path.join(GREETER, "theme.json"), json.dumps(cols, indent=2) + "\n")
     tmp = os.path.join(GREETER, "wallpaper.tmp.jpg")
     r = subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", img, "-vf",

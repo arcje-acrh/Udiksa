@@ -186,6 +186,13 @@ hl.bind("XF86AudioMicMute",     hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_AUDIO_S
 hl.bind("XF86MonBrightnessUp",   hl.dsp.exec_cmd("brightnessctl -c backlight -e2 -n2 set 5%+; qs ipc call osd brightness"), { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("brightnessctl -c backlight -e2 -n2 set 5%-; qs ipc call osd brightness"), { locked = true, repeating = true })
 
+--- Lid
+-- closing the lid locks at once (udiksa idle lid: skipped when the lid action is "ignore", e.g. docked). Sleep still
+-- locks too, but logind ignores the lid for 30 s after waking, so a quick close would otherwise stay unlocked.
+hl.bind("switch:on:Lid Switch", hl.dsp.exec_cmd(os.getenv("HOME") .. "/.local/bin/udiksa idle lid"), { locked = true })
+-- opening it: the lock screen looks for your face (once; does nothing when not locked)
+hl.bind("switch:off:Lid Switch", hl.dsp.exec_cmd("qs ipc call lock face"), { locked = true })
+
 --- Caps and Num Lock
 -- Caps Lock / Num Lock: show their state in the notch. non_consuming = the key still
 -- works normally; the short sleep lets the keyboard LED change before it is read.

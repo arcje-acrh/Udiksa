@@ -242,6 +242,7 @@ usage: <action> <source>
 # ARGUMENTS
   off                    Screen off
   sleep                  Sleep, then hibernate later if Settings says so
+  lid                    Lock now (lid closed), unless the lid action is "ignore"
   bat | ac | any         Only on battery, only on the charger, or always
 note: Both the battery and the charger timers run; the one for the other power source does nothing.
 [defaults]

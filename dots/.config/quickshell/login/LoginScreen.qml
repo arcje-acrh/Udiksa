@@ -8,10 +8,11 @@
 // Placement (s = screen height / 768, as in the original): clock top-left, name + password bottom-right,
 // a hairline along the bottom with the session on the left (login only) and Restart / Shut Down on the right.
 // Click the name = next user, click the session = next session. No messages: a wrong password shakes + clears.
+// Lock only: face unlock shows on the password hairline (a glide while it looks, a fill on a match), and a way out on unlock
+// (the UI fades, the wallpaper eases in). On every open the wallpaper settles from a slight zoom.
 import QtQuick
 import QtQuick.Shapes
 import Quickshell.Services.UPower
-import Quickshell.Services.Mpris
 
 Item {
     id: root
@@ -27,18 +28,14 @@ Item {
     property bool busy: false                    // waiting for greetd / PAM
     property string host: ""                     // shown bottom-left after the session / WM name
     property string wm: "Hyprland"               // lock mode: the running WM (login mode shows the session)
+    property string face: ""                     // lock, face unlock: "" none | "scan" | "ok" | "miss"
+    property bool leaving: false                 // unlocked: play out (Lock.qml drops the lock right after)
+    signal faceRetry()                           // Space in the empty field / click on the note after a miss
 
-    // battery + now playing, shown under the date
+    // battery, shown under the date
     readonly property var bat: UPower.displayDevice
-    readonly property var player: {
-        const ps = Mpris.players.values
-        for (let i = 0; i < ps.length; i++) if (ps[i].isPlaying) return ps[i]
-        return ps.length ? ps[0] : null
-    }
     readonly property string batLine: bat && bat.isLaptopBattery !== false && bat.percentage > 0
         ? (bat.state === UPowerDeviceState.Charging ? "󰂄 " : "󰁹 ") + Math.round(bat.percentage * 100) + "%" : ""
-    readonly property string mediaLine: player && player.trackTitle
-        ? (player.isPlaying ? "󰝚 " : "󰏤 ") + player.trackTitle + (player.trackArtist ? " · " + player.trackArtist : "") : ""
 
 
     signal submit(string user, string password, int session)
@@ -68,11 +65,14 @@ Item {
     Component.onCompleted: { fade.start(); focusTimer.start() }
     Timer { id: focusTimer; interval: 300; onTriggered: pw.forceActiveFocus() }
     NumberAnimation { id: fade; target: root; property: "ui"; from: 0; to: 1; duration: 1400; easing.type: Easing.OutCubic }
+    onLeavingChanged: if (leaving) { fade.stop(); leave.start() }
+    NumberAnimation { id: leave; target: root; property: "ui"; to: 0; duration: 400; easing.type: Easing.InCubic }
 
     // ---- background: wallpaper + vignette + dark bottom edge ----
     Rectangle { anchors.fill: parent; color: (root.colours && root.colours.scrim) || "#08090c" }
     Image {
         anchors.fill: parent
+        scale: 1 + 0.04 * (1 - root.ui)          // settles in on open, eases forward on unlock
         source: root.wallpaper ? "file://" + root.wallpaper : ""
         fillMode: Image.PreserveAspectCrop
         asynchronous: true
@@ -107,16 +107,6 @@ Item {
         }
     }
 
-    // ---- lock screen only: the turntable (media player), bottom-left ----
-    Loader {
-        active: root.mode === "lock"
-        source: "Turntable.qml"
-        x: 70 * root.s
-        y: root.height - 480 * root.s
-        opacity: root.ui
-        onLoaded: { item.s = Qt.binding(() => root.s); item.font = Qt.binding(() => root.font); item.fg = Qt.binding(() => root.fg); item.accent = Qt.binding(() => root.accent); item.dimc = Qt.binding(() => root.dimc); item.font = root.font }
-    }
-
     // ---- clock, top-left ----
     Column {
         anchors { left: parent.left; top: parent.top; leftMargin: 70 * root.s; topMargin: 60 * root.s }
@@ -139,7 +129,7 @@ Item {
             }
         }
         Item { width: 1; height: 6 * root.s }
-        Text {                                   // battery, then what's playing
+        Text {                                   // battery
             text: root.batLine
             visible: text !== ""
             color: root.fg
@@ -206,6 +196,9 @@ Item {
                 Keys.onReturnPressed: root.go()
                 Keys.onEnterPressed: root.go()
                 Keys.onEscapePressed: text = ""
+                Keys.onPressed: event => {
+                    if (event.key === Qt.Key_Space && text.length === 0 && root.face === "miss") { root.faceRetry(); event.accepted = true }
+                }
                 Row {
                     anchors { left: parent.left; verticalCenter: parent.verticalCenter }
                     spacing: 8 * root.s
@@ -252,8 +245,60 @@ Item {
         Rectangle {
             width: parent.width
             height: Math.max(1, root.s)
-            color: pw.activeFocus ? root.accent : root.dimc
+            color: pw.activeFocus && root.face !== "scan" && root.face !== "ok" ? root.accent : root.dimc   // dims while the face light runs
             Behavior on color { ColorAnimation { duration: 300 } }
+            clip: true
+            // face unlock (lock only): a faint light glides along the line while it looks; a match fills the line
+            Rectangle {
+                id: glint
+                width: 70 * root.s; height: parent.height
+                opacity: root.face === "scan" ? 0.9 : 0
+                Behavior on opacity { NumberAnimation { duration: 500 } }
+                gradient: Gradient {
+                    orientation: Gradient.Horizontal
+                    GradientStop { position: 0.0; color: "transparent" }
+                    GradientStop { position: 0.5; color: root.fg }
+                    GradientStop { position: 1.0; color: "transparent" }
+                }
+                NumberAnimation on x {
+                    loops: Animation.Infinite
+                    running: glint.opacity > 0
+                    from: -glint.width; to: glint.parent.width
+                    duration: 1800; easing.type: Easing.InOutSine
+                }
+            }
+            Rectangle {
+                anchors.right: parent.right
+                height: parent.height
+                width: root.face === "ok" ? parent.width : 0
+                color: root.fg
+                Behavior on width { NumberAnimation { duration: 350; easing.type: Easing.OutCubic } }
+            }
+        }
+        Item {                                   // face unlock note under the line (1 px: a Column skips 0-height items)
+            width: parent.width; height: 1
+            Text {
+                id: faceNote
+                anchors.right: parent.right
+                y: 10 * root.s
+                text: root.face === "scan" ? "Looking for you…" : root.face === "ok" ? "Welcome back"
+                    : root.face === "miss" ? "Didn't recognise you · space to try again" : ""
+                color: root.fg
+                font { family: root.font; pixelSize: 11 * root.s; letterSpacing: 1 * root.s }
+                property real shown: root.mode === "lock" && text !== "" ? (noteMa.containsMouse ? 0.85 : 0.5) : 0
+                opacity: shown
+                Behavior on opacity { NumberAnimation { duration: 250 } }
+                onTextChanged: if (faceNote.text !== "") swap.restart()
+                NumberAnimation { id: swap; target: faceNote; property: "opacity"; from: 0; to: faceNote.shown; duration: 300; easing.type: Easing.OutCubic }
+                MouseArea {
+                    id: noteMa
+                    anchors.fill: parent
+                    hoverEnabled: root.face === "miss"
+                    enabled: root.face === "miss"
+                    cursorShape: Qt.PointingHandCursor
+                    onClicked: { root.faceRetry(); pw.forceActiveFocus() }
+                }
+            }
         }
     }
 
