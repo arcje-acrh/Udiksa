@@ -2,7 +2,7 @@
 # install.sh -- face unlock for Udiksa (see ./about). ~/Udiksa/install.sh offers it after part 3 when ./detect finds an
 # IR camera; or run it yourself any time. Safe to run again (run it again to add your face later).
 #   packages.txt (howdy-next) | face models | camera = the IR camera (by-path, stable across reboots) |
-#   /etc/pam.d/sudo: one line, face first, password still works | the lock screen uses it by itself
+#   /etc/pam.d/sudo + /etc/pam.d/greetd (boot login, unless a keyring is installed): one line, face first, password still works | the lock screen uses it by itself
 #   (~/.config/quickshell/pam/face.conf, only when Howdy is installed) | your face, if you say yes
 set -euo pipefail
 HERE=$(cd "$(dirname "$(readlink -f "$0")")" && pwd)
@@ -26,6 +26,13 @@ sudo howdy set device_path "$cam" >/dev/null && note "camera: $cam"
 say "Face unlock: sudo"
 if grep -q pam_howdy /etc/pam.d/sudo; then note "already there"
 else sudo sed -i '0,/^auth/s//auth\t\tsufficient\tpam_howdy.so workaround=native\n&/' /etc/pam.d/sudo; note "added (face first, then your password)"; fi
+
+say "Face unlock: boot login"
+# a login keyring (gnome-keyring / kwallet) only opens with the password: then keep the boot login password-only
+if grep -q pam_howdy /etc/pam.d/greetd 2>/dev/null; then note "already there"
+elif pacman -Q gnome-keyring &>/dev/null || pacman -Q kwallet-pam &>/dev/null || grep -qE 'pam_(gnome_keyring|kwallet)' /etc/pam.d/*; then
+    note "skipped: a keyring needs your password at login"
+else sudo sed -i '/pam_nologin.so/a auth       sufficient   pam_howdy.so' /etc/pam.d/greetd; note "added (face first, then your password)"; fi
 
 say "Face unlock: your face"
 read -rp "    Add your face now (look at the camera)? [Y/n] " a || a=n     # no terminal (run from a script): later

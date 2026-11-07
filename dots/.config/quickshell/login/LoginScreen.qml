@@ -8,7 +8,7 @@
 // Placement (s = screen height / 768, as in the original): clock top-left, name + password bottom-right,
 // a hairline along the bottom with the session on the left (login only) and Restart / Shut Down on the right.
 // Click the name = next user, click the session = next session. No messages: a wrong password shakes + clears.
-// Lock only: face unlock shows on the password hairline (a glide while it looks, a fill on a match), and a way out on unlock
+// Face unlock (boot login + lock) shows on the password hairline (a glide while it looks, a fill on a match), and a way out on unlock
 // (the UI fades, the wallpaper eases in). On every open the wallpaper settles from a slight zoom.
 import QtQuick
 import QtQuick.Shapes
@@ -28,7 +28,7 @@ Item {
     property bool busy: false                    // waiting for greetd / PAM
     property string host: ""                     // shown bottom-left after the session / WM name
     property string wm: "Hyprland"               // lock mode: the running WM (login mode shows the session)
-    property string face: ""                     // lock, face unlock: "" none | "ready" | "scan" | "ok" | "miss"
+    property string face: ""                     // face unlock: "" none | "ready" | "scan" | "ok" | "miss"
     property bool leaving: false                 // unlocked: play out (Lock.qml drops the lock right after)
     signal faceRetry()                           // Space in the empty field / click on the note: start face unlock
 
@@ -265,7 +265,7 @@ Item {
             color: pw.activeFocus && root.face !== "scan" && root.face !== "ok" ? root.accent : root.dimc   // dims while the face light runs
             Behavior on color { ColorAnimation { duration: 300 } }
             clip: true
-            // face unlock (lock only): a faint light glides along the line while it looks; a match fills the line
+            // face unlock: a faint light glides along the line while it looks; a match fills the line
             Rectangle {
                 id: glint
                 width: 70 * root.s; height: parent.height
@@ -298,11 +298,11 @@ Item {
                 id: faceNote
                 anchors.right: parent.right
                 y: 10 * root.s
-                text: root.face === "ready" ? "Press space for face unlock" : root.face === "scan" ? "Looking for you…" : root.face === "ok" ? "Welcome back"
+                text: root.face === "ready" ? "Press space for face unlock" : root.face === "scan" ? "Looking for you…" : root.face === "ok" ? (root.mode === "lock" ? "Welcome back" : "Welcome")
                     : root.face === "miss" ? "Didn't recognise you · space to try again" : ""
                 color: root.fg
                 font { family: root.font; pixelSize: 11 * root.s; letterSpacing: 1 * root.s }
-                property real shown: root.mode === "lock" && text !== "" ? (noteMa.containsMouse ? 0.85 : 0.5) : 0
+                property real shown: text !== "" ? (noteMa.containsMouse ? 0.85 : 0.5) : 0
                 opacity: shown
                 Behavior on opacity { NumberAnimation { duration: 250 } }
                 onTextChanged: if (faceNote.text !== "") swap.restart()
