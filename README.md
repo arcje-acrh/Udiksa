@@ -223,7 +223,7 @@ Afterwards: Wi-Fi passwords, signing in to your apps, and `sudo tailscale up` if
 |---|---|
 | <kbd>Super</kbd>+<kbd>Enter</kbd> | Terminal (kitty) |
 | <kbd>Super</kbd>+<kbd>R</kbd> | Launcher: apps, maths, commands; type <kbd>></kbd> for the menu (clipboard, emoji, windows, scripts, tools, **Keybinds**) |
-| <kbd>Super</kbd>+<kbd>Z</kbd> | Zed, the code editor (optional app, themed with the rice) |
+| <kbd>Super</kbd>+<kbd>Z</kbd> | Zen, the web browser (optional app) |
 | <kbd>Super</kbd>+<kbd>I</kbd> | Settings |
 | <kbd>Super</kbd>+<kbd>T</kbd> / <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd> | Theme switcher / next wallpaper |
 | <kbd>Super</kbd>+<kbd>E</kbd> | Files (Kaze) |
