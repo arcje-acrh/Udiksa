@@ -1,0 +1,5 @@
+# Kaze answers "Show in folder" (Firefox / Zen downloads, VS Code, ...). The session bus reads ~/.local/share/dbus-1
+# before /usr/share/dbus-1, where Nautilus puts its own copy of this name.
+[D-BUS Service]
+Name=org.freedesktop.FileManager1
+Exec=/usr/bin/kaze --dbus-service

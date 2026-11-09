@@ -28,7 +28,6 @@ kvantum
 libheif
 libqalculate
 mpv
-nautilus
 noto-fonts
 noto-fonts-cjk
 noto-fonts-emoji

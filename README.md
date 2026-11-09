@@ -198,7 +198,7 @@ git clone https://github.com/arcje-acrh/Udiksa ~/Udiksa
 cd ~/Udiksa && ./install.sh apps rice
 ```
 
-- **apps**: the core apps, then asks about each optional one (Zen Browser, OnlyOffice, ncspot, Tailscale, Zed, WhatsApp, Netflix, Galaxy Buds).
+- **apps**: the core apps, then asks about each optional one (Zen Browser, OnlyOffice, ncspot, Tailscale, Zed, WhatsApp, Netflix, Galaxy Buds, Nautilus).
 - **rice**: links the configs, installs the login screen, boot splash and GRUB theme (if you use GRUB),
   and sets up hibernation (uses your swap, or makes a swap file).
 - **Hardware**: on an ASUS laptop or a hybrid NVIDIA laptop, it offers the matching support (see `hardware/`).
@@ -226,7 +226,7 @@ Afterwards: Wi-Fi passwords, signing in to your apps, and `sudo tailscale up` if
 | <kbd>Super</kbd>+<kbd>Z</kbd> | Zed, the code editor (optional app, themed with the rice) |
 | <kbd>Super</kbd>+<kbd>I</kbd> | Settings |
 | <kbd>Super</kbd>+<kbd>T</kbd> / <kbd>Super</kbd>+<kbd>Shift</kbd>+<kbd>T</kbd> | Theme switcher / next wallpaper |
-| <kbd>Super</kbd>+<kbd>E</kbd> | Files |
+| <kbd>Super</kbd>+<kbd>E</kbd> | Files (Kaze) |
 | <kbd>Super</kbd>+<kbd>Q</kbd> | Close window |
 | <kbd>Super</kbd>+<kbd>V</kbd> / <kbd>Super</kbd>+<kbd>F</kbd> | Float / fullscreen |
 | <kbd>Super</kbd>+<kbd>Arrows</kbd> | Move focus |
@@ -301,7 +301,7 @@ Udiksa/
 │   └── Pictures/Wallpapers/<Theme>/
 ├── system/             files for / (login screen, boot splash, power helper) + hibernation / snapshot setup
 ├── setup/              arch.sh (blank disk), apps.sh, rice.sh, packages/*.txt
-├── optional/<app>/     Zen, OnlyOffice, ncspot, Tailscale, Zed, WhatsApp, Netflix, Galaxy Buds: asked at install, each with its own dots/
+├── optional/<app>/     Zen, OnlyOffice, ncspot, Tailscale, Zed, WhatsApp, Netflix, Galaxy Buds, Nautilus: asked at install, each with its own dots/
 ├── hardware/<vendor>/  ASUS, hybrid NVIDIA: detected, then offered; dots/ + system/ + packages
 └── docs/               screenshots, adding hardware support
 ```
