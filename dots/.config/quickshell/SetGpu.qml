@@ -66,7 +66,7 @@ for p in /proc/[0-9]*; do ls -l $p/fd 2>/dev/null | grep -q '/dev/nvidia[0-9]' &
     SetRow {
         title: "Mode"
         desc: page.ultimateArmed ? "Ultimate needs a reboot and stays switched in Windows until you change it back. Click again to confirm."
-            : Power.gpuChangeQueued ? "Now " + Power.gpuLabels[Power.gpuMode] + " · " + Power.gpuLabels[Power.gpuQueued] + " after the next reboot."
+            : Power.gpuNote !== "" ? Power.gpuNote + "."
             : "Eco: NVIDIA card off, longest battery. Standard: it sleeps and wakes only for games / apps that ask."
               + (modeSeg.modes.indexOf("AsusMuxDgpu") >= 0 ? " Ultimate: the screen runs straight from NVIDIA (fastest, most power)." : "")
         Seg {

@@ -353,6 +353,13 @@ true`]
     property string gpuPower: ""               // runtime state of the dGPU: active / suspended
     readonly property bool gpuError: gpuMode === "Hybrid" && !gpuDriver
     readonly property var gpuLabels: ({ Integrated: "Eco", Hybrid: "Standard", AsusMuxDgpu: "Ultimate" })
+    // true from a click until the state is re-read: some switches apply live (Eco -> Standard), so do not
+    // announce "after the next reboot" before supergfxd has finished
+    property bool gpuSwitching: false
+    readonly property string gpuNote: gpuSwitching ? "Switching to " + gpuLabels[gpuQueued] + "…"
+        : gpuChangeQueued ? "Now " + gpuLabels[gpuMode] + " · " + gpuLabels[gpuQueued]
+            + (gpuPending.toLowerCase().indexOf("logout") >= 0 ? " after you log out" : " after the next reboot")
+        : ""
     function refreshGpu() { if (gfx && !gpuSet.running) gpuProc.running = true }
     Process {
         id: gpuProc
@@ -374,6 +381,7 @@ true`]
                     else if (k === "power") root.gpuPower = v
                     else if (k === "queued") root.gpuQueued = v
                 }
+                if (!gpuSet.running) root.gpuSwitching = false
             }
         }
     }
@@ -382,6 +390,7 @@ true`]
     property string gpuNext: ""
     function setGpuMode(m) {
         gpuQueued = m
+        gpuSwitching = true
         if (gpuSet.running) { gpuNext = m; return }
         gpuSet.command = ["supergfxctl", "-m", m]; gpuSet.running = true
     }

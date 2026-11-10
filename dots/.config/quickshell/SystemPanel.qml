@@ -129,8 +129,7 @@ Item {
                 visible: text !== ""
                 text: root.ultimateArmed ? "Ultimate needs a reboot and stays switched in Windows until you change it back."
                     : Power.gpuError ? "The NVIDIA driver is not loaded. A reboot usually fixes it."
-                    : Power.gpuChangeQueued ? "Now " + Power.gpuLabels[Power.gpuMode] + " · " + Power.gpuLabels[Power.gpuQueued] + " after the next reboot"
-                    : ""
+                    : Power.gpuNote
                 color: root.ultimateArmed || Power.gpuError ? Theme.warn : Theme.amber
                 font.family: Theme.font; font.pixelSize: 11
             }
