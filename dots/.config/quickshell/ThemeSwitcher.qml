@@ -99,7 +99,7 @@ Scope {
         anchors { top: true; left: true; right: true; bottom: true }
         color: "transparent"
 
-        CornerArcs { z: 100; opacity: stage.opacity }   // rounded screen corners stay while it covers the screen
+        CornerArcs { z: 100; opacity: stage.opacity; r: Corners.r / Corners.rel(win.screen ? win.screen.name : "") }   // rounded screen corners stay while it covers the screen
 
         Item {
             id: stage

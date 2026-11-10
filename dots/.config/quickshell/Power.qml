@@ -356,7 +356,12 @@ true`]
     // true from a click until the state is re-read: some switches apply live (Eco -> Standard), so do not
     // announce "after the next reboot" before supergfxd has finished
     property bool gpuSwitching: false
+    // Eco -> Standard applies live, but Hyprland only opens the NVIDIA card when the session starts: until you log out
+    // once, the ports wired to it (this laptop's HDMI) stay dark. Read from Hyprland itself: is the card open?
+    property bool gpuRelogin: false
+    onGpuReloginChanged: if (gpuRelogin) Quickshell.execDetached(["qs", "ipc", "call", "osd", "display", "Log out once to use the HDMI port"])
     readonly property string gpuNote: gpuSwitching ? "Switching to " + gpuLabels[gpuQueued] + "…"
+        : gpuRelogin ? "Standard is on · log out once to use the HDMI port"
         : gpuChangeQueued ? "Now " + gpuLabels[gpuMode] + " · " + gpuLabels[gpuQueued]
             + (gpuPending.toLowerCase().indexOf("logout") >= 0 ? " after you log out" : " after the next reboot")
         : ""
@@ -369,6 +374,7 @@ true`]
             "d=$(for x in /sys/bus/pci/devices/*; do [ \"$(cat $x/vendor)\" = 0x10de ] && case $(cat $x/class) in 0x03*) echo $x; break;; esac; done); " +
             "[ -e \"$d/driver\" ] && echo driver=1 || echo driver=0; " +
             "echo power=$(cat \"$d/power/runtime_status\" 2>/dev/null); " +
+            "n=$(ls \"$d/drm\" 2>/dev/null | grep -m1 '^card'); [ -n \"$n\" ] && ! ls -l /proc/$(pgrep -xo Hyprland)/fd 2>/dev/null | grep -q \"/dev/dri/$n$\" && echo relogin=1 || echo relogin=0; " +
             "echo queued=$(sed -n 's/.*\"mode\": *\"\\([A-Za-z]*\\)\".*/\\1/p' /etc/supergfxd.conf)"]
         stdout: StdioCollector {
             onStreamFinished: {
@@ -380,6 +386,7 @@ true`]
                     else if (k === "driver") root.gpuDriver = v === "1" || root.gpuMode === "Integrated"
                     else if (k === "power") root.gpuPower = v
                     else if (k === "queued") root.gpuQueued = v
+                    else if (k === "relogin") root.gpuRelogin = v === "1" && root.gpuMode === "Hybrid"
                 }
                 if (!gpuSet.running) root.gpuSwitching = false
             }

@@ -18,12 +18,13 @@ Scope {
         property bool bottom: false
         property var scr
         screen: scr
-        visible: root.r > 0 && !Modes.game
+        readonly property real r: root.r / Corners.rel(scr ? scr.name : "")   // this screen's own zoom (Corners.rel)
+        visible: r > 0 && !Modes.game
         WlrLayershell.layer: WlrLayer.Overlay
         WlrLayershell.namespace: "udiksa-corner"
         exclusionMode: ExclusionMode.Ignore
         anchors { top: !bottom; bottom: bottom; left: !right; right: right }
-        implicitWidth: root.r; implicitHeight: root.r
+        implicitWidth: r; implicitHeight: r
         color: "transparent"
         mask: Region {}                              // never takes the mouse
         Shape {
@@ -34,8 +35,8 @@ Scope {
             ShapePath {
                 fillColor: "black"; strokeColor: "transparent"
                 startX: 0; startY: 0
-                PathLine { x: root.r; y: 0 }
-                PathArc { x: 0; y: root.r; radiusX: root.r; radiusY: root.r; direction: PathArc.Counterclockwise }
+                PathLine { x: w.r; y: 0 }
+                PathArc { x: 0; y: w.r; radiusX: w.r; radiusY: w.r; direction: PathArc.Counterclockwise }
                 PathLine { x: 0; y: 0 }
             }
         }

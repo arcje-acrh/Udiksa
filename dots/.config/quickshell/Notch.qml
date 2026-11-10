@@ -16,7 +16,9 @@ import Quickshell.Widgets
 
 Item {
     id: root
-    readonly property real ear: Theme.islandRadius     // the concave top corners where it meets the screen edge = the same radius as its bottom corners (Settings > Windows > Corners)
+    property real rel: 1                    // this screen's zoom relative to the main one (Corners.rel; set by Bar.qml)
+    readonly property real island: Theme.islandRadius / rel   // the corner radius in this screen's units
+    readonly property real ear: island     // the concave top corners where it meets the screen edge = the same radius as its bottom corners (Settings > Windows > Corners)
     property int restWidth: 800            // set by Bar.qml (Theme.notchFraction x screen width, at least minRestWidth)
     property int maxWidth: 100000          // set by Bar.qml: the screen width minus a margin (portrait / small screens)
     // the least the resting row needs so nothing overlaps: the clock in the middle, with room on each side for the
@@ -102,14 +104,14 @@ Item {
     SystemClock { id: clock; precision: SystemClock.Minutes }
 
     // ---------- shape ----------
-    Rectangle { id: sizer; anchors.fill: parent; color: "transparent"; radius: Theme.islandRadius }
+    Rectangle { id: sizer; anchors.fill: parent; color: "transparent"; radius: root.island }
     // soft shadow BELOW the notch only: it starts well under the top edge (so nothing bleeds sideways along
     // the screen edge next to the ears) and is much lighter on light themes (user 2026-09-26: "weird shadow")
     RectangularShadow {
         anchors.fill: sizer
         anchors.topMargin: Math.min(sizer.height * 0.5, 40)
         anchors.leftMargin: 10; anchors.rightMargin: 10
-        radius: Theme.islandRadius
+        radius: root.island
         blur: root.panel !== "" ? 26 : 12
         offset: Qt.vector2d(0, root.panel !== "" ? 6 : 2)
         color: Qt.alpha(Theme.shadow, Theme.light ? (root.panel !== "" ? 0.14 : 0.06) : (root.panel !== "" ? 0.36 : 0.18))
@@ -118,7 +120,7 @@ Item {
 
     // ONE outline: concave ears -> sides -> rounded bottom corners -> ears. Filled with the
     // background colour, stroked in coral (open path: no line along the screen edge). Follows the size.
-    readonly property real r: Theme.islandRadius
+    readonly property real r: root.island
     readonly property real e: ear
     Shape {
         preferredRendererType: Shape.CurveRenderer

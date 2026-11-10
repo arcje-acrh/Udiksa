@@ -21,7 +21,15 @@ Singleton {
     readonly property var pref: Prefs.v.corners || ({ screen: -1, notch: -1 })
     readonly property real r: (pref.screen >= 0 ? pref.screen : winPx) / factor
     readonly property real notch: Math.min(15, (pref.notch >= 0 ? pref.notch : winPx) / factor)
-    readonly property real factor: Number(Quickshell.env("QT_SCALE_FACTOR")) || 1
+    readonly property real factor: Number(Quickshell.env("QT_SCALE_FACTOR")) || 1   // the main screen's (udiksa shell)
+    // another screen's own factor relative to the main one (QT_SCREEN_SCALE_FACTORS "eDP-1=1;HDMI-A-2=0.75"): a radius
+    // for screen s is  <radius> / rel(s.name), so it is the same Hyprland px on every screen
+    readonly property var rels: {
+        const m = {}
+        for (const p of (Quickshell.env("QT_SCREEN_SCALE_FACTORS") || "").split(";")) { const kv = p.split("="); if (kv.length === 2) m[kv[0]] = Number(kv[1]) || 1 }
+        return m
+    }
+    function rel(name) { return rels[name] || 1 }
 
     function refresh() { reader.running = true }
     Process {

@@ -605,6 +605,22 @@ def wallpaper(img, pos=None, transition="grow"):
     subprocess.run(args, capture_output=True)
 
 
+def boot_res():
+    """The resolution the boot menu and login screen are shown at: the built-in panel's own (first mode it lists),
+    else the first connected screen's, read from /sys (works without Hyprland); 1920x1080 if nothing answers."""
+    import glob
+    conns = sorted(glob.glob("/sys/class/drm/card*-*/status"), key=lambda f: not re.search(r"-(eDP|LVDS|DSI)-", f))
+    for st in conns:
+        try:
+            if open(st).read().strip() == "connected":
+                m = re.match(r"(\d+)x(\d+)", open(st[:-6] + "modes").readline())
+                if m:
+                    return int(m.group(1)), int(m.group(2))
+        except OSError:
+            pass
+    return 1920, 1080
+
+
 GRUB = "/boot/grub/themes/rice"          # owned by the user (chown once), so no password is needed here
 IOSEVKA = "/usr/share/fonts/TTF/IosevkaNerdFont-Regular.ttf"   # same font as the notch (Theme.font)
 
@@ -637,11 +653,12 @@ def grub(p, theme, img):
     if not os.access(GRUB, os.W_OK):
         return
     dark = mix(p["bg"], "#000000", 0.25) if p["mode"] == "dark" else p["bg"]
+    bw, bh = boot_res()                              # drawn at the screen's own size, nothing assumed
     # background: theme colour, the wallpaper at 16 %, every other 2 px line darkened (scanlines), baked in
     sub = subprocess.run(
-        ["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", f"color=c={dark}:s=2560x1600", "-i", img,
+        ["ffmpeg", "-loglevel", "error", "-y", "-f", "lavfi", "-i", f"color=c={dark}:s={bw}x{bh}", "-i", img,
          "-filter_complex",
-         "[1]scale=2560:1600:force_original_aspect_ratio=increase,crop=2560:1600,format=rgba,colorchannelmixer=aa=0.16[w];"
+         f"[1]scale={bw}:{bh}:force_original_aspect_ratio=increase,crop={bw}:{bh},format=rgba,colorchannelmixer=aa=0.16[w];"
          "[0][w]overlay=format=auto,format=rgb24,"
          "geq=r='r(X,Y)*if(lt(mod(Y,4),2),1,0.72)':g='g(X,Y)*if(lt(mod(Y,4),2),1,0.72)':b='b(X,Y)*if(lt(mod(Y,4),2),1,0.72)'",
          "-frames:v", "1", "-pix_fmt", "rgb24", os.path.join(GRUB, "background.png")], capture_output=True)   # PNG: GRUB rejects 4:4:4 JPEG
@@ -673,6 +690,8 @@ def grub(p, theme, img):
     ver = subprocess.run(["pacman", "-Q", "grub"], capture_output=True, text=True).stdout.split()[-1:] or ["2"]
     ver = ver[0].split(":")[-1].split("-")[0]
     # (the label uses a plain "-" between the words: the GRUB font has no "·", it drew a ? box)
+    # positions are shares of the screen (+ a few px: exactly the old layout on the 2560x1600 panel it was drawn on);
+    # ponytail: fonts stay the pf2 sizes made once (24 / 34 px); per-resolution grub-mkfont sizes if a small screen needs it
     txt = f"""# rice GRUB theme -- written by udiksa theme for "{theme}"; edit udiksa theme, not this file.
 title-text: ""
 desktop-image: "background.png"
@@ -685,9 +704,9 @@ terminal-height: "100%"
 terminal-border: "0"
 
 + label {{
-    left = 128
-    top = 110
-    width = 2300
+    left = 5%
+    top = 7%-2
+    width = 90%-4
     height = 40
     text = "GNU GRUB {ver} - arch - theme: {theme}"
     font = "RiceTerm Regular 24"
@@ -695,10 +714,10 @@ terminal-border: "0"
 }}
 
 + boot_menu {{
-    left = 84
-    top = 210
-    width = 1600
-    height = 820
+    left = 3%+8
+    top = 13%+2
+    width = 62%+13
+    height = 51%+4
     item_font = "RiceTerm Regular 34"
     selected_item_font = "RiceTermBold Bold 34"
     item_color = "{p['text']}"
@@ -715,9 +734,9 @@ terminal-border: "0"
 
 + label {{
     id = "__timeout__"
-    left = 128
-    top = 1130
-    width = 1200
+    left = 5%
+    top = 71%-6
+    width = 47%-3
     height = 40
     text = "booting in %d_"
     font = "RiceTerm Regular 24"
@@ -725,9 +744,9 @@ terminal-border: "0"
 }}
 
 + label {{
-    left = 128
-    top = 1470
-    width = 2300
+    left = 5%
+    top = 92%-2
+    width = 90%-4
     height = 40
     text = "up/down choose    enter boot    e edit    c console"
     font = "RiceTerm Regular 24"
@@ -763,7 +782,7 @@ def greeter(p, img):
     write(os.path.join(GREETER, "theme.json"), json.dumps(cols, indent=2) + "\n")
     tmp = os.path.join(GREETER, "wallpaper.tmp.jpg")
     r = subprocess.run(["ffmpeg", "-loglevel", "error", "-y", "-i", img, "-vf",
-                        "scale=2560:1600:force_original_aspect_ratio=increase,crop=2560:1600",
+                        "scale={0}:{1}:force_original_aspect_ratio=increase,crop={0}:{1}".format(*boot_res()),
                         "-frames:v", "1", "-q:v", "2", tmp], capture_output=True)
     if r.returncode == 0:
         os.replace(tmp, os.path.join(GREETER, "wallpaper.jpg"))

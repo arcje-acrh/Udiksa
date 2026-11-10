@@ -57,6 +57,7 @@ PanelWindow {
 
     Notch {
         id: notch
+        rel: Corners.rel(win.screen ? win.screen.name : "")
         anchors.horizontalCenter: parent.horizontalCenter
         y: 0
         // the design's share of the screen, but at least what its row needs (rotated / narrow screens) and never
