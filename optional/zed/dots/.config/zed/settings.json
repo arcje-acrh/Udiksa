@@ -1,6 +1,7 @@
 // Zed settings. The "Rice" theme is written by udiksa theme on every theme change (~/.config/zed/themes/rice.json).
 // Hyprland gives the window the same see-through + blur as every other app, so the theme itself stays solid.
 {
+  "cli_default_open_behavior": "existing_window",
   "agent_servers": {
     "claude-acp": {
       "default_config_options": {
