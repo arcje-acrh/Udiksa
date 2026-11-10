@@ -38,3 +38,8 @@ dots/.config/mpv/fonts.conf
 dots/.config/fontconfig/conf.d/
 # written by udiksa comfort (eye comfort shield)
 dots/.config/hypr/hyprsunset.conf
+
+# ---- tests ----
+# development tests stay local: put them in tests/ (never committed). Build tests, the ones the package build
+# itself runs (PKGBUILD check(), make check), are the only tests in the repo.
+tests/
