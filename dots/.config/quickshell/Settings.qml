@@ -103,15 +103,22 @@ Scope {
     FloatingWindow {
         id: win
         visible: root.shown
-        title: "Settings"                  // Hyprland rule "settings-window" (rules.lua): float, centre, 1600x1000
-        implicitWidth: 1600
+        title: "Settings"                  // Hyprland rule "settings-window" (rules.lua): float, centre, the same share of any screen
+        implicitWidth: 1600                 // the size it is designed at (= that share of the laptop screen)
         implicitHeight: 1000
+        minimumSize: Qt.size(implicitWidth / 3, implicitHeight / 3)   // freely resizable (and tileable); the stage zooms out when small
         color: Theme.bg
         onVisibleChanged: if (!visible && root.shown) { root.open = false; root.shown = false }   // closed by the WM (Super+Q)
 
         Item {
             id: stage
-            anchors.fill: parent
+            // smaller than the size it is designed at (its own implicit size above), the whole app zooms out evenly
+            // instead of squashing its rows into each other: on any screen it looks like a scaled picture of itself
+            // (within 5 % of it the rows simply reflow: a zoom of 0.999 would only blur every letter)
+            readonly property real fit: Math.min(1, win.width / win.implicitWidth, win.height / win.implicitHeight)
+            readonly property real k: fit > 0.95 ? 1 : fit
+            width: win.width / k; height: win.height / k
+            scale: k; transformOrigin: Item.TopLeft
             opacity: root.open ? 1 : 0
             Behavior on opacity { NumberAnimation { duration: root.open ? 220 : 260; easing.type: Easing.OutCubic } }
             focus: root.open
@@ -133,8 +140,14 @@ Scope {
                 color: Theme.surface
                 Rectangle { anchors { right: parent.right; top: parent.top; bottom: parent.bottom } width: 1; color: Theme.raised }
 
+                Flickable {   // the section list scrolls when the window is short
+                    anchors { left: parent.left; right: parent.right; top: parent.top; bottom: parent.bottom; bottomMargin: 52 }
+                    clip: true
+                    contentHeight: sideCol.implicitHeight + 32
+                    boundsBehavior: Flickable.StopAtBounds
                 Column {
-                    anchors { left: parent.left; right: parent.right; top: parent.top; margins: 24; topMargin: 32 }
+                    id: sideCol
+                    x: 24; y: 32; width: side.width - 48
                     spacing: 4
                     Text { text: "SETTINGS"; color: Theme.muted; font.family: Theme.font; font.pixelSize: 12; font.bold: true; font.letterSpacing: 3 }
                     Item { width: 1; height: 10 }
@@ -181,6 +194,7 @@ Scope {
                         }
                     }
                 }
+                }
                 Text {
                     anchors { left: parent.left; bottom: parent.bottom; margins: 28 }
                     text: "esc close · ctrl+↑↓ section"
@@ -220,6 +234,8 @@ Scope {
                     onLoaded: item.host = root
                 }
             }
+            // open drop-down lists (SetDrop) float here, above every row, instead of pushing the rows apart
+            Item { objectName: "dropLayer"; anchors.fill: parent; z: 100 }
         }
     }
 }

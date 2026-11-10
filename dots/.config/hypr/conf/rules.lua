@@ -39,7 +39,7 @@ hl.window_rule({
 -- file pickers and save / open / print dialogs: float in the middle
 hl.window_rule({
     name  = "dialogs",
-    min_size = "800 560",  -- GTK/Qt dialogs open small at 1.25 scale
+    min_size = "monitor_w*0.390625 monitor_h*0.4375",  -- GTK/Qt dialogs open small; 800x560 on the 2048x1280 laptop, the same share anywhere
     match = { title = "^(Open|Open File|Open Files|Open Folder|Save|Save As|Save File|Select a File|Choose Files?|File Upload|Select Folder|Export|Import|Print|Properties|Preferences|Rename)( .*)?$" },
 
     float  = true,  -- float ...
@@ -53,7 +53,7 @@ hl.window_rule({
 
     float  = true,
     center = true,
-    size   = "1200 800",
+    size   = "monitor_w*0.5859375 monitor_h*0.625",  -- 1200x800 on the 2048x1280 laptop; the same share on any screen
 })
 -- sub-windows of other apps that are plain top-level windows (not dialogs with a parent: Hyprland floats those itself):
 -- settings / options / about / shortcuts windows. The WHOLE title must match, so a browser tab "Settings — Zen Browser"
@@ -71,7 +71,7 @@ hl.window_rule({
 
     float  = true,
     center = true,
-    size   = "1000 640",
+    size   = "monitor_w*0.48828125 monitor_h*0.5",  -- 1000x640 on the laptop
 })
 
 -- small utility windows (sound, Bluetooth, network editor, calculator,
@@ -82,7 +82,7 @@ hl.window_rule({
 
     float  = true,
     center = true,
-    size   = "900 600",
+    size   = "monitor_w*0.439453125 monitor_h*0.46875",  -- 900x600 on the laptop
 })
 -- Kaze (file manager) and RDP Desk always open floating, centred, at the size they ask for
 -- (Kaze 1280x800, RDP Desk 1220x800). User 2026-11-10: "open rdpdesk and kaze as floating always".
@@ -112,7 +112,7 @@ hl.window_rule({
 
     float    = true,
     center   = true,
-    min_size = "900 650",  -- pop-ups (Gmail compose, ...) ask for a tiny CSS-pixel size; never smaller than this
+    min_size = "monitor_w*0.439453125 monitor_h*0.5078125",  -- pop-ups (Gmail compose, ...) ask for a tiny CSS-pixel size; never smaller than this (900x650 on the laptop)
 })
 -- browser EXTENSION pop-outs (user 2026-09-26: the Bitwarden unlock window opened tiled). Their title is
 -- "Extension: (<extension name>) - <page> — Zen Browser" (same pattern in Firefox; Chromium: class
@@ -137,17 +137,17 @@ hl.window_rule({
 -- pinned (follows you to every workspace), keeps the video shape, does not
 -- steal focus from what you are doing.
 -- This block must stay AFTER "browser-windows-open-floating": the PiP window's class is the browser's, so that
--- rule (centre, min_size 900x650) matches it too and, coming later, would win: the window could not be made
--- smaller than 900x650 and opened in the middle. min_size here puts that back.
+-- rule (centre, min_size) matches it too and, coming later, would win: the window could not be made
+-- smaller than that and opened in the middle. min_size here puts that back.
 hl.window_rule({
     name  = "pip",
     match = { title = "^(Picture-in-Picture|Picture in picture)$" },
 
     float             = true,
     pin               = true,       -- follow you to every workspace
-    size              = "480 270",  -- small video window
-    min_size          = "200 112",  -- may be resized small (the browser rule above asks for 900 650)
-    move              = "monitor_w-500 monitor_h-290",
+    size              = "monitor_w*0.234375 monitor_w*0.1318359375",  -- small 16:9 video window (480x270 on the laptop)
+    min_size          = "monitor_w*0.09765625 monitor_w*0.0546875",  -- may be resized small (the browser rule above asks for more)
+    move              = "monitor_w-window_w-monitor_w*0.01 monitor_h-window_h-monitor_h*0.0156",  -- bottom-right corner
     keep_aspect_ratio = true,  -- keep the video's shape
     no_initial_focus  = true,  -- do not steal focus
 })
@@ -167,7 +167,7 @@ hl.window_rule({
     float            = true,
     pin              = true,
     no_initial_focus = true,
-    move             = "monitor_w/2-100 40",
+    move             = "monitor_w/2-window_w/2 monitor_h*0.031",  -- top middle
 })
 
 -- ---------------------------------------------------------------------------
@@ -201,41 +201,42 @@ hl.layer_rule({
 
 -- ---------------------------------------------------------------------------
 -- music (~/.local/bin/music): ncspot + cava as ONE centred block on the music scratchpad (special:music, Super+M).
--- ncspot 968x640 on top, 12 px gap, cava 968x220 below; block height 872 -> top = centre - 436
--- (+15 for the 30 px bar at the top of the screen).
+-- ncspot 968x640 on top, 12 px gap, cava 968x220 below (on the 2048x1280 laptop; the same shares of any screen),
+-- block centred a little below the 30 px bar.
 -- the disk image flasher (~/.local/bin/udiksa flash, caligula): floating in the middle
 hl.window_rule({
     name  = "flash-window",
     match = { class = "^udiksa-flash$" },
     float = true,
-    size  = "1000 640",
-    move  = "monitor_w*0.5-500 monitor_h*0.5-320",
+    size  = "monitor_w*0.48828125 monitor_h*0.5",  -- 1000x640 on the laptop
+    move  = "monitor_w*0.256 monitor_h*0.25",  -- centred
 })
 hl.window_rule({
     name      = "music-ncspot",
     match     = { class = "^rice-ncspot$" },
     float     = true,
-    size      = "968 640",
-    move      = "monitor_w*0.5-484 monitor_h*0.5-421",
+    size      = "monitor_w*0.47265625 monitor_h*0.5",  -- 968x640 on the laptop
+    move      = "monitor_w*0.2637 monitor_h*0.1711",
     workspace = "special:music",  -- on the music scratchpad (Super+M)
 })
 hl.window_rule({
     name             = "music-cava",
     match            = { class = "^rice-cava$" },
     float            = true,
-    size             = "968 220",
-    move             = "monitor_w*0.5-484 monitor_h*0.5+231",
+    size             = "monitor_w*0.47265625 monitor_h*0.172",  -- 968x220 on the laptop
+    move             = "monitor_w*0.2637 monitor_h*0.6805",
     workspace        = "special:music",
     no_initial_focus = true,  -- do not steal focus
 })
 
--- Settings app (~/.config/quickshell/Settings.qml, Super+I): floating, centred, 1600x1000 (user 2026-09-26)
+-- Settings app (~/.config/quickshell/Settings.qml, Super+I): floating, centred, 1600x1000 on the laptop (user 2026-09-26),
+-- the same share of any other screen (fixed sizes did not fit a 1366x768 TV, 2026-11-11)
 hl.window_rule({
     name   = "settings-window",
     match  = { title = "^Settings$" },
     float  = true,
     center = true,
-    size   = "1600 1000",
+    size   = "monitor_w*0.78125 monitor_h*0.78125",  -- 1600x1000 on the laptop
 })
 
 -- btop from Settings > Monitor: floating, centred
@@ -244,7 +245,7 @@ hl.window_rule({
     match  = { class = "^rice-btop$" },
     float  = true,
     center = true,
-    size   = "1400 860",
+    size   = "monitor_w*0.68359375 monitor_h*0.671875",  -- 1400x860 on the laptop
 })
 
 -- system monitor scratchpad (Ctrl+Shift+Esc = ~/.local/bin/udiksa scratch sysmon): btop floating in the middle
@@ -253,7 +254,7 @@ hl.window_rule({
     match  = { class = "^rice-sysmon$" },
     float  = true,
     center = true,
-    size   = "1400 860",
+    size   = "monitor_w*0.68359375 monitor_h*0.671875",  -- 1400x860 on the laptop
 })
 
 -- screenshot editor (Alt+Print = ~/.local/bin/udiksa shot edit): floating, centred, most of the screen
@@ -271,5 +272,20 @@ hl.window_rule({
     match  = { class = "^(rice-edit|rice-script)$" },
     float  = true,
     center = true,
-    size   = "1100 720",
+    size   = "monitor_w*0.537 monitor_h*0.5625",  -- 1100x720 on the laptop
 })
+
+-- ---------------------------------------------------------------------------
+-- EVERY window that opens floating (any app, any rule above, an app's own size such as Kaze's) must fit the screen
+-- it opens on: bigger than 90 % of that screen -> shrunk to it and centred. Nothing here knows a screen size; it is
+-- measured on the window's own monitor each time (user 2026-11-11: "a problem with all floating open apps").
+-- ---------------------------------------------------------------------------
+hl.on("window.open", function(w)
+    if not w or not w.floating or not w.monitor or not w.size then return end
+    local m = w.monitor
+    local mw, mh = math.floor(m.width / m.scale * 0.9), math.floor(m.height / m.scale * 0.9)
+    if w.size.x <= mw and w.size.y <= mh then return end
+    local a = tostring(w.address); if not a:match("^0x") then a = "0x" .. a end
+    hl.dispatch(hl.dsp.window.resize({ x = math.min(w.size.x, mw), y = math.min(w.size.y, mh), window = "address:" .. a }))
+    hl.dispatch(hl.dsp.window.center({ window = "address:" .. a }))
+end)

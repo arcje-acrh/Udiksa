@@ -22,16 +22,18 @@ SetPage {
 
     // ---- screens (every 2 s, so plugging one in shows up) ----
     property var mons: []
+    property var opt: ({})                 // { screen: ["WxH@Hz", ...] }: the modes it shows best, best first (udiksa display modes)
     property string dmode: ""
     Timer { interval: 2000; running: page.visible; repeat: true; triggeredOnStart: true; onTriggered: monProc.running = true }
     Process {
         id: monProc
-        command: ["sh", "-c", "hyprctl monitors all -j; echo @@; cat \"${XDG_RUNTIME_DIR:-/tmp}/display-mode\" 2>/dev/null"]
+        command: ["sh", "-c", "hyprctl monitors all -j; echo @@; cat \"${XDG_RUNTIME_DIR:-/tmp}/display-mode\" 2>/dev/null; echo @@; ~/.local/bin/udiksa display modes"]
         stdout: StdioCollector {
             onStreamFinished: {
                 const p = text.split("@@")
-                try { page.mons = JSON.parse(p[0]) } catch (e) {}
+                try { page.mons = JSON.parse(p[0]).filter(m => !/^(FALLBACK|UDIKSA-WAKE)$/.test(m.name)) } catch (e) {}
                 page.dmode = (p[1] || "").trim()
+                try { page.opt = JSON.parse(p[2]) } catch (e) {}
             }
         }
     }
@@ -155,12 +157,17 @@ while read -r name bus; do v=$(ddcutil --bus "$bus" getvcp 10 --brief 2>/dev/nul
     property var pendingUndo: null                    // { key: previous cfg } of the change waiting for "Keep"
     property int secsLeft: 0
     Timer { id: countdown; interval: 1000; repeat: true; onTriggered: { page.secsLeft -= 1; if (page.secsLeft <= 0) page.revert() } }
+    // while a change waits for Keep, `udiksa shell --ensure` leaves the shell alone (it would close Settings mid-countdown)
+    readonly property string pendingFile: Quickshell.env("XDG_RUNTIME_DIR") + "/udiksa-display-pending"
     function applyMany(many, confirm) {
         if (confirm && page.pendingUndo === null) {
             const u = {}
             page.mons.forEach(o => { if (many[key(o)] !== undefined) u[key(o)] = cfgOf(o) })
             page.pendingUndo = u
         }
+        // the undo also goes to a file: if the shell is killed mid-countdown (restart, crash), `udiksa shell` applies it at
+        // the next start, so an unconfirmed change never stays (2026-11-11: a 100 % click survived a shell restart)
+        if (confirm) Quickshell.execDetached(["sh", "-c", "printf %s \"$1\" > \"$2\"", "sh", JSON.stringify(page.pendingUndo), page.pendingFile])
         if (confirm) { page.secsLeft = 15; countdown.restart() }
         monSet.command = [page.host.helper, "monitor", "many", JSON.stringify(many)]; monSet.running = true
     }
@@ -176,7 +183,8 @@ while read -r name bus; do v=$(ddcutil --bus "$bus" getvcp 10 --brief 2>/dev/nul
         onFileChanged: reload()
         onLoaded: { try { page.saved = JSON.parse(text()) } catch (e) { page.saved = {} } }
     }
-    function best(m) { return nativeRes(m).sort((a, b) => px(b) - px(a))[0] || (m.width + "x" + m.height) }
+    // the screen's best size: the first of its optimal modes (udiksa display: native, or a safe one on a second GPU)
+    function best(m) { const o = (opt[m.name] || [])[0]; return o ? o.split("@")[0] : (nativeRes(m).sort((a, b) => px(b) - px(a))[0] || (m.width + "x" + m.height)) }
     function resOf(m) { const s = saved[key(m)]; return s && s.res ? s.res : m.width + "x" + m.height }
     function zoomOf(m) {
         const s = saved[key(m)]; if (s && s.zoom) return s.zoom
@@ -206,19 +214,31 @@ while read -r name bus; do v=$(ddcutil --bus "$bus" getvcp 10 --brief 2>/dev/nul
     function keep() {
         const restart = page.scaleChanged
         countdown.stop(); page.pendingUndo = null
-        if (restart) Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exec_cmd(\"" + Quickshell.env("HOME") + "/.local/bin/udiksa shell --restart\")"])
+        Quickshell.execDetached(["rm", "-f", page.pendingFile])
+        if (restart) Quickshell.execDetached(["hyprctl", "dispatch", "hl.dsp.exec_cmd(\"" + Quickshell.env("HOME") + "/.local/bin/udiksa shell --ensure\")"])
     }
-    function revert() { countdown.stop(); const u = page.pendingUndo; page.pendingUndo = null; if (u) applyMany(u, false) }
-    function reset(m) { monSet.command = [page.host.helper, "monitor", "rm", key(m)]; monSet.running = true }
-    readonly property var standard: ["3840x2160", "3440x1440", "2560x1600", "2560x1440", "2048x1280", "1920x1200", "1920x1080",
-                                     "1680x1050", "1600x900", "1440x900", "1366x768", "1280x800", "1280x720"]
+    function revert() {
+        countdown.stop(); const u = page.pendingUndo; page.pendingUndo = null
+        Quickshell.execDetached(["rm", "-f", page.pendingFile])
+        if (u) Quickshell.execDetached([page.host.helper, "monitor", "many", JSON.stringify(u)])   // also runs as the page closes
+    }
+    // Settings closed (or another section opened) before Keep = not confirmed: undone, like letting the 15 s run out
+    Component.onDestruction: if (page.pendingUndo !== null) revert()
+    // Automatic: forget the saved setup, then the screen's best mode again (the same as plugging it in)
+    function reset(m) { monSet.command = ["sh", "-c", "\"$0\" monitor rm \"$1\" && ~/.local/bin/udiksa display added", page.host.helper, key(m)]; monSet.running = true }
     function px(r) { const p = r.split("x"); return parseInt(p[0]) * parseInt(p[1]) }
     function nativeRes(m) { const r = []; (m.availableModes || []).forEach(x => { const q = x.split("@")[0]; if (r.indexOf(q) < 0) r.push(q) }); return r }
-    // what the screen reports + the standard sizes up to its biggest one (those are scaled by the GPU: "scaled")
+    // every size: what the screen reports + "looks like" sizes made from its best one (best / each sharp scale, so
+    // they stay crisp: the screen keeps its best mode, everything is drawn bigger). Nothing here is a fixed list.
     function resolutions(m) {
-        const own = nativeRes(m), top = own.length ? Math.max.apply(null, own.map(px)) : 0
-        const all = own.concat(standard.filter(r => own.indexOf(r) < 0 && px(r) <= top))
-        return all.sort((a, b) => px(b) - px(a))
+        const own = nativeRes(m), b = best(m).split("x").map(Number), all = own.slice()
+        validScales(m, 3).forEach(v => { const r = Math.round(b[0] / v) + "x" + Math.round(b[1] / v); if (all.indexOf(r) < 0) all.push(r) })
+        return all.sort((x, y) => px(y) - px(x))
+    }
+    function resTag(m, r) {
+        if (r === best(m)) return "recommended"
+        if (nativeRes(m).indexOf(r) < 0) return "scaled"
+        return (opt[m.name] || []).some(o => o.split("@")[0] === r) ? "" : "not sharp"
     }
     function rates(m, res) {
         const r = []
@@ -308,17 +328,12 @@ while read -r name bus; do v=$(ddcutil --bus "$bus" getvcp 10 --brief 2>/dev/nul
             SetRow {
                 visible: !card.m.disabled
                 title: "Resolution"
-                Flow {
-                    width: 620; spacing: 6; layoutDirection: Qt.RightToLeft
-                    Repeater {
-                        model: page.resolutions(card.m)
-                        delegate: SetButton {
-                            required property var modelData
-                            text: modelData.replace("x", " × ") + (page.nativeRes(card.m).indexOf(modelData) < 0 ? " (scaled)" : "")
-                            accent: modelData === page.resOf(card.m)
-                            onClicked: page.save(card.m, page.shape(card.m, modelData, page.zoomOf(card.m)))
-                        }
-                    }
+                desc: "Recommended = the sharpest this screen shows, used by itself until you pick another. Scaled = drawn bigger on it, still sharp."
+                SetDrop {
+                    boxWidth: 260; filterable: false
+                    options: page.resolutions(card.m).map(r => ({ name: r.replace("x", " × "), tag: page.resTag(card.m, r) }))
+                    current: page.resOf(card.m).replace("x", " × ")
+                    onPicked: (n) => page.save(card.m, page.shape(card.m, n.replace(" × ", "x"), page.zoomOf(card.m)))
                 }
             }
             SetRow {
