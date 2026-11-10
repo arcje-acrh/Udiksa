@@ -8,6 +8,8 @@ dots/.config/quickshell/colors.json
 dots/.config/gtk-3.0/gtk.css
 dots/.config/gtk-4.0/gtk.css
 dots/.config/gtk-3.0/settings.ini
+# GTK file-chooser bookmarks: your own places
+dots/.config/gtk-3.0/bookmarks
 dots/.config/gtk-4.0/settings.ini
 dots/.config/fastfetch/config.jsonc
 optional/ncspot/dots/.config/ncspot/config.toml
