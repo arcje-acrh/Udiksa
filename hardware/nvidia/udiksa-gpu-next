@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+# udiksa-gpu-next -- set the GPU mode supergfxd applies at the NEXT BOOT, without switching now.
+# The notch / Settings > GPU use it for Standard -> Eco: a live switch fails while Hyprland has the NVIDIA card open
+# (rmmod nvidia_drm: in use; supergfxd then detaches the card and rolls back), and supergfxctl cannot queue a mode
+# (always_reboot only changes its message; the switch still runs live). supergfxd reads "mode" at boot, before the
+# login screen. Also cancels a queued Eco (writes Hybrid back). Runs through `sudo -n` (/etc/sudoers.d/udiksa-gpu).
+set -euo pipefail
+[[ $# -eq 1 && $1 =~ ^(Integrated|Hybrid)$ ]] || { echo "usage: udiksa-gpu-next Integrated|Hybrid"; exit 2; }
+sed -i -E "s/(\"mode\": *\")[A-Za-z]+\"/\1$1\"/" /etc/supergfxd.conf
+grep -q "\"mode\": *\"$1\"" /etc/supergfxd.conf

@@ -392,7 +392,12 @@ true`]
         gpuQueued = m
         gpuSwitching = true
         if (gpuSet.running) { gpuNext = m; return }
-        gpuSet.command = ["supergfxctl", "-m", m]; gpuSet.running = true
+        // Standard -> Eco cannot happen live (Hyprland keeps the NVIDIA card open), so it is written for the next boot;
+        // picking the running mode again cancels a queued change. Without the helper: supergfxctl as before.
+        gpuSet.command = (m === "Integrated" && gpuMode === "Hybrid") || m === gpuMode
+            ? ["sh", "-c", "sudo -n /usr/local/bin/udiksa-gpu-next \"$1\" || supergfxctl -m \"$1\"", "sh", m]
+            : ["supergfxctl", "-m", m]
+        gpuSet.running = true
     }
     Process {
         id: gpuSet
