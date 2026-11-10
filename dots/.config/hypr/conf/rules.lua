@@ -84,6 +84,16 @@ hl.window_rule({
     center = true,
     size   = "900 600",
 })
+-- Kaze (file manager) and RDP Desk always open floating, centred, at the size they ask for
+-- (Kaze 1280x800, RDP Desk 1220x800). User 2026-11-10: "open rdpdesk and kaze as floating always".
+-- FreeRDP's session windows have their own class (com.freerdp.*), so remote desktops still tile.
+hl.window_rule({
+    name  = "kaze-rdpdesk-floating",
+    match = { class = "^(kaze|io\\.github\\.rdpdesk)$" },
+
+    float  = true,
+    center = true,
+})
 hl.window_rule({
     name  = "browser-library",
     match = { title = "^(Library|Downloads|Page Info.*)$" },
