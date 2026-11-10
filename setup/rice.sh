@@ -2,8 +2,9 @@
 # setup/rice.sh -- PART 3: put the whole rice in place (after part 2 installed the apps).
 #   home    link dots/ into ~ with GNU Stow -- dots/ mirrors your home 1:1 (files you already have there are moved to
 #           ~/.dotfiles-backup/<date>)
-#   system  the rice's own system files (login screen, boot splash, quiet session), GRUB theme (if GRUB), services,
-#           hibernation (checked / asked); your own system files are only edited line by line, never replaced
+#   system  the rice's own system files (login screen, boot splash, quiet session), GRUB theme (if GRUB), the keyring
+#           (unlocked by the login password), services, hibernation (checked / asked); your own system files are only
+#           edited line by line, never replaced
 #   user    standard folders, ble.sh prompt, first-login setup (theme, default apps)
 # Usage:  setup/rice.sh [home] [system] [user] [--dry-run]      (no stage = all three)
 # --dry-run prints the system commands instead of running them (home/user stages are safe to repeat anyway).
@@ -144,6 +145,17 @@ stage_system() {
         grub_default GRUB_DISABLE_RECOVERY true
         for p in quiet splash loglevel=3 vt.global_cursor_default=0; do grub_param "$p"; done
     else note "no GRUB here: the boot menu theme is skipped (the rest of the rice does not need it)"; fi
+
+    say "Keyring (saved passwords for browsers, network logins, RDP Desk ...), opened by your login password"
+    local pam=/etc/pam.d/greetd
+    if [[ -f $pam ]] && pacman -Q gnome-keyring &>/dev/null; then
+        grep -q '^auth .*pam_gnome_keyring' $pam \
+            || S sed -i '/^auth .*include .*system-local-login/a auth       optional     pam_gnome_keyring.so' $pam
+        grep -q '^session .*pam_gnome_keyring' $pam \
+            || S sed -i '/^session .*include .*system-local-login/a session    optional     pam_gnome_keyring.so auto_start' $pam
+        # a face login (hardware/faceid) gives it no password: then the first app that needs it asks once per boot
+        note "opens with your login password; after a face login the first app that needs it asks for it once"
+    else note "skip (greetd or gnome-keyring not installed)"; fi
 
     say "Services"
     local svc=(NetworkManager bluetooth greetd systemd-timesyncd power-profiles-daemon)

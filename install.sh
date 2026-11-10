@@ -2,7 +2,7 @@
 # install.sh -- Udiksa: a fresh (or existing) Arch -> this rice, in three parts (setup/):
 #   arch  (1)  Arch itself     OPTIONAL, only for a blank machine: wipes the disk you pick (from the Arch USB, as root)
 #   apps  (2)  the apps        core apps (Kaze the file manager included) + the optional ones you say yes to (Zen, OnlyOffice, ncspot, Tailscale, WhatsApp, Netflix, Galaxy Buds, Nautilus)
-#   rice  (3)  the rice        dots/ linked into ~, login screen, boot splash + GRUB theme (if GRUB), hibernation (asked)
+#   rice  (3)  the rice        dots/ linked into ~, login screen, keyring, boot splash + GRUB theme (if GRUB), hibernation (asked)
 #   after rice                 hardware support, offered only where it fits (hardware/<name>/detect): ASUS laptops,
 #                        hybrid NVIDIA laptops, IR cameras (face unlock). Run one by hand: hardware/<name>/install.sh
 # The rice adapts to the machine (screens, GPU, battery, boot loader); your own choices live in

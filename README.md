@@ -200,7 +200,9 @@ cd ~/Udiksa && ./install.sh apps rice
 
 - **apps**: the core apps, then asks about each optional one (Zen Browser, OnlyOffice, ncspot, Tailscale, Zed, WhatsApp, Netflix, Galaxy Buds, Nautilus).
 - **rice**: links the configs, installs the login screen, boot splash and GRUB theme (if you use GRUB),
-  and sets up hibernation (uses your swap, or makes a swap file).
+  sets up the keyring (GNOME Keyring: apps keep saved passwords there, encrypted with your login password, which
+  opens it when you log in with it; after a face login the first app that needs it asks for that password once)
+  and hibernation (uses your swap, or makes a swap file).
 - **Hardware**: on an ASUS laptop or a hybrid NVIDIA laptop, it offers the matching support (see `hardware/`).
   Something on your machine not supported? [docs/HARDWARE.md](docs/HARDWARE.md) shows how to add it.
 - **Reboot.** The first login sets the theme, desktop settings and default apps.

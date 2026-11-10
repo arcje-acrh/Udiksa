@@ -13,6 +13,7 @@ cliphist
 fastfetch
 ffmpegthumbnailer
 file-roller
+gnome-keyring
 greetd
 grim
 gvfs
