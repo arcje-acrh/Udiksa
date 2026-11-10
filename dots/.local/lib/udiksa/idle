@@ -19,7 +19,9 @@ case ${1:-} in
     off)   hyprctl dispatch 'hl.dsp.dpms({action = "off"})' >/dev/null ;;
     sleep) if [[ -f /etc/systemd/sleep.conf.d/udiksa.conf ]]; then systemctl suspend-then-hibernate; else systemctl suspend; fi ;;
     lid)   key=HandleLidSwitch
-           (( $(hyprctl monitors -j | jq length) > 1 )) && key=HandleLidSwitchDocked || { ((on_ac)) && key=HandleLidSwitchExternalPower; }
+           # docked = logind's own test (another screen connected, even while the laptop screen is switched off)
+           [[ $(busctl get-property org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager Docked) == 'b true' ]] \
+               && key=HandleLidSwitchDocked || { ((on_ac)) && key=HandleLidSwitchExternalPower; }
            [[ $(busctl get-property org.freedesktop.login1 /org/freedesktop/login1 org.freedesktop.login1.Manager $key) == *'"ignore"' ]] || loginctl lock-session ;;
     *)     sed -n '2,8p' "$0"; exit 2 ;;
 esac

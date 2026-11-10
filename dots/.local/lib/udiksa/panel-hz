@@ -1,14 +1,16 @@
 #!/usr/bin/env bash
 # udiksa panel-hz <hz> -- set the refresh rate of the laptop's own panel (eDP / LVDS / DSI), keeping its current
 # resolution, position and scale. Used by the notch / Settings (Power.qml: 60 Hz on battery, high on the charger).
-# No built-in panel, or that rate not offered by it: does nothing. Only the mode changes (scale and position stay).
+# No built-in panel, or that rate not offered by it: does nothing. Only the mode changes: the rule carries the panel's
+# current scale, position and rotation too, because the newest Hyprland rule REPLACES the saved one (a rate-only rule
+# dropped the scale to Hyprland's automatic one -- 100 % on Hyprland 0.57, 2026-11-11).
 hz=${1:?usage: udiksa panel-hz <hz>}
 hyprctl monitors -j | jq -r --argjson hz "$hz" '
   .[] | select(.name | test("^(eDP|LVDS|DSI)")) | . as $m |
   select(any($m.availableModes[]; startswith("\($m.width)x\($m.height)@\($hz)"))) |
-  "\(.name) \(.width)x\(.height)@\($hz)"' |
-  head -1 | while read -r out mode; do
-      hyprctl eval "hl.monitor({ output = \"$out\", mode = \"$mode\" })" >/dev/null
+  "\(.name) \(.width)x\(.height)@\($hz) \(.scale) \(.x)x\(.y) \(.transform)"' |
+  head -1 | while read -r out mode scale pos tf; do
+      hyprctl eval "hl.monitor({ output = \"$out\", mode = \"$mode\", scale = $scale, position = \"$pos\", transform = $tf })" >/dev/null
       # remembered for config reloads (hyprland.lua re-applies it last), so a reload never changes the rate
-      mkdir -p "$HOME/.local/state/rice" && echo "$out $mode" > "$HOME/.local/state/rice/panel-mode"
+      mkdir -p "$HOME/.local/state/rice" && echo "$out $mode $scale $pos $tf" > "$HOME/.local/state/rice/panel-mode"
   done

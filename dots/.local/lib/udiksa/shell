@@ -1,14 +1,41 @@
 #!/usr/bin/env bash
-# udiksa shell -- start (or --restart) Quickshell at the design's PHYSICAL size on any screen and any scale.
-# The design is drawn for a 191 ppi panel at 125 % (2560x1600, 340 mm wide): one design pixel = 1.25 / 191.25 inch. Here the
-# shell (notch, panels, Settings, lock) is scaled by  QT_SCALE_FACTOR = 1.25 / scale x ppi / 191.25  (focused screen),
-# so at 115 % the notch keeps exactly the size it had at 125 %, and a bigger / smaller-dpi screen shows it the same
-# size in centimetres. Screens that report no physical size: 1.25 / scale. Kept between 0.7 and 1.8.
-# Used by autostart.lua, the Restart-shell script and Settings > Display after a scale change.
-restart=0; [[ ${1:-} == --restart ]] && { restart=1; shift; }
-f=$(hyprctl monitors -j 2>/dev/null | jq -r '(map(select(.focused)) + .)[0] |
-    (if (.physicalWidth // 0) > 0 then (.width / (.physicalWidth / 25.4)) else 191.25 end) as $ppi |
-    (1.25 / .scale * $ppi / 191.25) | if . < 0.7 then 0.7 elif . > 1.8 then 1.8 else . end | . * 1000 | round / 1000' 2>/dev/null)
-[[ $f =~ ^[0-9.]+$ ]] || f=1
-if ((restart)); then pkill -x quickshell; sleep 0.5; fi
-QT_SCALE_FACTOR=$f exec quickshell "$@"
+# udiksa shell -- start (or --restart) Quickshell at the design's PHYSICAL size on every screen, at any scale.
+# The design is drawn for a 191 ppi panel at 125 % (2560x1600, 340 mm wide): one design pixel = 1.25 / 191.25 inch.
+# Each screen gets its own factor  1.25 / scale x ppi / 191.25  (no physical size reported: 1.25 / scale; kept between
+# 0.7 and 1.8), so the notch is as big in centimetres on the laptop, a TV or a monitor, at any Settings scale.
+# Qt takes them as QT_SCALE_FACTOR (the main screen: built-in if on, else the first) x QT_SCREEN_SCALE_FACTORS
+# (each screen relative to it, by name).
+#   udiksa shell [--restart]   start (autostart.lua) / restart (Restart-shell script)
+#   udiksa shell --ensure      restart ONLY if the running shell's factors no longer match the screens. Run by Hyprland
+#                              whenever screens change (conf/monitors.lua: plug, unplug, scale, resolution), so a factor
+#                              read during a screen change (2026-11-11: 1.25 instead of 1.0 after a recovery) never sticks.
+#                              Skipped while Settings > Display waits for "Keep" (its marker file, < 30 s old); a change
+#                              still unconfirmed when the shell restarts is undone first (the marker holds the undo).
+mode=${1:-}; [[ $mode == --restart || $mode == --ensure ]] && shift || mode=""
+factors() {
+    hyprctl monitors -j 2>/dev/null | jq -r '
+        [.[] | select(.width > 0 and (.name | test("^(FALLBACK|UDIKSA-WAKE)$") | not))
+         | {name, int: (.name | test("^(eDP|LVDS|DSI)")),
+            f: ((if (.physicalWidth // 0) > 0 then (.width / (.physicalWidth / 25.4)) else 191.25 end) as $ppi
+                | (1.25 / .scale * $ppi / 191.25) | if . < 0.7 then 0.7 elif . > 1.8 then 1.8 else . end)}] as $s
+        | (([$s[] | select(.int)] + $s)[0].f // 1) as $main
+        | "\($main * 1000 | round / 1000)|" + ([$s[] | "\(.name)=\(.f / $main * 1000 | round / 1000)"] | join(";"))' 2>/dev/null
+}
+want=$(factors); [[ $want =~ ^[0-9.]+\| ]] || want="1|"
+if [[ $mode == --ensure ]]; then
+    exec 9>"${XDG_RUNTIME_DIR:-/tmp}/udiksa-shell.lock"; flock -n 9 || exit 0   # one check at a time
+    sleep 1; want=$(factors); [[ $want =~ ^[0-9.]+\| ]] || exit 0                # let the screens settle
+    [ -n "$(find "${XDG_RUNTIME_DIR:-/tmp}/udiksa-display-pending" -newermt '-30 seconds' 2>/dev/null)" ] && exit 0
+    pid=$(pgrep -xo quickshell) || exit 0                                        # no shell = nothing to correct
+    env=$(tr '\0' '\n' < /proc/$pid/environ)
+    have="$(sed -n 's/^QT_SCALE_FACTOR=//p' <<<"$env")|$(sed -n 's/^QT_SCREEN_SCALE_FACTORS=//p' <<<"$env")"
+    [[ $have == "$want" ]] && exit 0
+    exec 9>&-; mode=--restart
+fi
+if [[ $mode == --restart ]]; then pkill -x quickshell; sleep 0.5; fi
+# a Settings > Display change still waiting for "Keep" when the old shell died: not confirmed -> undone (its undo is in the file)
+pend="${XDG_RUNTIME_DIR:-/tmp}/udiksa-display-pending"
+if [ -s "$pend" ] && ! pgrep -x quickshell >/dev/null; then
+    ~/.local/lib/udiksa/settings monitor many "$(cat "$pend")" >/dev/null 2>&1; rm -f "$pend"; sleep 1; want=$(factors); [[ $want =~ ^[0-9.]+\| ]] || want="1|"
+fi
+QT_SCALE_FACTOR=${want%%|*} QT_SCREEN_SCALE_FACTORS=${want#*|} exec quickshell "$@"

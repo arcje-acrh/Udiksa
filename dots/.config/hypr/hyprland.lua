@@ -47,9 +47,13 @@ end
 do
     local f = io.open(os.getenv("HOME") .. "/.local/state/rice/panel-mode", "r")  -- the refresh rate udiksa panel-hz last set
     if f then
-        local out, mode = (f:read("*l") or ""):match("^(%S+)%s+(%S+)$")
+        -- "<output> <mode> <scale> <position> <transform>": the whole rule, as a rate-only one would replace the saved
+        -- scale (older files hold only the first two: then just those, as before)
+        local out, mode, rest = (f:read("*l") or ""):match("^(%S+)%s+(%S+)%s*(.*)$")
         f:close()
-        if out then hl.monitor({ output = out, mode = mode }) end  -- set it again so a reload does not change the display mode
+        local scale, pos, tf = (rest or ""):match("^(%S+)%s+(%S+)%s+(%S+)$")
+        if out and scale then hl.monitor({ output = out, mode = mode, scale = tonumber(scale), position = pos, transform = tonumber(tf) })
+        elseif out then hl.monitor({ output = out, mode = mode }) end  -- set it again so a reload does not change the display mode
     end
 end
 -- game mode stays on through reloads (theme switch, Settings) until it is turned off (conf/gamemode.lua)

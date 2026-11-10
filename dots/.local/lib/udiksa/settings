@@ -202,12 +202,28 @@ MON_JSON = os.path.join(HOME, ".config/hypr/local/monitors.json")
 MON_LUA = os.path.join(HOME, ".config/hypr/local/monitors.lua")
 
 
-def mon_lua(out, v):
+def builtin_keys():
+    """The laptop's own panel(s), as the keys Settings saves them under ("desc:<description>" or the output name)."""
+    try:
+        mons = json.loads(subprocess.run(["hyprctl", "monitors", "all", "-j"], capture_output=True, text=True).stdout)
+    except ValueError:
+        return set()
+    return {k for m in mons if re.match(r"(eDP|LVDS|DSI)", m.get("name", "")) for k in (m["name"], "desc:" + m.get("description", ""))}
+
+
+def mon_lua(out, v, builtin=frozenset()):
     parts = [f"output = {lua_str(out)}"]
-    if v.get("disabled"):
+    # the laptop's own screen is never saved as plainly OFF: "only the other screen" holds only while another screen is
+    # connected (checked whenever the config loads: login, reload, and on unplug -- conf/monitors.lua), else it comes
+    # back on by itself instead of leaving no screen at all (user 2026-11-11: black screen after unplugging the TV)
+    off = "#hl.get_monitors({ all = true }) > 1" if out in builtin else "true"
+    if v.get("disabled") and out not in builtin:
         parts.append("disabled = true")
     else:
-        parts.append(f"mode = {lua_str(v.get('mode') or 'preferred')}")
+        mode = v.get("mode") or "preferred"
+        if mode.startswith("0x0"):        # read while the screen was off: let it pick its own mode again
+            mode, v = "preferred", dict(v, scale="auto")
+        parts.append(f"mode = {lua_str(mode)}")
         parts.append(f"position = {lua_str(v.get('position') or 'auto')}")
         sc = v.get("scale", "auto")
         parts.append(f"scale = {sc if isinstance(sc, (int, float)) else lua_str(sc)}")
@@ -215,7 +231,7 @@ def mon_lua(out, v):
         # (tested: a rule without transform left the screen rotated)
         parts.append(f"transform = {int(v.get('transform') or 0)}")
         parts.append(f"mirror = {lua_str(v.get('mirror') or '')}")
-        parts.append("disabled = false")
+        parts.append(f"disabled = {off}" if v.get("disabled") else "disabled = false")
     return "hl.monitor({ " + ", ".join(parts) + " })"
 
 
@@ -239,10 +255,11 @@ def cmd_monitor(op, out, data=None):
         d.pop(out, None)
     else:
         sys.exit("monitor set|rm")
+    builtin = builtin_keys()
     for path, txt in ((MON_JSON, json.dumps(d, indent=2) + "\n"),
                       (MON_LUA, "-- monitors.lua -- written by Settings > Display (~/.local/bin/udiksa settings monitor);\n"
                                 "-- personal layer, loaded after the shipped monitors.lua. Delete it to go back to automatic.\n"
-                                + "".join(mon_lua(k, v) + "\n" for k, v in d.items()))):
+                                + "".join(mon_lua(k, v, builtin) + "\n" for k, v in d.items()))):
         real = os.path.realpath(path)
         os.makedirs(os.path.dirname(real), exist_ok=True)
         open(real + ".tmp", "w").write(txt)

@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # udiksa xdpi -- load ~/.Xresources and set Xft.dpi = 96 x the screen scale, so X11 apps (drawn unscaled by Hyprland,
 # misc.lua xwayland.force_zero_scaling) size themselves right on ANY screen. Run at login (autostart.lua) and after
-# a scale change in Settings > Display. Uses the focused screen (or the first one).
+# a scale change in Settings > Display, and on every screen change (conf/monitors.lua). X11 has ONE dpi for every
+# screen, so it follows the main screen, the same one the shell is sized by (udiksa shell): the built-in if it is on,
+# else the first; X11 apps on another screen with another scale are sized for the main one (an X11 limit).
 xrdb -merge "$HOME/.Xresources" 2>/dev/null
-scale=$(hyprctl monitors -j 2>/dev/null | jq -r '(map(select(.focused)) + .)[0].scale // 1')
+scale=$(hyprctl monitors -j 2>/dev/null | jq -r '[.[] | select(.name | test("^(FALLBACK|UDIKSA-WAKE)$") | not)] |
+    ((map(select(.name | test("^(eDP|LVDS|DSI)"))) + .)[0].scale // 1)')
 dpi=$(awk -v s="$scale" 'BEGIN { printf "%d", 96 * s + 0.5 }')
 echo "Xft.dpi: $dpi" | xrdb -merge

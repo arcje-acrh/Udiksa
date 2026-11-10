@@ -6,8 +6,100 @@
 # The laptop panel's refresh rate is handed back to the System panel (qs ipc call power screen).
 # `udiksa display <extend|mirror|external|laptop>` sets that one directly (Settings > Display).
 # State: $XDG_RUNTIME_DIR/display-mode (gone after a reboot = back to the normal setup).
+# `udiksa display added` / `removed` -- run by Hyprland on plug / unplug (conf/monitors.lua), see below.
+# Every real screen, switched on or off; never Hyprland's stand-in FALLBACK output or our own UDIKSA-WAKE (see wake).
+real() { hyprctl monitors all -j | jq '[.[] | select(.name | test("^(FALLBACK|UDIKSA-WAKE)$") | not)]'; }
+mons=$(real)
+# Device-optimised modes of a screen, best first (one "WxH@Hz" per line) -- the ONLY place that decides which modes the
+# rice offers (Settings > Display) or picks by itself (plug-in, F9); nothing here knows any particular screen:
+#  - the screen's own preferred (native) mode, and smaller modes it reports with the same shape (aspect within 1 %,
+#    at least half as wide): bigger modes are shrunk by the screen itself (soft), other shapes are stretched;
+#  - on a screen wired to a GPU that is not the one drawing (hybrid laptop: HDMI on the NVIDIA card) the picture is
+#    copied across, and NVIDIA reads it wrongly (slanted garbage) unless the width is a multiple of 16 px (a 1366x768 TV).
+optimal() {
+    local c sec=false
+    c=$(ls -d /sys/class/drm/card*-"$1" 2>/dev/null | head -1)
+    [ -n "$c" ] && [ "$(cat "$c/device/device/boot_vga" 2>/dev/null)" != 1 ] && sec=true
+    jq -r --arg n "$1" --argjson sec "$sec" '
+        def wh: split("@")[0] | split("x") | map(tonumber);
+        def hz: split("@")[1] | sub("Hz$"; "") | tonumber;
+        def safe: ($sec | not) or ((wh)[0] % 16 == 0);
+        .[] | select(.name == $n) | .availableModes as $all | select(($all | length) > 0)
+        | ($all[0] | wh) as [$pw, $ph]
+        | [$all[] | select(safe) | (wh) as [$w, $h]
+           | select($w <= $pw and $h <= $ph and $w * 2 >= $pw and ((($w / $h) - ($pw / $ph)) | fabs) < 0.01 * $pw / $ph)] as $ok
+        | (if ($ok | length) > 0 then $ok else [$all[] | select(safe)] end)
+        | sort_by([((wh) | .[0] * .[1]), hz]) | reverse | .[] | sub("Hz$"; "")' <<<"$mons"
+}
+# the mode to use on its own: the screen's preferred one if it is optimal, else the best optimal one; a screen set in
+# Settings > Display (~/.config/hypr/local/monitors.lua) keeps its own
+fitmode() {
+    local desc first
+    desc=$(jq -r --arg n "$1" '.[] | select(.name == $n) | .description' <<<"$mons")
+    first=$(optimal "$1" | head -1)
+    if [ -z "$first" ] || [ "$first" = "$(jq -r --arg n "$1" '.[] | select(.name == $n) | .availableModes[0] | sub("Hz$"; "")' <<<"$mons")" ] \
+       || grep -qF -e "desc:$desc\"" -e "output = \"$1\"" ~/.config/hypr/local/monitors.lua 2>/dev/null; then
+        echo preferred
+    else
+        echo "$first"
+    fi
+}
+# `udiksa display modes`: { "<screen>": ["WxH@Hz", ...] } for Settings > Display
+if [ "${1:-}" = modes ]; then
+    for n in $(jq -r '.[].name' <<<"$mons"); do jq -n --arg n "$n" '{($n): $ARGS.positional}' --args $(optimal "$n"); done | jq -s 'add // {}'
+    exit 0
+fi
+# Switch a screen back on when none is left (like GNOME / KDE / Windows: an unplug never leaves a black screen):
+# the built-in one if there is one, else the first connected, with its saved scale. Hyprland applies a screen change
+# only while some screen is drawing, so with none left it would never happen, and `hyprctl reload` in that state
+# crashes it (Hyprland 0.57.1, 2026-11-11: PropRefresher -> initFB, bad_any_cast). So a virtual screen (UDIKSA-WAKE,
+# invisible) is added for the moment it takes, and removed again.
+lit() { real | jq '[.[] | select(.disabled | not)] | length'; }
+wake() {
+    local t sc
+    t=$(jq -r '([.[] | select(.name | test("^(eDP|LVDS|DSI)"))] + .)[0] | .name // empty' <<<"$mons")
+    [ -z "$t" ] && return
+    sc=$(jq -r --arg d "desc:$(jq -r --arg t "$t" '.[] | select(.name == $t) | .description' <<<"$mons")" --arg t "$t" \
+         '(.[$d] // .[$t] // {}).scale // "auto" | if type == "number" then . else "\"auto\"" end' ~/.config/hypr/local/monitors.json 2>/dev/null)
+    hyprctl eval "hl.monitor({ output = \"$t\", mode = \"preferred\", position = \"auto\", scale = ${sc:-\"auto\"}, disabled = false })" >/dev/null
+    hyprctl output create headless UDIKSA-WAKE >/dev/null
+    for _ in $(seq 30); do (( $(lit) > 0 )) && break; sleep 0.1; done
+    hyprctl output remove UDIKSA-WAKE >/dev/null
+    echo laptop > "${XDG_RUNTIME_DIR:-/tmp}/display-mode"
+}
+# `udiksa display removed`: a screen went; if none is left switched on, wake one
+if [ "${1:-}" = removed ]; then
+    sleep 0.3
+    (( $(lit) == 0 )) && wake
+    exit 0
+fi
+# `udiksa display added`: a screen came (or the session started with it): a safe mode for screens on a second GPU
+# (fitmode), "only the other screen" from Settings honoured again (the laptop's own screen is saved as off only while
+# another one is connected -- udiksa settings), and the current wallpaper on every screen that has none yet
+if [ "${1:-}" = added ]; then
+    off=$(jq -r 'to_entries[] | select(.value.disabled) | .key' ~/.config/hypr/local/monitors.json 2>/dev/null)
+    for n in $(jq -r '.[] | select(.name | test("^(eDP|LVDS|DSI)")) | select(.disabled | not) | .name' <<<"$mons"); do
+        d=$(jq -r --arg n "$n" '.[] | select(.name == $n) | "desc:" + .description' <<<"$mons")
+        grep -qxF -e "$d" -e "$n" <<<"$off" && (( $(jq '[.[] | select(.disabled | not)] | length' <<<"$mons") > 1 )) \
+            && hyprctl eval "hl.monitor({ output = \"$n\", disabled = true })" >/dev/null
+    done
+    for n in $(jq -r '.[] | select(.disabled | not) | .name' <<<"$mons"); do
+        m=$(fitmode "$n")
+        [ "$m" = preferred ] && continue
+        s=$(jq -r --arg n "$n" '.[] | select(.name == $n) | .scale' <<<"$mons")
+        hyprctl eval "hl.monitor({ output = \"$n\", mode = \"$m\", position = \"auto\", scale = $s })" >/dev/null
+    done
+    wp=$(jq -r '.wallpaper // empty' ~/.local/state/rice/theme.json 2>/dev/null)
+    [ -f "$wp" ] || exit 0
+    for _ in 1 2 3 4 5 6; do   # awww learns about a new screen a moment after Hyprland
+        bare=$(awww query 2>/dev/null | sed -n 's/^: \([^:]*\):.*currently displaying: color.*/\1/p')
+        for n in $bare; do awww img -o "$n" "$wp" --resize crop --transition-type none >/dev/null 2>&1; done
+        [ -n "$bare" ] && exit 0
+        sleep 0.5
+    done
+    exit 0
+fi
 # the built-in screen (eDP / LVDS / DSI) and the first other one; their scale is kept (Settings > Display sets it)
-mons=$(hyprctl monitors all -j)
 int=$(jq -r '[.[] | select(.name | test("^(eDP|LVDS|DSI)"))][0].name // empty' <<<"$mons")
 [ -z "$int" ] && { qs ipc call osd display "No built-in screen"; exit 0; }
 ext=$(jq -r --arg i "$int" '.[] | select(.name != $i) | .name' <<<"$mons" | head -1)
@@ -15,6 +107,10 @@ sc() { jq -r --arg n "$1" '(.[] | select(.name == $n and (.disabled | not)) | .s
 isc=$(sc "$int"); esc=$(sc "$ext")
 q() { [[ $1 == auto ]] && echo '"auto"' || echo "$1"; }
 if [ -z "$ext" ]; then
+    # nothing else plugged in: if the laptop screen is somehow off, F9 brings it back (works blind on a black screen)
+    if jq -e --arg i "$int" '.[] | select(.name == $i) | .disabled' <<<"$mons" >/dev/null; then
+        wake; exit 0
+    fi
     qs ipc call osd display "No external display"
     exit 0
 fi
@@ -26,11 +122,12 @@ next=extend
 for i in "${!modes[@]}"; do [ "${modes[$i]}" = "$cur" ] && next=${modes[$(( (i + 1) % ${#modes[@]} ))]}; done
 case ${1:-} in extend|mirror|external|laptop) next=$1 ;; esac
 
+em=$(fitmode "$ext")
 lap_on="hl.monitor({ output = \"$int\", mode = \"preferred\", position = \"0x0\", scale = $(q "$isc") })"
 lap_off="hl.monitor({ output = \"$int\", disabled = true })"
-ext_right="hl.monitor({ output = \"$ext\", mode = \"preferred\", position = \"auto-right\", scale = $(q "$esc") })"
-ext_only="hl.monitor({ output = \"$ext\", mode = \"preferred\", position = \"0x0\", scale = $(q "$esc") })"
-ext_mirror="hl.monitor({ output = \"$ext\", mode = \"preferred\", position = \"auto\", scale = $(q "$esc"), mirror = \"$int\" })"
+ext_right="hl.monitor({ output = \"$ext\", mode = \"$em\", position = \"auto-right\", scale = $(q "$esc") })"
+ext_only="hl.monitor({ output = \"$ext\", mode = \"$em\", position = \"0x0\", scale = $(q "$esc") })"
+ext_mirror="hl.monitor({ output = \"$ext\", mode = \"$em\", position = \"auto\", scale = $(q "$esc"), mirror = \"$int\" })"
 ext_off="hl.monitor({ output = \"$ext\", disabled = true })"
 case $next in
     extend)   lua="$lap_on; $ext_right" ;;
