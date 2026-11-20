@@ -54,10 +54,10 @@ fi
 say "Installing ${#aur[@]} AUR packages"
 yay -S --needed --noconfirm --answerdiff None --answerclean None --removemake "${aur[@]}"
 
-# Kaze, the file manager: its own repo, built as the pacman package `kaze` (makepkg -s pulls in what it needs).
+# Kaze, the file manager: its own repo, built as the pacman package `kaze-explorer` (not `kaze`: that AUR name is a music player; makepkg -s pulls in what it needs).
 # Already installed = left alone; to update it later: in a clone of it, cd pkg && makepkg -fsi.
 say "Kaze, the file manager (github.com/arcje-acrh/Kaze)"
-if ! pacman -Qq kaze &>/dev/null; then
+if ! pacman -Qq kaze-explorer &>/dev/null; then
     tmp=$(mktemp -d)
     git clone --depth 1 https://github.com/arcje-acrh/Kaze.git "$tmp/kaze"
     (cd "$tmp/kaze/pkg" && makepkg -si --noconfirm)
