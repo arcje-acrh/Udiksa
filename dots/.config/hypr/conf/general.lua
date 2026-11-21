@@ -36,6 +36,12 @@ hl.config({
         fullscreen_on_one_column = true,  -- a lone column fills the screen (scrolling layout)
     },
 
+    -- the notch (Bar.qml) rises to the Overlay layer for a volume / brightness pop-up and drops back to Top after;
+    -- that rebuilds its surface, and a NEW top surface would stay above the fullscreen video. Off = it goes back under.
+    layers = {
+        allow_new_top_layers_over_existing_fullscreen = false,
+    },
+
     -- window groups = tabs (Super+G makes one, Super+Tab steps through it; binds.lua). The tab strip is flat
     -- like the notch: square-ish, Iosevka, the theme's accent for the shown tab (colours: colors.lua).
     group = {
